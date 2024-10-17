@@ -1,10 +1,15 @@
 using System;
 
-namespace Bytom.Hardware {
+namespace Bytom.Hardware
+{
     public class Disk
     {
-        public UInt32 capacity { get; set; }
+        public uint capacity_bytes { get; set; }
 
+        public Disk(uint capacity_bytes_)
+        {
+            this.capacity_bytes = capacity_bytes_;
+        }
     }
 }
 

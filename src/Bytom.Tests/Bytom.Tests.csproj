@@ -22,4 +22,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Bytom.Hardware\Bytom.Hardware.csproj" />
+  </ItemGroup>
+
 </Project>
