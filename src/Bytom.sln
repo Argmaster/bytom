@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bytom.Compiler", "Bytom.Compiler\Bytom.Compiler.csproj", "{9A7E09F2-F96F-42A8-AF1C-12A9DBD70843}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bytom.Firmware", "Bytom.Firmware\Bytom.Firmware.csproj", "{758CDCAC-5132-4A8A-8C5C-DDFECA24DF97}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bytom.Hardware", "Bytom.Hardware\Bytom.Hardware.csproj", "{2257CE6A-142A-4DB3-AA4E-6047B603C101}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bytom.NerdixOS", "Bytom.NerdixOS\Bytom.NerdixOS.csproj", "{ADE9770E-96FF-458E-8E19-D063FDA43222}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bytom.Parser", "Bytom.Parser\Bytom.Parser.csproj", "{7FA771E6-9296-42B4-AA56-8A5587D101F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bytom.Tests", "Bytom.Tests\Bytom.Tests.csproj", "{B3963E94-27EA-4122-B403-6B45248AB660}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9A7E09F2-F96F-42A8-AF1C-12A9DBD70843}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A7E09F2-F96F-42A8-AF1C-12A9DBD70843}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A7E09F2-F96F-42A8-AF1C-12A9DBD70843}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A7E09F2-F96F-42A8-AF1C-12A9DBD70843}.Release|Any CPU.Build.0 = Release|Any CPU
+		{758CDCAC-5132-4A8A-8C5C-DDFECA24DF97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{758CDCAC-5132-4A8A-8C5C-DDFECA24DF97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{758CDCAC-5132-4A8A-8C5C-DDFECA24DF97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{758CDCAC-5132-4A8A-8C5C-DDFECA24DF97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2257CE6A-142A-4DB3-AA4E-6047B603C101}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2257CE6A-142A-4DB3-AA4E-6047B603C101}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2257CE6A-142A-4DB3-AA4E-6047B603C101}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2257CE6A-142A-4DB3-AA4E-6047B603C101}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADE9770E-96FF-458E-8E19-D063FDA43222}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADE9770E-96FF-458E-8E19-D063FDA43222}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADE9770E-96FF-458E-8E19-D063FDA43222}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADE9770E-96FF-458E-8E19-D063FDA43222}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FA771E6-9296-42B4-AA56-8A5587D101F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FA771E6-9296-42B4-AA56-8A5587D101F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FA771E6-9296-42B4-AA56-8A5587D101F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FA771E6-9296-42B4-AA56-8A5587D101F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3963E94-27EA-4122-B403-6B45248AB660}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3963E94-27EA-4122-B403-6B45248AB660}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3963E94-27EA-4122-B403-6B45248AB660}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3963E94-27EA-4122-B403-6B45248AB660}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
