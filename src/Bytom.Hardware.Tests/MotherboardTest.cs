@@ -2,11 +2,16 @@ using Bytom.Hardware;
 using Bytom.Hardware.CPU;
 using Bytom.Hardware.RAM;
 
-namespace Bytom.Tests
+namespace Bytom.Hardware.Tests
 {
     public class MachineTest
     {
-        [Fact]
+        [SetUp]
+        public void Setup()
+        {
+        }
+
+        [Test]
         public void TestMotherboardConstruction()
         {
             Controller ram = new Controller(new List<Stick>{
