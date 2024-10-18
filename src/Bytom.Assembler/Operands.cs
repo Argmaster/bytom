@@ -7,6 +7,10 @@ namespace Bytom.Assembler.Operands
         public Operand()
         {
         }
+        public virtual string ToAssembly()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public enum RegisterName
@@ -19,6 +23,14 @@ namespace Bytom.Assembler.Operands
         RD5 = 0b00_0110,
         RD6 = 0b00_0111,
         RD7 = 0b00_1000,
+        RD8 = 0b00_1001,
+        RD9 = 0b00_1010,
+        RDA = 0b00_1011,
+        RDB = 0b00_1100,
+        RDC = 0b00_1101,
+        RDD = 0b00_1110,
+        RDE = 0b00_1111,
+        RDF = 0b01_0000,
         CR0 = 0b10_0000,
         CSTP = 0b10_0100,
         CSBP = 0b10_0101,
@@ -38,6 +50,10 @@ namespace Bytom.Assembler.Operands
         {
             this.name = name;
         }
+        public override string ToAssembly()
+        {
+            return name.ToString();
+        }
     }
 
     public class MemoryAddress : Operand
@@ -46,6 +62,10 @@ namespace Bytom.Assembler.Operands
         public MemoryAddress(RegisterName register)
         {
             this.register = register;
+        }
+        public override string ToAssembly()
+        {
+            return $"[{register}]";
         }
     }
 
@@ -61,15 +81,19 @@ namespace Bytom.Assembler.Operands
     }
     public class ConstantInt : Constant
     {
-        public static readonly uint operand_type_code = 0b0010;
-        public uint value { get; set; }
-        public ConstantInt(uint value)
+        public static readonly int operand_type_code = 0b0010;
+        public int value { get; set; }
+        public ConstantInt(int value)
         {
             this.value = value;
         }
         public override byte[] GetBytes()
         {
             return Serialization.Int32ToBytesBigEndian(value);
+        }
+        public override string ToAssembly()
+        {
+            return value.ToString();
         }
     }
 
@@ -85,6 +109,10 @@ namespace Bytom.Assembler.Operands
         {
             return Serialization.Float32ToBytesBigEndian(value);
         }
+        public override string ToAssembly()
+        {
+            return value.ToString();
+        }
     }
 
     public class Label : Operand
@@ -93,6 +121,10 @@ namespace Bytom.Assembler.Operands
         public Label(string name)
         {
             this.name = name;
+        }
+        public override string ToAssembly()
+        {
+            return this.name;
         }
     }
 }

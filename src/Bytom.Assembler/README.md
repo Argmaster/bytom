@@ -22,7 +22,10 @@ in 64 bit instructions
 
 ### 32-bit General purpose registers
 
-byte - 8 bits word - 16 bits dword - 32 bits qword - 64 bits
+- byte - 8 bits
+- word - 16 bits
+- dword - 32 bits
+- qword - 64 bits
 
 - `RD0` `0b00_0001`
 - `RD1` `0b00_0010`
@@ -37,8 +40,9 @@ byte - 8 bits word - 16 bits dword - 32 bits qword - 64 bits
 - `RDA` `0b00_1011`
 - `RDB` `0b00_1100`
 - `RDC` `0b00_1101`
-- `RDE` `0b00_1110`
-- `RDF` `0b00_1111`
+- `RDD` `0b00_1110`
+- `RDE` `0b00_1111`
+- `RDF` `0b01_0000`
 
 ### Special registers
 

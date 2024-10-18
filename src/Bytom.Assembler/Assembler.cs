@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Bytom.Assembler.Instructions;
 using Bytom.Assembler.Operands;
+using Serilog;
 
 namespace Bytom.Assembler
 {
@@ -12,7 +13,6 @@ namespace Bytom.Assembler
     {
         public Frontend()
         {
-
         }
 
         public List<Node> parse(string source_code)
@@ -29,13 +29,8 @@ namespace Bytom.Assembler
 
                 if (trimmed_line.EndsWith(":"))
                 {
-                    var match = Regex.Match(trimmed_line, @"^([A-Fa-f_]+):$");
-                    if (match.Success)
-                    {
-                        nodes.Add(new LabelNode(match.Groups[1].Value));
-                        continue;
-                    }
-                    throw new Exception("Invalid label");
+                    nodes.Add(new LabelNode(trimmed_line.Substring(0, trimmed_line.Length - 1)));
+                    continue;
                 }
 
                 var instruction_elements = trimmed_line.Split(" ", 2);
@@ -423,18 +418,7 @@ namespace Bytom.Assembler
                 return operand;
             }
 
-            throw new System.Exception("Invalid number of operands");
-        }
-
-        private static ConstantFloat parseConstantFloat(string source_code)
-        {
-            string trimmed_source_code = source_code.Trim();
-            var operand = tryParseConstantFloat(trimmed_source_code);
-            if (operand != null)
-            {
-                return operand;
-            }
-            throw new Exception("Invalid float constant");
+            throw new Exception("Invalid number of operands");
         }
 
         private static ConstantFloat? tryParseConstantFloat(string trimmed_source_code)
@@ -447,31 +431,20 @@ namespace Bytom.Assembler
             return null;
         }
 
-        private static ConstantInt parseConstantInt(string source_code)
-        {
-            string trimmed_source_code = source_code.Trim();
-            var operand = tryParseConstantInt(trimmed_source_code);
-            if (operand != null)
-            {
-                return operand;
-            }
-            throw new Exception("Invalid integer constant");
-        }
-
         private static ConstantInt? tryParseConstantInt(string trimmed_source_code)
         {
             Match match = Regex.Match(trimmed_source_code, @"^0x([0-9A-Fa-f]+)$");
             if (match.Success)
             {
                 return new ConstantInt(
-                    uint.Parse(match.Groups[1].Value, NumberStyles.HexNumber)
+                    int.Parse(match.Groups[1].Value, NumberStyles.HexNumber)
                 );
             }
 
             match = Regex.Match(trimmed_source_code, @"^([-+]?[0-9A-Fa-f]+)$");
             if (match.Success)
             {
-                return new ConstantInt(uint.Parse(match.Groups[0].Value, NumberStyles.HexNumber));
+                return new ConstantInt(int.Parse(match.Groups[0].Value, NumberStyles.HexNumber));
             }
             return null;
         }
@@ -489,34 +462,19 @@ namespace Bytom.Assembler
 
         private static Register? tryParseRegister(string trimmed_source_code)
         {
-            if (Enum.GetNames(typeof(RegisterName)).Contains(trimmed_source_code))
+            var register_name = trimmed_source_code.ToUpper();
+            if (Enum.TryParse(register_name, out RegisterName register))
             {
-                var register_name = trimmed_source_code;
-                if (Enum.TryParse(trimmed_source_code, out RegisterName register))
-                {
-                    return new Register(register);
-                }
-                throw new Exception($"Invalid register name {register_name}");
+                return new Register(register);
             }
             return null;
-        }
-
-        private static MemoryAddress parseMemoryAddress(string source_code)
-        {
-            string trimmed_source_code = source_code.Trim();
-            var operand = tryParseMemoryAddress(trimmed_source_code);
-            if (operand != null)
-            {
-                return operand;
-            }
-            throw new Exception("Invalid memory address");
         }
 
         private static MemoryAddress? tryParseMemoryAddress(string source)
         {
             if (source.StartsWith("[") && source.EndsWith("]"))
             {
-                var register_name = source.Substring(1, source.Length - 2);
+                var register_name = source.Substring(1, source.Length - 2).ToUpper();
                 if (Enum.TryParse(register_name, out RegisterName register))
                 {
                     return new MemoryAddress(register);
@@ -524,6 +482,145 @@ namespace Bytom.Assembler
                 throw new Exception($"Invalid register name {register_name}");
             }
             return null;
+        }
+    }
+
+    public class Backend
+    {
+        public Backend()
+        {
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.File("/home/argmaster/dev/bytom/assembler_backend.log")
+                .CreateLogger();
+        }
+
+        public Code compile(List<Node> nodes)
+        {
+            Log.Information($"Starting compilation of {nodes.Count} nodes.");
+            Dictionary<string, long> label_offsets = getLabelOffsets(nodes);
+            var instructions = expandLabels(nodes, label_offsets);
+
+
+            return new Code(instructions);
+        }
+
+        private static Dictionary<string, long> getLabelOffsets(List<Node> nodes)
+        {
+            Dictionary<string, long> label_offsets = new Dictionary<string, long>();
+            uint current_offset = 0;
+
+            foreach (Node node in nodes)
+            {
+                if (node is LabelNode)
+                {
+                    string node_name = ((LabelNode)node).name;
+                    Log.Information($"Found label '{node_name}' at offset '{current_offset}'.");
+                    label_offsets[node_name] = current_offset;
+                }
+                current_offset += node.GetSizeBytes();
+            }
+
+            return label_offsets;
+        }
+
+        private static List<Instruction> expandLabels(List<Node> nodes, Dictionary<string, long> label_offsets)
+        {
+            List<Instruction> new_nodes = new List<Instruction>(nodes.Capacity);
+            long current_offset = 0;
+
+            foreach (Node node in nodes)
+            {
+                if (node is LabelJumpInstruction)
+                {
+                    // push RDE  // 32 bits
+                    // push RDF  // 32 bits
+                    // mov RDF, IP  // 32 bits
+                    // mov RDE, <offset>  // 64 bits
+                    // add RDF, RDE  // 32 bits
+                    // pop RDE  // 32 bits
+                    // <j> [RDF]  // 32 bits
+                    var push_rde = new PushReg(new Register(RegisterName.RDE));
+                    var push_rdf = new PushReg(new Register(RegisterName.RDF));
+                    var mov_rdf_ip = new MovRegReg(
+                        new Register(RegisterName.RDF),
+                        new Register(RegisterName.IP)
+                    );
+                    var mov_rde_offset = new MovRegCon(
+                        new Register(RegisterName.RDE),
+                        new ConstantInt(0)
+                    );
+                    var add_rdf_rde = new Add(
+                        new Register(RegisterName.RDF),
+                        new Register(RegisterName.RDE)
+                    );
+                    var pop_rde = new PopReg(new Register(RegisterName.RDE));
+                    var jmp_rdf = ((LabelJumpInstruction)node).GetJumpInstruction(RegisterName.RDF);
+
+                    string label_name = ((LabelJumpInstruction)node).label.name;
+                    long label_offset = label_offsets[label_name];
+                    long jmp_offset = current_offset;
+                    jmp_offset += push_rde.GetSizeBytes();
+                    jmp_offset += push_rdf.GetSizeBytes();
+
+                    long relative_offset = label_offset - jmp_offset;
+                    ((ConstantInt)mov_rde_offset.source).value = (int)relative_offset;
+
+                    new_nodes.Add(push_rde);
+                    new_nodes.Add(push_rdf);
+                    new_nodes.Add(mov_rdf_ip);
+                    new_nodes.Add(mov_rde_offset);
+                    new_nodes.Add(add_rdf_rde);
+                    new_nodes.Add(pop_rde);
+                    new_nodes.Add(jmp_rdf);
+                }
+                else if (node is Instruction)
+                {
+                    new_nodes.Add((Instruction)node);
+                }
+                current_offset += node.GetSizeBytes();
+            }
+            return new_nodes;
+        }
+    }
+
+    public class Code
+    {
+        public List<Instruction> instructions { get; set; }
+        public Code(List<Instruction> instructions)
+        {
+            this.instructions = instructions;
+        }
+        public List<byte> ToMachineCode()
+        {
+            List<byte> machine_code = new List<byte>();
+
+            foreach (Node node in instructions)
+            {
+                if (node is Instruction)
+                {
+                    machine_code.AddRange(((Instruction)node).ToMachineCode());
+                }
+                else if (node is LabelNode)
+                {
+                    // Do nothing
+                }
+                else
+                {
+                    throw new Exception("Invalid node type");
+                }
+            }
+            return machine_code;
+        }
+
+        public string ToAssembly()
+        {
+            string assembly = "";
+            foreach (Node node in instructions)
+            {
+                assembly += node.ToAssembly() + "\n";
+            }
+            return assembly;
         }
     }
 }

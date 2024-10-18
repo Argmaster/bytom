@@ -23,22 +23,24 @@ namespace Bytom.Assembler.Tests
             Assert.IsInstanceOf<Halt>(instructions[0]);
         }
 
-        [TestCase("MOV RD0, RD1", typeof(MovRegReg))]
-        [TestCase("MOV RD0, [RD1]", typeof(MovRegMem))]
-        [TestCase("MOV [RD0], RD1", typeof(MovMemReg))]
-        [TestCase("MOV RD0, 0xFF", typeof(MovRegCon))]
-        [TestCase("MOV RD0, 0.44", typeof(MovRegCon))]
-        [TestCase("MOV [RD0], 0xFF", typeof(MovMemCon))]
-        [TestCase("MOV [RD0], 0.44", typeof(MovMemCon))]
+        [TestCase("MOV RD0, RD1", typeof(MovRegReg), 32u)]
+        [TestCase("MOV RD0, [RD1]", typeof(MovRegMem), 32u)]
+        [TestCase("MOV [RD0], RD1", typeof(MovMemReg), 32u)]
+        [TestCase("MOV RD0, 0xFF", typeof(MovRegCon), 64u)]
+        [TestCase("MOV RD0, 0.44", typeof(MovRegCon), 64u)]
+        [TestCase("MOV [RD0], 0xFF", typeof(MovMemCon), 64u)]
+        [TestCase("MOV [RD0], 0.44", typeof(MovMemCon), 64u)]
         public void TestMov(
             string instructionString,
-            Type expectedInstructionType
+            Type expectedInstructionType,
+            uint size
         )
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse(instructionString);
             Assert.That(1 == instructions.Count);
             Assert.IsInstanceOf(expectedInstructionType, instructions[0]);
+            Assert.That(((Instruction)instructions[0]).GetSizeBits(), Is.EqualTo(size));
         }
 
         [TestCase("PUSH RD0", typeof(PushReg))]
@@ -391,6 +393,28 @@ namespace Bytom.Assembler.Tests
             var instructions = frontend.parse("CMP RD0, RD1");
             Assert.That(1 == instructions.Count);
             Assert.IsInstanceOf<Cmp>(instructions[0]);
+        }
+    }
+
+    public class BackendTest
+    {
+
+        [Test]
+        public void TestCompile()
+        {
+            Frontend frontend = new Frontend();
+            var instructions = frontend.parse(@"
+            foo:
+                mov rd0, 0xFF
+                jmp end
+            end:
+                halt
+            ");
+
+            Backend backend = new Backend();
+            var code = backend.compile(instructions);
+
+            File.WriteAllText("output.asm", code.ToAssembly());
         }
     }
 }

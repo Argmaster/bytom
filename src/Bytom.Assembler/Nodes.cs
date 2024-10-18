@@ -3,7 +3,21 @@ using Bytom.Assembler.Operands;
 
 namespace Bytom.Assembler.Instructions
 {
-    public class Node { }
+    public class Node
+    {
+        public virtual uint GetSizeBits()
+        {
+            return 32;
+        }
+        public uint GetSizeBytes()
+        {
+            return GetSizeBits() / 8;
+        }
+        public virtual string ToAssembly()
+        {
+            throw new NotImplementedException();
+        }
+    }
 
     public class LabelNode : Node
     {
@@ -12,22 +26,25 @@ namespace Bytom.Assembler.Instructions
         {
             this.name = name;
         }
+        public override uint GetSizeBits()
+        {
+            return 0;
+        }
+        public override string ToAssembly()
+        {
+            return $"{name}:";
+        }
     }
 
     public class Instruction : Node
     {
         public static readonly uint code = 0b0000_0000_0000_0000;
-        public static readonly uint size = 32;
 
         public virtual uint GetOpCode()
         {
             return code;
         }
-        public virtual uint GetSize()
-        {
-            return size;
-        }
-        public virtual byte[] GetMachineCode()
+        public virtual byte[] ToMachineCode()
         {
             throw new NotImplementedException();
         }
@@ -39,6 +56,10 @@ namespace Bytom.Assembler.Instructions
         public Nop()
         {
         }
+        public override string ToAssembly()
+        {
+            return "nop";
+        }
     }
 
     public class Halt : Instruction
@@ -46,6 +67,10 @@ namespace Bytom.Assembler.Instructions
         public static new readonly uint code = 0b0000_0000_0000_0001;
         public Halt()
         {
+        }
+        public override string ToAssembly()
+        {
+            return "halt";
         }
     }
 
@@ -59,6 +84,10 @@ namespace Bytom.Assembler.Instructions
             this.destination = destination;
             this.source = source;
         }
+        public override string ToAssembly()
+        {
+            return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
     }
 
     public class MovRegMem : Instruction
@@ -70,6 +99,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.destination = destination;
             this.source = source;
+        }
+        public override string ToAssembly()
+        {
+            return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
         }
     }
 
@@ -83,12 +116,15 @@ namespace Bytom.Assembler.Instructions
             this.source = source;
             this.destination = destination;
         }
+        public override string ToAssembly()
+        {
+            return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
     }
 
     public class MovRegCon : Instruction
     {
         public static new readonly uint code = 0b1000_0000_0000_0001;
-        public static new readonly uint size = 64;
         public Register destination { get; set; }
         public Constant source { get; set; }
         public MovRegCon(Register destination, Constant source)
@@ -96,18 +132,33 @@ namespace Bytom.Assembler.Instructions
             this.destination = destination;
             this.source = source;
         }
+        public override uint GetSizeBits()
+        {
+            return 64;
+        }
+        public override string ToAssembly()
+        {
+            return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
     }
 
     public class MovMemCon : Instruction
     {
         public static new readonly uint code = 0b1000_0000_0000_0001;
-        public static new readonly uint size = 64;
         public MemoryAddress destination { get; set; }
         public Constant source { get; set; }
         public MovMemCon(MemoryAddress destination, Constant source)
         {
             this.destination = destination;
             this.source = source;
+        }
+        public override uint GetSizeBits()
+        {
+            return 64;
+        }
+        public override string ToAssembly()
+        {
+            return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
         }
     }
 
@@ -119,6 +170,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.source = source;
         }
+        public override string ToAssembly()
+        {
+            return $"push {source.ToAssembly()}";
+        }
     }
 
     public class PushMem : Instruction
@@ -128,6 +183,10 @@ namespace Bytom.Assembler.Instructions
         public PushMem(MemoryAddress source)
         {
             this.source = source;
+        }
+        public override string ToAssembly()
+        {
+            return $"push {source.ToAssembly()}";
         }
     }
 
@@ -139,6 +198,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.source = source;
         }
+        public override string ToAssembly()
+        {
+            return $"push {source.ToAssembly()}";
+        }
     }
 
     public class PopReg : Instruction
@@ -149,6 +212,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.destination = destination;
         }
+        public override string ToAssembly()
+        {
+            return $"pop {destination.ToAssembly()}";
+        }
     }
 
     public class PopMem : Instruction
@@ -158,6 +225,10 @@ namespace Bytom.Assembler.Instructions
         public PopMem(MemoryAddress destination)
         {
             this.destination = destination;
+        }
+        public override string ToAssembly()
+        {
+            return $"pop {destination.ToAssembly()}";
         }
     }
 
@@ -171,6 +242,10 @@ namespace Bytom.Assembler.Instructions
             this.destination = destination;
             this.source = source;
         }
+        public override string ToAssembly()
+        {
+            return $"swap {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
     }
 
     public class Add : Instruction
@@ -182,6 +257,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.destination = destination;
             this.source = source;
+        }
+        public override string ToAssembly()
+        {
+            return $"add {destination.ToAssembly()}, {source.ToAssembly()}";
         }
     }
 
@@ -195,6 +274,10 @@ namespace Bytom.Assembler.Instructions
             this.destination = destination;
             this.source = source;
         }
+        public override string ToAssembly()
+        {
+            return $"sub {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
     }
 
     public class Inc : Instruction
@@ -205,6 +288,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.destination = destination;
         }
+        public override string ToAssembly()
+        {
+            return $"inc {destination.ToAssembly()}";
+        }
     }
 
     public class Dec : Instruction
@@ -214,6 +301,10 @@ namespace Bytom.Assembler.Instructions
         public Dec(Register destination)
         {
             this.destination = destination;
+        }
+        public override string ToAssembly()
+        {
+            return $"dec {destination.ToAssembly()}";
         }
     }
 
@@ -227,6 +318,10 @@ namespace Bytom.Assembler.Instructions
             this.destination = destination;
             this.source = source;
         }
+        public override string ToAssembly()
+        {
+            return $"mul {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
     }
 
     public class IMul : Instruction
@@ -238,6 +333,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.destination = destination;
             this.source = source;
+        }
+        public override string ToAssembly()
+        {
+            return $"imul {destination.ToAssembly()}, {source.ToAssembly()}";
         }
     }
 
@@ -251,6 +350,10 @@ namespace Bytom.Assembler.Instructions
             this.destination = destination;
             this.source = source;
         }
+        public override string ToAssembly()
+        {
+            return $"div {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
     }
 
     public class IDiv : Instruction
@@ -262,6 +365,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.destination = destination;
             this.source = source;
+        }
+        public override string ToAssembly()
+        {
+            return $"idiv {destination.ToAssembly()}, {source.ToAssembly()}";
         }
     }
 
@@ -275,6 +382,10 @@ namespace Bytom.Assembler.Instructions
             this.destination = destination;
             this.source = source;
         }
+        public override string ToAssembly()
+        {
+            return $"and {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
     }
 
     public class Or : Instruction
@@ -286,6 +397,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.destination = destination;
             this.source = source;
+        }
+        public override string ToAssembly()
+        {
+            return $"or {destination.ToAssembly()}, {source.ToAssembly()}";
         }
     }
 
@@ -299,6 +414,10 @@ namespace Bytom.Assembler.Instructions
             this.destination = destination;
             this.source = source;
         }
+        public override string ToAssembly()
+        {
+            return $"xor {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
     }
 
     public class Not : Instruction
@@ -308,6 +427,10 @@ namespace Bytom.Assembler.Instructions
         public Not(Register destination)
         {
             this.destination = destination;
+        }
+        public override string ToAssembly()
+        {
+            return $"not {destination.ToAssembly()}";
         }
     }
 
@@ -321,6 +444,10 @@ namespace Bytom.Assembler.Instructions
             this.destination = destination;
             this.source = source;
         }
+        public override string ToAssembly()
+        {
+            return $"shl {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
     }
 
     public class Shr : Instruction
@@ -332,6 +459,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.destination = destination;
             this.source = source;
+        }
+        public override string ToAssembly()
+        {
+            return $"shr {destination.ToAssembly()}, {source.ToAssembly()}";
         }
     }
 
@@ -345,6 +476,10 @@ namespace Bytom.Assembler.Instructions
             this.destination = destination;
             this.source = source;
         }
+        public override string ToAssembly()
+        {
+            return $"fadd {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
     }
 
     public class Fsub : Instruction
@@ -356,6 +491,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.destination = destination;
             this.source = source;
+        }
+        public override string ToAssembly()
+        {
+            return $"fsub {destination.ToAssembly()}, {source.ToAssembly()}";
         }
     }
 
@@ -369,6 +508,10 @@ namespace Bytom.Assembler.Instructions
             this.destination = destination;
             this.source = source;
         }
+        public override string ToAssembly()
+        {
+            return $"fmul {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
     }
 
     public class Fdiv : Instruction
@@ -380,6 +523,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.destination = destination;
             this.source = source;
+        }
+        public override string ToAssembly()
+        {
+            return $"fdiv {destination.ToAssembly()}, {source.ToAssembly()}";
         }
     }
 
@@ -393,6 +540,10 @@ namespace Bytom.Assembler.Instructions
             this.left = left;
             this.right = right;
         }
+        public override string ToAssembly()
+        {
+            return $"fcmp {left.ToAssembly()}, {right.ToAssembly()}";
+        }
     }
 
     public class JumpMemoryAddressInstruction : Instruction
@@ -403,7 +554,6 @@ namespace Bytom.Assembler.Instructions
         {
             this.destination = destination;
         }
-
     }
 
     public class LabelJumpInstruction : Instruction
@@ -415,6 +565,23 @@ namespace Bytom.Assembler.Instructions
         {
             this.label = label;
         }
+        public override uint GetSizeBits()
+        {
+            // push RDE  // 32 bits
+            // push RDF  // 32 bits
+            // mov RDE, IP  // 32 bits
+            // mov RDF, <offset>  // 64 bits
+            // add RDE, RDF  // 32 bits
+            // pop RDE  // 32 bits
+            // <j> [RDE]  // 32 bits
+            return 32 + 32 + 32 + 64 + 32 + 32 + 32;
+        }
+        public virtual JumpMemoryAddressInstruction GetJumpInstruction(
+            RegisterName name = RegisterName.RDF
+        )
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class JmpMem : JumpMemoryAddressInstruction
@@ -422,6 +589,10 @@ namespace Bytom.Assembler.Instructions
         public static new readonly uint code = 0b0000_0000_0000_0010;
         public JmpMem(MemoryAddress destination) : base(destination)
         {
+        }
+        public override string ToAssembly()
+        {
+            return $"jmp {destination.ToAssembly()}";
         }
     }
 
@@ -432,6 +603,16 @@ namespace Bytom.Assembler.Instructions
         public JmpLabel(Label label) : base(label)
         {
         }
+        public override JumpMemoryAddressInstruction GetJumpInstruction(
+            RegisterName name = RegisterName.RDF
+        )
+        {
+            return new JmpMem(new MemoryAddress(name));
+        }
+        public override string ToAssembly()
+        {
+            return $"jmp {label.ToAssembly()}";
+        }
     }
 
     public class JeqMem : JumpMemoryAddressInstruction
@@ -439,6 +620,10 @@ namespace Bytom.Assembler.Instructions
         public static new readonly uint code = 0b0000_0000_0010_0001;
         public JeqMem(MemoryAddress destination) : base(destination)
         {
+        }
+        public override string ToAssembly()
+        {
+            return $"jeq {destination.ToAssembly()}";
         }
     }
 
@@ -449,6 +634,16 @@ namespace Bytom.Assembler.Instructions
         public JeqLabel(Label label) : base(label)
         {
         }
+        public override JumpMemoryAddressInstruction GetJumpInstruction(
+            RegisterName name = RegisterName.RDF
+        )
+        {
+            return new JeqMem(new MemoryAddress(name));
+        }
+        public override string ToAssembly()
+        {
+            return $"jeq {label.ToAssembly()}";
+        }
     }
 
     public class JneMem : JumpMemoryAddressInstruction
@@ -456,6 +651,10 @@ namespace Bytom.Assembler.Instructions
         public static new readonly uint code = 0b0000_0000_0010_0010;
         public JneMem(MemoryAddress destination) : base(destination)
         {
+        }
+        public override string ToAssembly()
+        {
+            return $"jne {destination.ToAssembly()}";
         }
     }
 
@@ -466,6 +665,16 @@ namespace Bytom.Assembler.Instructions
         public JneLabel(Label label) : base(label)
         {
         }
+        public override JumpMemoryAddressInstruction GetJumpInstruction(
+            RegisterName name = RegisterName.RDF
+        )
+        {
+            return new JneMem(new MemoryAddress(name));
+        }
+        public override string ToAssembly()
+        {
+            return $"jne {label.ToAssembly()}";
+        }
     }
 
     public class JltMem : JumpMemoryAddressInstruction
@@ -473,6 +682,10 @@ namespace Bytom.Assembler.Instructions
         public static new readonly uint code = 0b0000_0000_0010_0011;
         public JltMem(MemoryAddress destination) : base(destination)
         {
+        }
+        public override string ToAssembly()
+        {
+            return $"jlt {destination.ToAssembly()}";
         }
     }
 
@@ -483,6 +696,16 @@ namespace Bytom.Assembler.Instructions
         public JltLabel(Label label) : base(label)
         {
         }
+        public override JumpMemoryAddressInstruction GetJumpInstruction(
+            RegisterName name = RegisterName.RDF
+        )
+        {
+            return new JltMem(new MemoryAddress(name));
+        }
+        public override string ToAssembly()
+        {
+            return $"jlt {label.ToAssembly()}";
+        }
     }
 
     public class JleMem : JumpMemoryAddressInstruction
@@ -490,6 +713,10 @@ namespace Bytom.Assembler.Instructions
         public static new readonly uint code = 0b0000_0000_0010_0100;
         public JleMem(MemoryAddress destination) : base(destination)
         {
+        }
+        public override string ToAssembly()
+        {
+            return $"jle {destination.ToAssembly()}";
         }
     }
 
@@ -500,6 +727,16 @@ namespace Bytom.Assembler.Instructions
         public JleLabel(Label label) : base(label)
         {
         }
+        public override JumpMemoryAddressInstruction GetJumpInstruction(
+            RegisterName name = RegisterName.RDF
+        )
+        {
+            return new JleMem(new MemoryAddress(name));
+        }
+        public override string ToAssembly()
+        {
+            return $"jle {label.ToAssembly()}";
+        }
     }
 
     public class JgtMem : JumpMemoryAddressInstruction
@@ -507,6 +744,10 @@ namespace Bytom.Assembler.Instructions
         public static new readonly uint code = 0b0000_0000_0010_0101;
         public JgtMem(MemoryAddress destination) : base(destination)
         {
+        }
+        public override string ToAssembly()
+        {
+            return $"jgt {destination.ToAssembly()}";
         }
     }
 
@@ -517,6 +758,16 @@ namespace Bytom.Assembler.Instructions
         public JgtLabel(Label label) : base(label)
         {
         }
+        public override JumpMemoryAddressInstruction GetJumpInstruction(
+            RegisterName name = RegisterName.RDF
+        )
+        {
+            return new JgtMem(new MemoryAddress(name));
+        }
+        public override string ToAssembly()
+        {
+            return $"jgt {label.ToAssembly()}";
+        }
     }
 
     public class JgeMem : JumpMemoryAddressInstruction
@@ -524,6 +775,10 @@ namespace Bytom.Assembler.Instructions
         public static new readonly uint code = 0b0000_0000_0010_0110;
         public JgeMem(MemoryAddress destination) : base(destination)
         {
+        }
+        public override string ToAssembly()
+        {
+            return $"jge {destination.ToAssembly()}";
         }
     }
 
@@ -534,6 +789,16 @@ namespace Bytom.Assembler.Instructions
         public JgeLabel(Label label) : base(label)
         {
         }
+        public override JumpMemoryAddressInstruction GetJumpInstruction(
+            RegisterName name = RegisterName.RDF
+        )
+        {
+            return new JgeMem(new MemoryAddress(name));
+        }
+        public override string ToAssembly()
+        {
+            return $"jge {label.ToAssembly()}";
+        }
     }
 
     public class CallMem : JumpMemoryAddressInstruction
@@ -541,6 +806,10 @@ namespace Bytom.Assembler.Instructions
         public static new readonly uint code = 0b0000_0000_0010_1000;
         public CallMem(MemoryAddress destination) : base(destination)
         {
+        }
+        public override string ToAssembly()
+        {
+            return $"call {destination.ToAssembly()}";
         }
     }
 
@@ -551,6 +820,16 @@ namespace Bytom.Assembler.Instructions
         public CallLabel(Label label) : base(label)
         {
         }
+        public override JumpMemoryAddressInstruction GetJumpInstruction(
+            RegisterName name = RegisterName.RDF
+        )
+        {
+            return new CallMem(new MemoryAddress(name));
+        }
+        public override string ToAssembly()
+        {
+            return $"call {label.ToAssembly()}";
+        }
     }
 
     public class Ret : Instruction
@@ -558,6 +837,10 @@ namespace Bytom.Assembler.Instructions
         public static new readonly uint code = 0b0000_0000_0010_1001;
         public Ret()
         {
+        }
+        public override string ToAssembly()
+        {
+            return "ret";
         }
     }
 
@@ -570,6 +853,10 @@ namespace Bytom.Assembler.Instructions
         {
             this.left = left;
             this.right = right;
+        }
+        public override string ToAssembly()
+        {
+            return $"cmp {left.ToAssembly()}, {right.ToAssembly()}";
         }
     }
 }

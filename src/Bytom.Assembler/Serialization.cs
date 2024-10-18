@@ -4,7 +4,7 @@ namespace Bytom.Assembler
 {
     public class Serialization
     {
-        public static byte[] Int32ToBytesBigEndian(uint value)
+        public static byte[] Int32ToBytesBigEndian(int value)
         {
             byte[] bytes = BitConverter.GetBytes(value);
             if (BitConverter.IsLittleEndian)
