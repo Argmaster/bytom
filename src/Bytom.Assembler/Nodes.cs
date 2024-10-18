@@ -335,6 +335,66 @@ namespace Bytom.Assembler.Instructions
         }
     }
 
+    public class Fadd : Instruction
+    {
+        public static new readonly uint code = 0b0000_0000_0001_0000;
+        public Register destination { get; set; }
+        public Register source { get; set; }
+        public Fadd(Register destination, Register source)
+        {
+            this.destination = destination;
+            this.source = source;
+        }
+    }
+
+    public class Fsub : Instruction
+    {
+        public static new readonly uint code = 0b0000_0000_0001_0001;
+        public Register destination { get; set; }
+        public Register source { get; set; }
+        public Fsub(Register destination, Register source)
+        {
+            this.destination = destination;
+            this.source = source;
+        }
+    }
+
+    public class Fmul : Instruction
+    {
+        public static new readonly uint code = 0b0000_0000_0001_0010;
+        public Register destination { get; set; }
+        public Register source { get; set; }
+        public Fmul(Register destination, Register source)
+        {
+            this.destination = destination;
+            this.source = source;
+        }
+    }
+
+    public class Fdiv : Instruction
+    {
+        public static new readonly uint code = 0b0000_0000_0001_0011;
+        public Register destination { get; set; }
+        public Register source { get; set; }
+        public Fdiv(Register destination, Register source)
+        {
+            this.destination = destination;
+            this.source = source;
+        }
+    }
+
+    public class Fcmp : Instruction
+    {
+        public static new readonly uint code = 0b0000_0000_0001_0100;
+        public Register left { get; set; }
+        public Register right { get; set; }
+        public Fcmp(Register left, Register right)
+        {
+            this.left = left;
+            this.right = right;
+        }
+    }
+
     public class JumpMemoryAddressInstruction : Instruction
     {
 
@@ -374,10 +434,10 @@ namespace Bytom.Assembler.Instructions
         }
     }
 
-    public class JeqReg : JumpMemoryAddressInstruction
+    public class JeqMem : JumpMemoryAddressInstruction
     {
         public static new readonly uint code = 0b0000_0000_0010_0001;
-        public JeqReg(MemoryAddress destination) : base(destination)
+        public JeqMem(MemoryAddress destination) : base(destination)
         {
         }
     }
@@ -391,10 +451,10 @@ namespace Bytom.Assembler.Instructions
         }
     }
 
-    public class JneReg : JumpMemoryAddressInstruction
+    public class JneMem : JumpMemoryAddressInstruction
     {
         public static new readonly uint code = 0b0000_0000_0010_0010;
-        public JneReg(MemoryAddress destination) : base(destination)
+        public JneMem(MemoryAddress destination) : base(destination)
         {
         }
     }
@@ -408,10 +468,10 @@ namespace Bytom.Assembler.Instructions
         }
     }
 
-    public class JltReg : JumpMemoryAddressInstruction
+    public class JltMem : JumpMemoryAddressInstruction
     {
         public static new readonly uint code = 0b0000_0000_0010_0011;
-        public JltReg(MemoryAddress destination) : base(destination)
+        public JltMem(MemoryAddress destination) : base(destination)
         {
         }
     }
@@ -425,10 +485,10 @@ namespace Bytom.Assembler.Instructions
         }
     }
 
-    public class JleReg : JumpMemoryAddressInstruction
+    public class JleMem : JumpMemoryAddressInstruction
     {
         public static new readonly uint code = 0b0000_0000_0010_0100;
-        public JleReg(MemoryAddress destination) : base(destination)
+        public JleMem(MemoryAddress destination) : base(destination)
         {
         }
     }
@@ -442,10 +502,10 @@ namespace Bytom.Assembler.Instructions
         }
     }
 
-    public class JgtReg : JumpMemoryAddressInstruction
+    public class JgtMem : JumpMemoryAddressInstruction
     {
         public static new readonly uint code = 0b0000_0000_0010_0101;
-        public JgtReg(MemoryAddress destination) : base(destination)
+        public JgtMem(MemoryAddress destination) : base(destination)
         {
         }
     }
@@ -459,10 +519,10 @@ namespace Bytom.Assembler.Instructions
         }
     }
 
-    public class JgeReg : JumpMemoryAddressInstruction
+    public class JgeMem : JumpMemoryAddressInstruction
     {
         public static new readonly uint code = 0b0000_0000_0010_0110;
-        public JgeReg(MemoryAddress destination) : base(destination)
+        public JgeMem(MemoryAddress destination) : base(destination)
         {
         }
     }
