@@ -1,3 +1,30 @@
 {
-    "dotnet.defaultSolution": "src"
+    "dotnet.defaultSolution": "src",
+    "omnisharp.organizeImportsOnFormat": true,
+    "cSpell.words": [
+        "callif",
+        "CSBP",
+        "CSTP",
+        "dword",
+        "fadd",
+        "Fcmp",
+        "fdiv",
+        "fmul",
+        "fsub",
+        "HWQRA",
+        "IDIV",
+        "imul",
+        "jmpif",
+        "MOVMC",
+        "MOVMR",
+        "MOVRC",
+        "MOVRM",
+        "MOVRR",
+        "PAGEF",
+        "Serilog",
+        "SIGHTA",
+        "SIGV",
+        "VATTA",
+        "xxyy"
+    ]
 }
