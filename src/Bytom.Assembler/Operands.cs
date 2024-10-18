@@ -35,12 +35,8 @@ namespace Bytom.Assembler.Operands
         CSTP = 0b10_0100,
         CSBP = 0b10_0101,
         VATTA = 0b10_0110,
-        SIGV = 0b10_0111,
-        SIGHTA = 0b10_1000,
+        IDT = 0b10_0111,
         IP = 0b10_1001,
-        HWQ = 0b10_1010,
-        HWQRA = 0b10_1011,
-        PAGEF = 0b10_1100,
     }
 
     public class Register : Operand
@@ -89,7 +85,7 @@ namespace Bytom.Assembler.Operands
         }
         public override byte[] GetBytes()
         {
-            return Serialization.Int32ToBytesBigEndian(value);
+            return Serialization.ToBytesBigEndian(value);
         }
         public override string ToAssembly()
         {
@@ -107,7 +103,7 @@ namespace Bytom.Assembler.Operands
         }
         public override byte[] GetBytes()
         {
-            return Serialization.Float32ToBytesBigEndian(value);
+            return Serialization.ToBytesBigEndian(value);
         }
         public override string ToAssembly()
         {

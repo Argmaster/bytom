@@ -48,15 +48,14 @@ in 64 bit instructions
 
 - `CR0` `0b10_0000` - Configuration Register 0
   - bit 0: enable virtual memory
-- `CSTP` `0b10_0100` - Call Stack Top Pointer containing virtual address of call stack.
-- `CSBP` `0b10_0101` - Call Stack Base Pointer containing virtual address of call stack.
+  - bit 31: supervisor bit
+- `CSTP` `0b10_0100` - Call Stack Top Pointer containing virtual address of top of the
+  call stack.
+- `CSBP` `0b10_0101` - Call Stack Base Pointer containing virtual address of the bottom
+  of the call stack.
 - `VATTA` `0b10_0110` - Virtual Address Translation Table Address
-- `SIGV` `0b10_0111` - Signal Value
-- `SIGHTA` `0b10_1000` - Signal Handler Table Address
+- `IDT` `0b10_0111` - Interrupt Descriptor Table containing virtual address of the Interrupt Handlers
 - `IP` `0b10_1001` - Instruction Pointer containing virtual address of next instruction
-- `HWQ` `0b10_1010` - Hardware query ID
-- `HWQRA` `0b10_1011` - Hardware query result address
-- `PAGEF` `0b10_1100` - Page Fault Handler Address
 
 ## Declaration syntax
 
@@ -70,8 +69,11 @@ Hardware only supports 32-bit operations
 
 ## Data Movement Instructions
 
-`nop` - `0b0000_0000_0000_0000_0000_0000_0000_0000` # 32 bit `halt` -
-`0b0000_0000_0000_0000_0000_0000_0000_0001` # 32 bit
+`nop` - `0b0000_0000_0000_0000_0000_0000_0000_0000` # 32 bit
+
+`halt` - `0b0000_0000_0000_0000_0000_0000_0000_0001` # 32 bit
+
+`xxxx_xx` mark first operand, destination. `yy_yyyy` mark second operand, source.
 
 ### mov
 

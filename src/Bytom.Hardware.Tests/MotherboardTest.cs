@@ -1,4 +1,3 @@
-using Bytom.Hardware;
 using Bytom.Hardware.CPU;
 using Bytom.Hardware.RAM;
 

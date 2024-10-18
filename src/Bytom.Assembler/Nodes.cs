@@ -60,6 +60,11 @@ namespace Bytom.Assembler.Instructions
         {
             return "nop";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .GetInstruction();
+        }
     }
 
     public class Halt : Instruction
@@ -71,6 +76,11 @@ namespace Bytom.Assembler.Instructions
         public override string ToAssembly()
         {
             return "halt";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .GetInstruction();
         }
     }
 
@@ -87,6 +97,15 @@ namespace Bytom.Assembler.Instructions
         public override string ToAssembly()
         {
             return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
         }
     }
 

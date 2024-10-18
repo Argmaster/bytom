@@ -10,7 +10,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("NOP");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Nop>(instructions[0]);
         }
 
@@ -19,7 +19,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("HALT");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Halt>(instructions[0]);
         }
 
@@ -38,7 +38,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse(instructionString);
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf(expectedInstructionType, instructions[0]);
             Assert.That(((Instruction)instructions[0]).GetSizeBits(), Is.EqualTo(size));
         }
@@ -53,7 +53,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse(instructionString);
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf(expectedInstructionType, instructions[0]);
         }
 
@@ -66,7 +66,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse(instructionString);
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf(expectedInstructionType, instructions[0]);
         }
 
@@ -75,7 +75,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("SWAP RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Swap>(instructions[0]);
         }
 
@@ -84,7 +84,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("ADD RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Add>(instructions[0]);
         }
 
@@ -93,7 +93,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("SUB RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Sub>(instructions[0]);
         }
 
@@ -102,7 +102,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("INC RD0");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Inc>(instructions[0]);
         }
 
@@ -111,7 +111,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("DEC RD0");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Dec>(instructions[0]);
         }
 
@@ -121,7 +121,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("MUL RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Mul>(instructions[0]);
         }
 
@@ -130,7 +130,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("IMUL RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<IMul>(instructions[0]);
         }
 
@@ -139,7 +139,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("DIV RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Div>(instructions[0]);
         }
 
@@ -148,7 +148,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("IDIV RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<IDiv>(instructions[0]);
         }
 
@@ -157,7 +157,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("AND RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<And>(instructions[0]);
         }
 
@@ -166,7 +166,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("OR RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Or>(instructions[0]);
         }
 
@@ -175,7 +175,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("XOR RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Xor>(instructions[0]);
         }
 
@@ -184,7 +184,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("NOT RD0");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Not>(instructions[0]);
         }
 
@@ -193,7 +193,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("SHL RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Shl>(instructions[0]);
         }
 
@@ -202,7 +202,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("SHR RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Shr>(instructions[0]);
         }
 
@@ -211,7 +211,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("FADD RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Fadd>(instructions[0]);
         }
 
@@ -220,7 +220,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("FSUB RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Fsub>(instructions[0]);
         }
 
@@ -229,7 +229,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("FMUL RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Fmul>(instructions[0]);
         }
 
@@ -238,7 +238,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("FDIV RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Fdiv>(instructions[0]);
         }
 
@@ -247,7 +247,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("FCMP RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Fcmp>(instructions[0]);
         }
 
@@ -256,7 +256,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("JMP [RD0]");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JmpMem>(instructions[0]);
         }
 
@@ -265,7 +265,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("JMP foo");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JmpLabel>(instructions[0]);
         }
 
@@ -274,7 +274,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("JEQ [RD0]");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JeqMem>(instructions[0]);
         }
 
@@ -283,7 +283,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("JEQ foo");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JeqLabel>(instructions[0]);
         }
 
@@ -292,7 +292,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("JNE [RD0]");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JneMem>(instructions[0]);
         }
 
@@ -301,7 +301,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("JNE foo");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JneLabel>(instructions[0]);
         }
 
@@ -310,7 +310,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("JLT [RD0]");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JltMem>(instructions[0]);
         }
 
@@ -319,7 +319,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("JLT foo");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JltLabel>(instructions[0]);
         }
 
@@ -328,7 +328,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("JLE [RD0]");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JleMem>(instructions[0]);
         }
 
@@ -337,7 +337,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("JLE foo");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JleLabel>(instructions[0]);
         }
 
@@ -346,7 +346,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("JGT [RD0]");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JgtMem>(instructions[0]);
         }
 
@@ -355,7 +355,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("JGT foo");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JgtLabel>(instructions[0]);
         }
 
@@ -364,7 +364,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("CALL [RD0]");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<CallMem>(instructions[0]);
         }
 
@@ -373,7 +373,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("CALL foo");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<CallLabel>(instructions[0]);
         }
 
@@ -382,7 +382,7 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("RET");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Ret>(instructions[0]);
         }
 
@@ -391,16 +391,40 @@ namespace Bytom.Assembler.Tests
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse("CMP RD0, RD1");
-            Assert.That(1 == instructions.Count);
+            Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Cmp>(instructions[0]);
         }
     }
 
     public class BackendTest
     {
+        [Test]
+        public void TestMovRegReg()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new MovRegReg(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(MovRegReg.code));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
 
         [Test]
-        public void TestCompile()
+        public void TestLabelJump()
         {
             Frontend frontend = new Frontend();
             var instructions = frontend.parse(@"
@@ -414,7 +438,17 @@ namespace Bytom.Assembler.Tests
             Backend backend = new Backend();
             var code = backend.compile(instructions);
 
-            File.WriteAllText("output.asm", code.ToAssembly());
+            Assert.That(code.ToAssembly(), Is.EqualTo(@"mov RD0, 255
+push RDE
+push RDF
+mov RDF, IP
+mov RDE, 24
+add RDF, RDE
+pop RDE
+jmp [RDF]
+halt
+"
+            ));
         }
     }
 }

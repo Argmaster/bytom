@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Bytom.Assembler.Instructions;
 using Bytom.Assembler.Operands;
@@ -491,7 +490,7 @@ namespace Bytom.Assembler
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
-                .WriteTo.File("/home/argmaster/dev/bytom/assembler_backend.log")
+                .WriteTo.File("assembler_backend.log")
                 .CreateLogger();
         }
 
