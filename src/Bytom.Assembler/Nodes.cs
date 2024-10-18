@@ -229,6 +229,13 @@ namespace Bytom.Assembler.Instructions
         {
             return $"push {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(source.name)
+                .GetInstruction();
+        }
     }
 
     public class PushMem : Instruction
@@ -243,6 +250,13 @@ namespace Bytom.Assembler.Instructions
         {
             return $"push {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.MEMORY_ADDRESS)
+                .SetFirstRegisterID(source.register)
+                .GetInstruction();
+        }
     }
 
     public class PushCon : Instruction
@@ -253,9 +267,20 @@ namespace Bytom.Assembler.Instructions
         {
             this.source = source;
         }
+        public override uint GetSizeBits()
+        {
+            return 64;
+        }
         public override string ToAssembly()
         {
             return $"push {source.ToAssembly()}";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.CONSTANT)
+                .SetConstant(source.GetBytes())
+                .GetInstruction();
         }
     }
 

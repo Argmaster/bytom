@@ -139,7 +139,7 @@ namespace Bytom.Assembler.Tests
         }
 
         [Test]
-        public void TestMovMemCon()
+        public void TestMovMemConI32()
         {
             Backend backend = new Backend();
             var code = backend.compile(
@@ -166,12 +166,136 @@ namespace Bytom.Assembler.Tests
                 machine_code.GetRange(4, 4).ToArray()
             );
 
-            Assert.That(op_code, Is.EqualTo(MovRegCon.code));
+            Assert.That(op_code, Is.EqualTo(MovMemCon.code));
 
             Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.MEMORY_ADDRESS));
             Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
 
             Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.CONSTANT));
+            Assert.That(second_register, Is.EqualTo(0));
+
+            Assert.That(constant, Is.EqualTo(0xFF));
+        }
+
+        [Test]
+        public void TestMovMemConF32()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new MovMemCon(
+                        new MemoryAddress(RegisterName.RD0),
+                        new ConstantFloat(0.5f)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(
+                machine_code.GetRange(0, 4).ToArray()
+            );
+            var op_code = instruction & Serialization.Mask(16);
+            var constant = Serialization.Float32FromBytesBigEndian(
+                machine_code.GetRange(4, 4).ToArray()
+            );
+
+            Assert.That(op_code, Is.EqualTo(MovMemCon.code));
+            Assert.That(constant, Is.EqualTo(0.5f));
+        }
+        [Test]
+        public void TestPushReg()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new PushReg(
+                        new Register(RegisterName.RD0)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(PushReg.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo(0));
+            Assert.That(second_register, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TestPushMem()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new PushMem(
+                        new MemoryAddress(RegisterName.RD0)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(PushMem.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.MEMORY_ADDRESS));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo(0));
+            Assert.That(second_register, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TestPushCon()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new PushCon(
+                        new ConstantInt(0xFF)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(
+                machine_code.GetRange(0, 4).ToArray()
+            );
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+                machine_code.GetRange(4, 4).ToArray()
+            );
+
+            Assert.That(op_code, Is.EqualTo(PushCon.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.CONSTANT));
+            Assert.That(first_register, Is.EqualTo(0));
+
+            Assert.That(second_operand_type, Is.EqualTo(0));
             Assert.That(second_register, Is.EqualTo(0));
 
             Assert.That(constant, Is.EqualTo(0xFF));
