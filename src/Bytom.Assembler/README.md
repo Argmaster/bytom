@@ -53,8 +53,9 @@ in 64 bit instructions
   call stack.
 - `CSBP` `0b10_0101` - Call Stack Base Pointer containing virtual address of the bottom
   of the call stack.
-- `VATTA` `0b10_0110` - Virtual Address Translation Table Address
+- `VATTA` `0b10_0110` - Virtual Address Translation Table Physical Address
 - `IDT` `0b10_0111` - Interrupt Descriptor Table containing virtual address of the Interrupt Handlers
+- `IRA` `0b10_1000` - Interrupt Return Address containing virtual address of the next instruction after the interrupt
 - `IP` `0b10_1001` - Instruction Pointer containing virtual address of next instruction
 
 ## Declaration syntax
@@ -342,6 +343,16 @@ instruction, except the result of the subtraction is discarded instead of replac
 first operand.
 
 - `cmp <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_1111` # 32 bit
+
+
+## I/O Instructions
+
+### in
+
+The in instruction reads a byte from the I/O port specified by the first operand and
+stores it in the second operand.
+
+- `in <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_1111` # 32 bit
 
 ### Address translation
 

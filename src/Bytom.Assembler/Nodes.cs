@@ -123,6 +123,15 @@ namespace Bytom.Assembler.Instructions
         {
             return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.MEMORY_ADDRESS)
+                .SetSecondRegisterID(source.register)
+                .GetInstruction();
+        }
     }
 
     public class MovMemReg : Instruction
@@ -139,11 +148,20 @@ namespace Bytom.Assembler.Instructions
         {
             return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.MEMORY_ADDRESS)
+                .SetFirstRegisterID(destination.register)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
+        }
     }
 
     public class MovRegCon : Instruction
     {
-        public static new readonly uint code = 0b1000_0000_0000_0001;
+        public static new readonly uint code = 0b0010_0000_0000_0001;
         public Register destination { get; set; }
         public Constant source { get; set; }
         public MovRegCon(Register destination, Constant source)
@@ -159,11 +177,20 @@ namespace Bytom.Assembler.Instructions
         {
             return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.CONSTANT)
+                .SetConstant(source.GetBytes())
+                .GetInstruction();
+        }
     }
 
     public class MovMemCon : Instruction
     {
-        public static new readonly uint code = 0b1000_0000_0000_0001;
+        public static new readonly uint code = 0b0110_0000_0000_0001;
         public MemoryAddress destination { get; set; }
         public Constant source { get; set; }
         public MovMemCon(MemoryAddress destination, Constant source)
@@ -178,6 +205,15 @@ namespace Bytom.Assembler.Instructions
         public override string ToAssembly()
         {
             return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.MEMORY_ADDRESS)
+                .SetFirstRegisterID(destination.register)
+                .SetSecondOperandType(OperandType.CONSTANT)
+                .SetConstant(source.GetBytes())
+                .GetInstruction();
         }
     }
 
@@ -197,7 +233,7 @@ namespace Bytom.Assembler.Instructions
 
     public class PushMem : Instruction
     {
-        public static new readonly uint code = 0b0001_0000_0000_0010;
+        public static new readonly uint code = 0b0100_0000_0000_0010;
         public MemoryAddress source { get; set; }
         public PushMem(MemoryAddress source)
         {

@@ -36,29 +36,53 @@ namespace Bytom.Assembler
 
         public static uint Uint32FromBytesBigEndian(byte[] bytes)
         {
+            if (bytes.Length != 4)
+            {
+                throw new ArgumentException("bytes must be 4 bytes long");
+            }
+
+            byte[] bytesCopy = new byte[4];
+            Array.Copy(bytes, bytesCopy, 4);
+
             if (BitConverter.IsLittleEndian)
             {
-                Array.Reverse(bytes);
+                Array.Reverse(bytesCopy);
             }
-            return BitConverter.ToUInt32(bytes, 0);
+            return BitConverter.ToUInt32(bytesCopy);
         }
 
         public static int Int32FromBytesBigEndian(byte[] bytes)
         {
+            if (bytes.Length != 4)
+            {
+                throw new ArgumentException("bytes must be 4 bytes long");
+            }
+
+            byte[] bytesCopy = new byte[4];
+            Array.Copy(bytes, bytesCopy, 4);
+
             if (BitConverter.IsLittleEndian)
             {
-                Array.Reverse(bytes);
+                Array.Reverse(bytesCopy);
             }
-            return BitConverter.ToInt32(bytes, 0);
+            return BitConverter.ToInt32(bytesCopy);
         }
 
         public static float Float32FromBytesBigEndian(byte[] bytes)
         {
+            if (bytes.Length != 4)
+            {
+                throw new ArgumentException("bytes must be 4 bytes long");
+            }
+
+            byte[] bytesCopy = new byte[4];
+            Array.Copy(bytes, bytesCopy, 4);
+
             if (BitConverter.IsLittleEndian)
             {
-                Array.Reverse(bytes);
+                Array.Reverse(bytesCopy);
             }
-            return BitConverter.ToSingle(bytes, 0);
+            return BitConverter.ToSingle(bytesCopy);
         }
 
         public static uint Mask(uint length)
@@ -166,19 +190,14 @@ namespace Bytom.Assembler
             instruction |= ((uint)id & 0b11_1111) << 16;
             return this;
         }
+        public MachineInstructionBuilder SetConstant(byte[] value)
+        {
+            constant = value;
+            return this;
+        }
         public byte[] GetInstruction()
         {
             return Serialization.ToBytesBigEndian(instruction).Concat(constant).ToArray();
-        }
-        public MachineInstructionBuilder SetConstant(int value)
-        {
-            constant = Serialization.ToBytesBigEndian(value);
-            return this;
-        }
-        public MachineInstructionBuilder SetConstant(float value)
-        {
-            constant = Serialization.ToBytesBigEndian(value);
-            return this;
         }
     }
 }
