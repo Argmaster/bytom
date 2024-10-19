@@ -1,4 +1,4 @@
-using Bytom.Assembler.Instructions;
+using Bytom.Assembler.Nodes;
 using Bytom.Assembler.Operands;
 
 namespace Bytom.Assembler.Tests

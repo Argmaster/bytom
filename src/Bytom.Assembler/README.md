@@ -72,7 +72,7 @@ Hardware only supports 32-bit operations
 
 `nop` - `0b0000_0000_0000_0000_0000_0000_0000_0000` # 32 bit
 
-`halt` - `0b0000_0000_0000_0000_0000_0000_0000_0001` # 32 bit
+`halt` - `0b0000_0000_0000_0000_0000_0000_0001_0000` # 32 bit
 
 `xxxx_xx` mark first operand, destination. `yy_yyyy` mark second operand, source.
 
@@ -85,11 +85,11 @@ possible, direct memory-to-memory moves are not. In cases where memory transfers
 desired, the source memory contents must first be loaded into a register, then can be
 stored to the destination memory address.
 
-- `mov <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0000_0001` # 32 bit
-- `mov <reg>,<mem>` - `0b0000_xxxx_xxyy_yyyy_0001_0000_0000_0001` # 32 bit
-- `mov <mem>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0100_0000_0000_0001` # 32 bit
-- `mov <reg>,<con>` - `0b1000_xxxx_xx00_0000_0010_0000_0000_0001` # 64 bit
-- `mov <mem>,<con>` - `0b1000_xxxx_xx00_0000_0110_0000_0000_0001` # 64 bit
+- `mov <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0010_0000` # 32 bit
+- `mov <reg>,<mem>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0010_0001` # 32 bit
+- `mov <mem>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0010_0100` # 32 bit
+- `mov <reg>,<con>` - `0b1000_xxxx_xx00_0000_0000_0000_0010_0010` # 64 bit
+- `mov <mem>,<con>` - `0b1000_xxxx_xx00_0000_0000_0000_0010_0110` # 64 bit
 
 ### push
 
@@ -99,9 +99,9 @@ contents of the 32-bit location at address [CSTP]. CSTP (the stack pointer) is
 decremented by push since the x86 stack grows down - i.e. the stack grows from high
 addresses to lower addresses.
 
-- `push <reg>` - `0b0000_xxxx_xx00_0000_0000_0000_0000_0010` # 32 bit
-- `push <mem>` - `0b0000_xxxx_xx00_0000_0100_0000_0000_0010` # 32 bit
-- `push <con>` - `0b1000_0000_0000_0000_1000_0000_0000_0010` # 64 bit
+- `push <reg>` - `0b0000_xxxx_xx00_0000_0000_0000_0011_0000` # 32 bit
+- `push <mem>` - `0b0000_xxxx_xx00_0000_0100_0000_0011_0000` # 32 bit
+- `push <con>` - `0b1000_0000_0000_0000_1000_0000_0011_0000` # 64 bit
 
 ### pop
 
@@ -110,14 +110,14 @@ hardware-supported stack into the specified operand (i.e. register or memory loc
 It first moves the 4 bytes located at memory location [CSTP] into the specified register
 or memory location, and then increments CSTP by 4.
 
-- `pop <reg>` - `0b0000_xxxx_xx00_0000_0000_0000_0000_0011` # 32 bit
-- `pop <mem>` - `0b0000_xxxx_xx00_0000_0100_0000_0000_0011` # 32 bit
+- `pop <reg>` - `0b0000_xxxx_xx00_0000_0000_0000_0100_0000` # 32 bit
+- `pop <mem>` - `0b0000_xxxx_xx00_0000_0100_0000_0100_0000` # 32 bit
 
 ### swap
 
 The swap instruction exchanges the values of two registers.
 
-- `swap <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0000_0100` # 32 bit
+- `swap <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0101_0000` # 32 bit
 
 ## 32-bit Integer Arithmetic and Logic Instructions
 
@@ -127,7 +127,7 @@ The add instruction adds together its two operands, storing the result in its fi
 operand. Note, whereas both operands may be registers, at most one operand may be a
 memory location.
 
-- `add <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_0000` # 32 bit
+- `add <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_0000_0000` # 32 bit
 
 TODO: adc, add with carry
 
@@ -136,7 +136,7 @@ TODO: adc, add with carry
 The sub instruction stores in the value of its first operand the result of subtracting
 the value of its second operand from the value of its first operand. As with add
 
-- `sub <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_0001` # 32 bit
+- `sub <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_0001_0000` # 32 bit
 
 TODO: sbb, sub with borrow
 
@@ -145,28 +145,28 @@ TODO: sbb, sub with borrow
 The inc instruction increments the value of its first operand by one and stores it
 there.
 
-- `inc <reg>` - `0b0000_xxxx_xx00_0000_0000_0000_0001_0010` # 32 bit
+- `inc <reg>` - `0b0000_xxxx_xx00_0000_0000_0001_0010_0000` # 32 bit
 
 ### dec
 
 The dec instruction decrements the value of its first operand by one and stores it
 there.
 
-- `dec <reg>` - `0b0000_xxxx_xx00_0000_0000_0000_0001_0011` # 32 bit
+- `dec <reg>` - `0b0000_xxxx_xx00_0000_0000_0001_0011_0000` # 32 bit
 
 ### mul
 
 The mul instruction does unsigned integer multiplication of two operands together and
 stores the result in the first operand.
 
-- `mul <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_0100` # 32 bit
+- `mul <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_0100_0000` # 32 bit
 
 ### imul
 
 The mul instruction does signed integer multiplication of two operands together and
 stores the result in the first operand.
 
-- `imul <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_0101` # 32 bit
+- `imul <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_0101_0000` # 32 bit
 
 ### div
 
@@ -174,7 +174,7 @@ The div instruction does unsigned integer division of the first operand by the s
 operand, storing the quotient in the first operand and the remainder in the second
 operand.
 
-- `div <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_0110` # 32 bit
+- `div <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_0110_0000` # 32 bit
 
 ### idiv
 
@@ -182,48 +182,48 @@ The idiv instruction does signed integer division of the first operand by the se
 operand, storing the quotient in the first operand and the remainder in the second
 operand.
 
-- `idiv <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_0111` # 32 bit
+- `idiv <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_0111_0000` # 32 bit
 
 ### and
 
 The and instruction does a bitwise AND of its two operands and stores the result in the
 first operand.
 
-- `and <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_1000` # 32 bit
+- `and <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_1000_0000` # 32 bit
 
 ### or
 
 The or instruction does a bitwise OR of its two operands and stores the result in the
 first operand.
 
-- `or <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_1001` # 32 bit
+- `or <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_1001_0000` # 32 bit
 
 ### xor
 
 The xor instruction does a bitwise XOR of its two operands and stores the result in the
 first operand.
 
-- `xor <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_1010` # 32 bit
+- `xor <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_1010_0000` # 32 bit
 
 ### not
 
 The not instruction does a bitwise NOT of its operand and stores the result there.
 
-- `not <reg>` - `0b0000_xxxx_xx00_0000_0000_0000_0001_1011` # 32 bit
+- `not <reg>` - `0b0000_xxxx_xx00_0000_0000_0001_1011_0000` # 32 bit
 
 ### shl
 
 The shl instruction does a bitwise shift left of its first operand by the number of bits
 specified in the second operand and stores the result in the first operand.
 
-- `shl <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_1100` # 32 bit
+- `shl <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_1100_0000` # 32 bit
 
 ### shr
 
 The shr instruction does a bitwise shift right of its first operand by the number of
 bits specified in the second operand and stores the result in the first operand.
 
-- `shr <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_1101` # 32 bit
+- `shr <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_1101_0000` # 32 bit
 
 ### 32-bit Floating Arithmetic Instructions
 
@@ -232,21 +232,21 @@ bits specified in the second operand and stores the result in the first operand.
 The fadd instruction adds together its two operands, storing the result in its first
 operand.
 
-- `fadd <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0100_0000` # 32 bit
+- `fadd <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0100_0000_0000` # 32 bit
 
 ### fsub
 
 The fsub instruction stores in the value of its first operand the result of subtracting
 the value of its second operand from the value of its first operand.
 
-- `fsub <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0100_0010` # 32 bit
+- `fsub <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0100_0010_0000` # 32 bit
 
 ### fmul
 
 The fmul instruction does unsigned integer multiplication of two operands together and
 stores the result in the first operand.
 
-- `fmul <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0100_0100` # 32 bit
+- `fmul <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0100_0100_0000` # 32 bit
 
 ### fdiv
 
@@ -254,14 +254,14 @@ The fdiv instruction does unsigned integer division of the first operand by the 
 operand, storing the quotient in the first operand and the remainder in the second
 operand.
 
-- `fdiv <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0100_0110` # 32 bit
+- `fdiv <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0100_0110_0000` # 32 bit
 
 ### fcmp
 
 Compare the values of the two specified operands, setting the condition codes in the
 machine status word appropriately. This instruction is equivalent to the sub
 
-- `fcmp <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0100_1111` # 32 bit
+- `fcmp <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0100_1111_0000` # 32 bit
 
 ## Control Flow Instructions
 
@@ -273,49 +273,49 @@ calculation.
 The jmp instruction unconditionally transfers control to the instruction at the address
 specified by its operand.
 
-- `jmp <mem>` - `0b0000_xxxx_xx00_0000_0000_0000_0010_0000` # 32 bit
+- `jmp <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0000_0000` # 32 bit
 
 ### jeq
 
 The jeq instruction transfers control to the instruction at the address specified by its
 operand if the two operands are equal.
 
-- `jeq <mem>` - `0b0000_xxxx_xx00_0000_0000_0000_0010_0001` # 32 bit
+- `jeq <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0001_0000` # 32 bit
 
 ### jne
 
 The jne instruction transfers control to the instruction at the address specified by its
 operand if the two operands are not equal.
 
-- `jne <mem>` - `0b0000_xxxx_xx00_0000_0000_0000_0010_0010` # 32 bit
+- `jne <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0010_0000` # 32 bit
 
 ### jlt
 
 The jlt instruction transfers control to the instruction at the address specified by its
 operand if the first operand is less than the second operand.
 
-- `jlt <mem>` - `0b0000_xxxx_xx00_0000_0000_0000_0010_0011` # 32 bit
+- `jlt <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0011_0000` # 32 bit
 
 ### jle
 
 The jle instruction transfers control to the instruction at the address specified by its
 operand if the first operand is less than or equal to the second operand.
 
-- `jle <mem>` - `0b0000_xxxx_xx00_0000_0000_0000_0010_0100` # 32 bit
+- `jle <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0100_0000` # 32 bit
 
 ### jgt
 
 The jgt instruction transfers control to the instruction at the address specified by its
 operand if the first operand is greater than the second operand.
 
-- `jgt <mem>` - `0b0000_xxxx_xx00_0000_0000_0000_0010_0101` # 32 bit
+- `jgt <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0101_0000` # 32 bit
 
 ### jge
 
 The jge instruction transfers control to the instruction at the address specified by its
 operand if the first operand is greater than or equal to the second operand.
 
-- `jge <mem>` - `0b0000_xxxx_xx00_0000_0000_0000_0010_0110` # 32 bit
+- `jge <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0110_0000` # 32 bit
 
 ### call
 
@@ -325,7 +325,7 @@ unconditional jump to the code location indicated by the label operand. Unlike t
 simple jump instructions, the call instruction saves the location to return to when the
 subroutine completes.
 
-- `call <mem>` - `0b0000_xxxx_xx00_0000_0000_0000_0010_1000` # 32 bit
+- `call <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_1000_0000` # 32 bit
 
 ### ret
 
@@ -333,7 +333,7 @@ The ret instruction pops the top of the hardware-supported stack in memory into 
 instruction pointer, effectively returning control to the location saved by the most
 recent call instruction.
 
-- `ret` - `0b0000_0000_0000_0000_0000_0000_0010_1001` # 32 bit
+- `ret` - `0b0000_0000_0000_0000_0000_0010_1001_0000` # 32 bit
 
 ### cmp
 
@@ -342,7 +342,7 @@ machine status word appropriately. This instruction is equivalent to the sub
 instruction, except the result of the subtraction is discarded instead of replacing the
 first operand.
 
-- `cmp <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_1111` # 32 bit
+- `cmp <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_1111_0000` # 32 bit
 
 
 ## I/O Instructions
@@ -352,7 +352,14 @@ first operand.
 The in instruction reads a byte from the I/O port specified by the first operand and
 stores it in the second operand.
 
-- `in <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0001_1111` # 32 bit
+- `in <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_1000_0001_0000` # 32 bit
+
+### out
+
+The out instruction writes a byte from the second operand to the I/O port specified by
+the first operand.
+
+- `out <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_1000_0010_0000` # 32 bit
 
 ### Address translation
 

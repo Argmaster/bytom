@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Bytom.Assembler.Instructions;
+using Bytom.Assembler.Nodes;
 using Bytom.Assembler.Operands;
+using Bytom.Hardware.CPU;
 
 
 namespace Bytom.Assembler
@@ -462,7 +463,7 @@ namespace Bytom.Assembler
         private static Register? tryParseRegister(string trimmed_source_code)
         {
             var register_name = trimmed_source_code.ToUpper();
-            if (Enum.TryParse(register_name, out RegisterName register))
+            if (Enum.TryParse(register_name, out RegisterID register))
             {
                 return new Register(register);
             }
@@ -474,7 +475,7 @@ namespace Bytom.Assembler
             if (source.StartsWith("[") && source.EndsWith("]"))
             {
                 var register_name = source.Substring(1, source.Length - 2).ToUpper();
-                if (Enum.TryParse(register_name, out RegisterName register))
+                if (Enum.TryParse(register_name, out RegisterID register))
                 {
                     return new MemoryAddress(register);
                 }

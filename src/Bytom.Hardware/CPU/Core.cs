@@ -6,6 +6,7 @@ namespace Bytom.Hardware.CPU
 {
     public enum RegisterID
     {
+        NO_REGISTER = 0b00_0000,
         RD0 = 0b00_0001,
         RD1 = 0b00_0010,
         RD2 = 0b00_0011,

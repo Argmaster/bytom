@@ -1,18 +1,21 @@
 using System;
 using Bytom.Assembler.Operands;
+using Bytom.Hardware.CPU;
 
-namespace Bytom.Assembler.Instructions
+namespace Bytom.Assembler.Nodes
 {
     public class Node
     {
         public virtual uint GetSizeBits()
         {
-            return 32;
+            throw new NotImplementedException();
         }
+
         public uint GetSizeBytes()
         {
             return GetSizeBits() / 8;
         }
+
         public virtual string ToAssembly()
         {
             throw new NotImplementedException();
@@ -22,14 +25,17 @@ namespace Bytom.Assembler.Instructions
     public class LabelNode : Node
     {
         public string name { get; set; }
+
         public LabelNode(string name)
         {
             this.name = name;
         }
+
         public override uint GetSizeBits()
         {
             return 0;
         }
+
         public override string ToAssembly()
         {
             return $"{name}:";
@@ -38,12 +44,16 @@ namespace Bytom.Assembler.Instructions
 
     public class Instruction : Node
     {
-        public static readonly uint code = 0b0000_0000_0000_0000;
-
-        public virtual uint GetOpCode()
+        public override uint GetSizeBits()
         {
-            return code;
+            return 32;
         }
+
+        public virtual OpCode GetOpCode()
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual byte[] ToMachineCode()
         {
             throw new NotImplementedException();
@@ -52,58 +62,75 @@ namespace Bytom.Assembler.Instructions
 
     public class Nop : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0000_0000;
         public Nop()
         {
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Nop;
+        }
+
         public override string ToAssembly()
         {
             return "nop";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
+            return new MachineInstructionBuilder(GetOpCode())
                 .GetInstruction();
         }
     }
 
     public class Halt : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0000_0001;
         public Halt()
         {
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Halt;
+        }
+
         public override string ToAssembly()
         {
             return "halt";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
+            return new MachineInstructionBuilder(GetOpCode())
                 .GetInstruction();
         }
     }
 
     public class MovRegReg : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0000_0001;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public MovRegReg(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.MovRegReg;
+        }
+
         public override string ToAssembly()
         {
             return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -111,24 +138,29 @@ namespace Bytom.Assembler.Instructions
 
     public class MovRegMem : Instruction
     {
-        public static new readonly uint code = 0b0001_0000_0000_0001;
         public Register destination { get; set; }
         public MemoryAddress source { get; set; }
+
         public MovRegMem(Register destination, MemoryAddress source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.MovRegMem;
+        }
+
         public override string ToAssembly()
         {
             return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.MEMORY_ADDRESS)
                 .SetSecondRegisterID(source.register)
                 .GetInstruction();
         }
@@ -136,24 +168,29 @@ namespace Bytom.Assembler.Instructions
 
     public class MovMemReg : Instruction
     {
-        public static new readonly uint code = 0b0100_0000_0000_0001;
         public MemoryAddress destination { get; set; }
         public Register source { get; set; }
+
         public MovMemReg(MemoryAddress destination, Register source)
         {
             this.source = source;
             this.destination = destination;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.MovMemReg;
+        }
+
         public override string ToAssembly()
         {
             return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.MEMORY_ADDRESS)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.register)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -161,28 +198,34 @@ namespace Bytom.Assembler.Instructions
 
     public class MovRegCon : Instruction
     {
-        public static new readonly uint code = 0b0010_0000_0000_0001;
         public Register destination { get; set; }
         public Constant source { get; set; }
+
         public MovRegCon(Register destination, Constant source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.MovRegCon;
+        }
+
         public override uint GetSizeBits()
         {
             return 64;
         }
+
         public override string ToAssembly()
         {
             return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.CONSTANT)
                 .SetConstant(source.GetBytes())
                 .GetInstruction();
         }
@@ -190,28 +233,34 @@ namespace Bytom.Assembler.Instructions
 
     public class MovMemCon : Instruction
     {
-        public static new readonly uint code = 0b0110_0000_0000_0001;
         public MemoryAddress destination { get; set; }
         public Constant source { get; set; }
+
         public MovMemCon(MemoryAddress destination, Constant source)
         {
             this.destination = destination;
             this.source = source;
         }
+
         public override uint GetSizeBits()
         {
             return 64;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.MovMemCon;
+        }
+
         public override string ToAssembly()
         {
             return $"mov {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.MEMORY_ADDRESS)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.register)
-                .SetSecondOperandType(OperandType.CONSTANT)
                 .SetConstant(source.GetBytes())
                 .GetInstruction();
         }
@@ -219,20 +268,26 @@ namespace Bytom.Assembler.Instructions
 
     public class PushReg : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0000_0010;
         public Register source { get; set; }
+
         public PushReg(Register source)
         {
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.PushReg;
+        }
+
         public override string ToAssembly()
         {
             return $"push {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(source.name)
                 .GetInstruction();
         }
@@ -240,20 +295,26 @@ namespace Bytom.Assembler.Instructions
 
     public class PushMem : Instruction
     {
-        public static new readonly uint code = 0b0100_0000_0000_0010;
         public MemoryAddress source { get; set; }
+
         public PushMem(MemoryAddress source)
         {
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.PushMem;
+        }
+
         public override string ToAssembly()
         {
             return $"push {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.MEMORY_ADDRESS)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(source.register)
                 .GetInstruction();
         }
@@ -261,24 +322,31 @@ namespace Bytom.Assembler.Instructions
 
     public class PushCon : Instruction
     {
-        public static new readonly uint code = 0b1000_0000_0000_0010;
         public Constant source { get; set; }
+
         public PushCon(Constant source)
         {
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.PushCon;
+        }
+
         public override uint GetSizeBits()
         {
             return 64;
         }
+
         public override string ToAssembly()
         {
             return $"push {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.CONSTANT)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetConstant(source.GetBytes())
                 .GetInstruction();
         }
@@ -286,20 +354,26 @@ namespace Bytom.Assembler.Instructions
 
     public class PopReg : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0000_0011;
         public Register destination { get; set; }
+
         public PopReg(Register destination)
         {
             this.destination = destination;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.PopReg;
+        }
+
         public override string ToAssembly()
         {
             return $"pop {destination.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
                 .GetInstruction();
         }
@@ -307,20 +381,26 @@ namespace Bytom.Assembler.Instructions
 
     public class PopMem : Instruction
     {
-        public static new readonly uint code = 0b0100_0000_0000_0011;
         public MemoryAddress destination { get; set; }
+
         public PopMem(MemoryAddress destination)
         {
             this.destination = destination;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.PopMem;
+        }
+
         public override string ToAssembly()
         {
             return $"pop {destination.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.MEMORY_ADDRESS)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.register)
                 .GetInstruction();
         }
@@ -330,24 +410,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Swap : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0000_0100;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Swap(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Swap;
+        }
+
         public override string ToAssembly()
         {
             return $"swap {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -355,24 +440,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Add : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0000;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Add(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Add;
+        }
+
         public override string ToAssembly()
         {
             return $"add {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -380,24 +470,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Sub : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0001;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Sub(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Sub;
+        }
+
         public override string ToAssembly()
         {
             return $"sub {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -405,20 +500,26 @@ namespace Bytom.Assembler.Instructions
 
     public class Inc : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0010;
         public Register destination { get; set; }
+
         public Inc(Register destination)
         {
             this.destination = destination;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Inc;
+        }
+
         public override string ToAssembly()
         {
             return $"inc {destination.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
                 .GetInstruction();
         }
@@ -426,20 +527,26 @@ namespace Bytom.Assembler.Instructions
 
     public class Dec : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0011;
         public Register destination { get; set; }
+
         public Dec(Register destination)
         {
             this.destination = destination;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Dec;
+        }
+
         public override string ToAssembly()
         {
             return $"dec {destination.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
                 .GetInstruction();
         }
@@ -447,24 +554,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Mul : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0100;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Mul(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Mul;
+        }
+
         public override string ToAssembly()
         {
             return $"mul {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -472,24 +584,29 @@ namespace Bytom.Assembler.Instructions
 
     public class IMul : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0101;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public IMul(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.IMul;
+        }
+
         public override string ToAssembly()
         {
             return $"imul {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -497,24 +614,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Div : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0110;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Div(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Div;
+        }
+
         public override string ToAssembly()
         {
             return $"div {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -522,24 +644,29 @@ namespace Bytom.Assembler.Instructions
 
     public class IDiv : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0111;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public IDiv(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.IDiv;
+        }
+
         public override string ToAssembly()
         {
             return $"idiv {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -547,24 +674,29 @@ namespace Bytom.Assembler.Instructions
 
     public class And : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_1000;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public And(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.And;
+        }
+
         public override string ToAssembly()
         {
             return $"and {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -572,24 +704,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Or : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_1001;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Or(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Or;
+        }
+
         public override string ToAssembly()
         {
             return $"or {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -597,24 +734,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Xor : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_1010;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Xor(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Xor;
+        }
+
         public override string ToAssembly()
         {
             return $"xor {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -622,20 +764,26 @@ namespace Bytom.Assembler.Instructions
 
     public class Not : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_1011;
         public Register destination { get; set; }
+
         public Not(Register destination)
         {
             this.destination = destination;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Not;
+        }
+
         public override string ToAssembly()
         {
             return $"not {destination.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
                 .GetInstruction();
         }
@@ -643,24 +791,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Shl : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_1100;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Shl(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Shl;
+        }
+
         public override string ToAssembly()
         {
             return $"shl {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -668,24 +821,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Shr : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_1101;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Shr(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Shr;
+        }
+
         public override string ToAssembly()
         {
             return $"shr {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -693,24 +851,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Fadd : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0000;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Fadd(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Fadd;
+        }
+
         public override string ToAssembly()
         {
             return $"fadd {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -718,24 +881,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Fsub : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0001;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Fsub(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Fsub;
+        }
+
         public override string ToAssembly()
         {
             return $"fsub {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -743,24 +911,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Fmul : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0010;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Fmul(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Fmul;
+        }
+
         public override string ToAssembly()
         {
             return $"fmul {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -768,24 +941,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Fdiv : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0011;
         public Register destination { get; set; }
         public Register source { get; set; }
+
         public Fdiv(Register destination, Register source)
         {
             this.destination = destination;
             this.source = source;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Fdiv;
+        }
+
         public override string ToAssembly()
         {
             return $"fdiv {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(destination.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(source.name)
                 .GetInstruction();
         }
@@ -793,24 +971,29 @@ namespace Bytom.Assembler.Instructions
 
     public class Fcmp : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_0100;
         public Register left { get; set; }
         public Register right { get; set; }
+
         public Fcmp(Register left, Register right)
         {
             this.left = left;
             this.right = right;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Fcmp;
+        }
+
         public override string ToAssembly()
         {
             return $"fcmp {left.ToAssembly()}, {right.ToAssembly()}";
         }
+
         public override byte[] ToMachineCode()
         {
-            return new MachineInstructionBuilder(code)
-                .SetFirstOperandType(OperandType.REGISTER)
+            return new MachineInstructionBuilder(GetOpCode())
                 .SetFirstRegisterID(left.name)
-                .SetSecondOperandType(OperandType.REGISTER)
                 .SetSecondRegisterID(right.name)
                 .GetInstruction();
         }
@@ -847,7 +1030,7 @@ namespace Bytom.Assembler.Instructions
             return 32 + 32 + 32 + 64 + 32 + 32 + 32;
         }
         public virtual JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterName name = RegisterName.RDF
+            RegisterID name = RegisterID.RDF
         )
         {
             throw new NotImplementedException();
@@ -856,10 +1039,15 @@ namespace Bytom.Assembler.Instructions
 
     public class JmpMem : JumpMemoryAddressInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0000_0010;
         public JmpMem(MemoryAddress destination) : base(destination)
         {
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Jmp;
+        }
+
         public override string ToAssembly()
         {
             return $"jmp {destination.ToAssembly()}";
@@ -868,17 +1056,18 @@ namespace Bytom.Assembler.Instructions
 
     public class JmpLabel : LabelJumpInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0000;
 
         public JmpLabel(Label label) : base(label)
         {
         }
+
         public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterName name = RegisterName.RDF
+            RegisterID name = RegisterID.RDF
         )
         {
             return new JmpMem(new MemoryAddress(name));
         }
+
         public override string ToAssembly()
         {
             return $"jmp {label.ToAssembly()}";
@@ -887,10 +1076,15 @@ namespace Bytom.Assembler.Instructions
 
     public class JeqMem : JumpMemoryAddressInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0001;
         public JeqMem(MemoryAddress destination) : base(destination)
         {
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Jeq;
+        }
+
         public override string ToAssembly()
         {
             return $"jeq {destination.ToAssembly()}";
@@ -899,17 +1093,18 @@ namespace Bytom.Assembler.Instructions
 
     public class JeqLabel : LabelJumpInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0001;
 
         public JeqLabel(Label label) : base(label)
         {
         }
+
         public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterName name = RegisterName.RDF
+            RegisterID name = RegisterID.RDF
         )
         {
             return new JeqMem(new MemoryAddress(name));
         }
+
         public override string ToAssembly()
         {
             return $"jeq {label.ToAssembly()}";
@@ -918,10 +1113,15 @@ namespace Bytom.Assembler.Instructions
 
     public class JneMem : JumpMemoryAddressInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0010;
         public JneMem(MemoryAddress destination) : base(destination)
         {
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Jne;
+        }
+
         public override string ToAssembly()
         {
             return $"jne {destination.ToAssembly()}";
@@ -930,17 +1130,18 @@ namespace Bytom.Assembler.Instructions
 
     public class JneLabel : LabelJumpInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0010;
 
         public JneLabel(Label label) : base(label)
         {
         }
+
         public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterName name = RegisterName.RDF
+            RegisterID name = RegisterID.RDF
         )
         {
             return new JneMem(new MemoryAddress(name));
         }
+
         public override string ToAssembly()
         {
             return $"jne {label.ToAssembly()}";
@@ -949,10 +1150,15 @@ namespace Bytom.Assembler.Instructions
 
     public class JltMem : JumpMemoryAddressInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0011;
         public JltMem(MemoryAddress destination) : base(destination)
         {
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Jlt;
+        }
+
         public override string ToAssembly()
         {
             return $"jlt {destination.ToAssembly()}";
@@ -961,13 +1167,12 @@ namespace Bytom.Assembler.Instructions
 
     public class JltLabel : LabelJumpInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0011;
 
         public JltLabel(Label label) : base(label)
         {
         }
         public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterName name = RegisterName.RDF
+            RegisterID name = RegisterID.RDF
         )
         {
             return new JltMem(new MemoryAddress(name));
@@ -980,10 +1185,15 @@ namespace Bytom.Assembler.Instructions
 
     public class JleMem : JumpMemoryAddressInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0100;
         public JleMem(MemoryAddress destination) : base(destination)
         {
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Jle;
+        }
+
         public override string ToAssembly()
         {
             return $"jle {destination.ToAssembly()}";
@@ -992,17 +1202,18 @@ namespace Bytom.Assembler.Instructions
 
     public class JleLabel : LabelJumpInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0100;
 
         public JleLabel(Label label) : base(label)
         {
         }
+
         public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterName name = RegisterName.RDF
+            RegisterID name = RegisterID.RDF
         )
         {
             return new JleMem(new MemoryAddress(name));
         }
+
         public override string ToAssembly()
         {
             return $"jle {label.ToAssembly()}";
@@ -1011,10 +1222,15 @@ namespace Bytom.Assembler.Instructions
 
     public class JgtMem : JumpMemoryAddressInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0101;
         public JgtMem(MemoryAddress destination) : base(destination)
         {
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Jgt;
+        }
+
         public override string ToAssembly()
         {
             return $"jgt {destination.ToAssembly()}";
@@ -1023,13 +1239,12 @@ namespace Bytom.Assembler.Instructions
 
     public class JgtLabel : LabelJumpInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0101;
 
         public JgtLabel(Label label) : base(label)
         {
         }
         public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterName name = RegisterName.RDF
+            RegisterID name = RegisterID.RDF
         )
         {
             return new JgtMem(new MemoryAddress(name));
@@ -1042,10 +1257,15 @@ namespace Bytom.Assembler.Instructions
 
     public class JgeMem : JumpMemoryAddressInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0110;
         public JgeMem(MemoryAddress destination) : base(destination)
         {
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Jge;
+        }
+
         public override string ToAssembly()
         {
             return $"jge {destination.ToAssembly()}";
@@ -1054,17 +1274,18 @@ namespace Bytom.Assembler.Instructions
 
     public class JgeLabel : LabelJumpInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_0110;
 
         public JgeLabel(Label label) : base(label)
         {
         }
+
         public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterName name = RegisterName.RDF
+            RegisterID name = RegisterID.RDF
         )
         {
             return new JgeMem(new MemoryAddress(name));
         }
+
         public override string ToAssembly()
         {
             return $"jge {label.ToAssembly()}";
@@ -1073,10 +1294,15 @@ namespace Bytom.Assembler.Instructions
 
     public class CallMem : JumpMemoryAddressInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_1000;
         public CallMem(MemoryAddress destination) : base(destination)
         {
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Call;
+        }
+
         public override string ToAssembly()
         {
             return $"call {destination.ToAssembly()}";
@@ -1085,17 +1311,18 @@ namespace Bytom.Assembler.Instructions
 
     public class CallLabel : LabelJumpInstruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_1000;
 
         public CallLabel(Label label) : base(label)
         {
         }
+
         public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterName name = RegisterName.RDF
+            RegisterID name = RegisterID.RDF
         )
         {
             return new CallMem(new MemoryAddress(name));
         }
+
         public override string ToAssembly()
         {
             return $"call {label.ToAssembly()}";
@@ -1104,10 +1331,15 @@ namespace Bytom.Assembler.Instructions
 
     public class Ret : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0010_1001;
         public Ret()
         {
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Ret;
+        }
+
         public override string ToAssembly()
         {
             return "ret";
@@ -1116,14 +1348,20 @@ namespace Bytom.Assembler.Instructions
 
     public class Cmp : Instruction
     {
-        public static new readonly uint code = 0b0000_0000_0001_1111;
         public Register left { get; set; }
         public Register right { get; set; }
+
         public Cmp(Register left, Register right)
         {
             this.left = left;
             this.right = right;
         }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Cmp;
+        }
+
         public override string ToAssembly()
         {
             return $"cmp {left.ToAssembly()}, {right.ToAssembly()}";

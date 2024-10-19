@@ -1,4 +1,6 @@
 using System;
+using Bytom.Hardware.CPU;
+using Bytom.Tools;
 
 namespace Bytom.Assembler.Operands
 {
@@ -13,36 +15,10 @@ namespace Bytom.Assembler.Operands
         }
     }
 
-    public enum RegisterName
-    {
-        RD0 = 0b00_0001,
-        RD1 = 0b00_0010,
-        RD2 = 0b00_0011,
-        RD3 = 0b00_0100,
-        RD4 = 0b00_0101,
-        RD5 = 0b00_0110,
-        RD6 = 0b00_0111,
-        RD7 = 0b00_1000,
-        RD8 = 0b00_1001,
-        RD9 = 0b00_1010,
-        RDA = 0b00_1011,
-        RDB = 0b00_1100,
-        RDC = 0b00_1101,
-        RDD = 0b00_1110,
-        RDE = 0b00_1111,
-        RDF = 0b01_0000,
-        CR0 = 0b10_0000,
-        CSTP = 0b10_0100,
-        CSBP = 0b10_0101,
-        VATTA = 0b10_0110,
-        IDT = 0b10_0111,
-        IP = 0b10_1001,
-    }
-
     public class Register : Operand
     {
-        public RegisterName name { get; set; }
-        public Register(RegisterName name)
+        public RegisterID name { get; set; }
+        public Register(RegisterID name)
         {
             this.name = name;
         }
@@ -54,8 +30,8 @@ namespace Bytom.Assembler.Operands
 
     public class MemoryAddress : Operand
     {
-        public RegisterName register { get; set; }
-        public MemoryAddress(RegisterName register)
+        public RegisterID register { get; set; }
+        public MemoryAddress(RegisterID register)
         {
             this.register = register;
         }

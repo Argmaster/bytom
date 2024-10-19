@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Bytom.Assembler.Instructions;
+using Bytom.Assembler.Nodes;
 using Bytom.Assembler.Operands;
 using Serilog;
+using Bytom.Hardware.CPU;
 
 namespace Bytom.Assembler
 {
@@ -57,22 +58,22 @@ namespace Bytom.Assembler
                     // add RDF, RDE  // 32 bits
                     // pop RDE  // 32 bits
                     // <j> [RDF]  // 32 bits
-                    var push_rde = new PushReg(new Register(RegisterName.RDE));
-                    var push_rdf = new PushReg(new Register(RegisterName.RDF));
+                    var push_rde = new PushReg(new Register(RegisterID.RDE));
+                    var push_rdf = new PushReg(new Register(RegisterID.RDF));
                     var mov_rdf_ip = new MovRegReg(
-                        new Register(RegisterName.RDF),
-                        new Register(RegisterName.IP)
+                        new Register(RegisterID.RDF),
+                        new Register(RegisterID.IP)
                     );
                     var mov_rde_offset = new MovRegCon(
-                        new Register(RegisterName.RDE),
+                        new Register(RegisterID.RDE),
                         new ConstantInt(0)
                     );
                     var add_rdf_rde = new Add(
-                        new Register(RegisterName.RDF),
-                        new Register(RegisterName.RDE)
+                        new Register(RegisterID.RDF),
+                        new Register(RegisterID.RDE)
                     );
-                    var pop_rde = new PopReg(new Register(RegisterName.RDE));
-                    var jmp_rdf = ((LabelJumpInstruction)node).GetJumpInstruction(RegisterName.RDF);
+                    var pop_rde = new PopReg(new Register(RegisterID.RDE));
+                    var jmp_rdf = ((LabelJumpInstruction)node).GetJumpInstruction(RegisterID.RDF);
 
                     string label_name = ((LabelJumpInstruction)node).label.name;
                     long label_offset = label_offsets[label_name];

@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bytom.Assembler\Bytom.Assembler.csproj" />
+    <ProjectReference Include="..\Bytom.Tools\Bytom.Tools.csproj" />
   </ItemGroup>
 
 </Project>
