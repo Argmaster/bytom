@@ -302,6 +302,67 @@ namespace Bytom.Assembler.Tests
         }
 
         [Test]
+        public void TestPopReg()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new PopReg(
+                        new Register(RegisterName.RD0)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(PopReg.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo(0));
+            Assert.That(second_register, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TestSwap()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Swap(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(Swap.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
+
+        [Test]
         public void TestLabelJump()
         {
             Frontend frontend = new Frontend();

@@ -117,7 +117,7 @@ or memory location, and then increments CSTP by 4.
 
 The swap instruction exchanges the values of two registers.
 
-- `swap <reg>,<reg>` - 0b0000_xxxx_xxyy_yyyy_0000_0000_0000_0100 # 32 bit
+- `swap <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0000_0100` # 32 bit
 
 ## 32-bit Integer Arithmetic and Logic Instructions
 

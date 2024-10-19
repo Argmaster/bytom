@@ -296,6 +296,13 @@ namespace Bytom.Assembler.Instructions
         {
             return $"pop {destination.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .GetInstruction();
+        }
     }
 
     public class PopMem : Instruction
@@ -310,7 +317,16 @@ namespace Bytom.Assembler.Instructions
         {
             return $"pop {destination.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.MEMORY_ADDRESS)
+                .SetFirstRegisterID(destination.register)
+                .GetInstruction();
+        }
     }
+
+
 
     public class Swap : Instruction
     {
@@ -325,6 +341,15 @@ namespace Bytom.Assembler.Instructions
         public override string ToAssembly()
         {
             return $"swap {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
         }
     }
 
