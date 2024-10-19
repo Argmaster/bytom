@@ -367,6 +367,15 @@ namespace Bytom.Assembler.Instructions
         {
             return $"add {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
+        }
     }
 
     public class Sub : Instruction
@@ -383,6 +392,15 @@ namespace Bytom.Assembler.Instructions
         {
             return $"sub {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
+        }
     }
 
     public class Inc : Instruction
@@ -397,6 +415,13 @@ namespace Bytom.Assembler.Instructions
         {
             return $"inc {destination.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .GetInstruction();
+        }
     }
 
     public class Dec : Instruction
@@ -410,6 +435,13 @@ namespace Bytom.Assembler.Instructions
         public override string ToAssembly()
         {
             return $"dec {destination.ToAssembly()}";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .GetInstruction();
         }
     }
 
@@ -427,6 +459,15 @@ namespace Bytom.Assembler.Instructions
         {
             return $"mul {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
+        }
     }
 
     public class IMul : Instruction
@@ -442,6 +483,15 @@ namespace Bytom.Assembler.Instructions
         public override string ToAssembly()
         {
             return $"imul {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
         }
     }
 
@@ -459,6 +509,15 @@ namespace Bytom.Assembler.Instructions
         {
             return $"div {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
+        }
     }
 
     public class IDiv : Instruction
@@ -474,6 +533,15 @@ namespace Bytom.Assembler.Instructions
         public override string ToAssembly()
         {
             return $"idiv {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
         }
     }
 
@@ -491,6 +559,15 @@ namespace Bytom.Assembler.Instructions
         {
             return $"and {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
+        }
     }
 
     public class Or : Instruction
@@ -506,6 +583,15 @@ namespace Bytom.Assembler.Instructions
         public override string ToAssembly()
         {
             return $"or {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
         }
     }
 
@@ -523,6 +609,15 @@ namespace Bytom.Assembler.Instructions
         {
             return $"xor {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
+        }
     }
 
     public class Not : Instruction
@@ -536,6 +631,13 @@ namespace Bytom.Assembler.Instructions
         public override string ToAssembly()
         {
             return $"not {destination.ToAssembly()}";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .GetInstruction();
         }
     }
 
@@ -553,6 +655,15 @@ namespace Bytom.Assembler.Instructions
         {
             return $"shl {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
+        }
     }
 
     public class Shr : Instruction
@@ -568,6 +679,15 @@ namespace Bytom.Assembler.Instructions
         public override string ToAssembly()
         {
             return $"shr {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
         }
     }
 
@@ -585,6 +705,15 @@ namespace Bytom.Assembler.Instructions
         {
             return $"fadd {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
+        }
     }
 
     public class Fsub : Instruction
@@ -600,6 +729,15 @@ namespace Bytom.Assembler.Instructions
         public override string ToAssembly()
         {
             return $"fsub {destination.ToAssembly()}, {source.ToAssembly()}";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
         }
     }
 
@@ -617,6 +755,15 @@ namespace Bytom.Assembler.Instructions
         {
             return $"fmul {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
+        }
     }
 
     public class Fdiv : Instruction
@@ -633,6 +780,15 @@ namespace Bytom.Assembler.Instructions
         {
             return $"fdiv {destination.ToAssembly()}, {source.ToAssembly()}";
         }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(destination.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(source.name)
+                .GetInstruction();
+        }
     }
 
     public class Fcmp : Instruction
@@ -648,6 +804,15 @@ namespace Bytom.Assembler.Instructions
         public override string ToAssembly()
         {
             return $"fcmp {left.ToAssembly()}, {right.ToAssembly()}";
+        }
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(code)
+                .SetFirstOperandType(OperandType.REGISTER)
+                .SetFirstRegisterID(left.name)
+                .SetSecondOperandType(OperandType.REGISTER)
+                .SetSecondRegisterID(right.name)
+                .GetInstruction();
         }
     }
 

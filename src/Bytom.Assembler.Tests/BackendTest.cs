@@ -363,6 +363,425 @@ namespace Bytom.Assembler.Tests
         }
 
         [Test]
+        public void TestAdd()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Add(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(Add.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
+
+        [Test]
+        public void TestSub()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Sub(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(Sub.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
+
+        [Test]
+        public void TestInc()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Inc(
+                        new Register(RegisterName.RD0)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(Inc.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+        }
+
+        [Test]
+        public void TestDec()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Dec(
+                        new Register(RegisterName.RD0)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(Dec.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+        }
+
+        [Test]
+        public void TestMul()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Mul(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(Mul.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
+
+        [Test]
+        public void TestIMul()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new IMul(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(IMul.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
+
+        [Test]
+        public void TestDiv()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Div(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(Div.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
+
+
+        [Test]
+        public void TestIDiv()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new IDiv(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(IDiv.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
+
+
+        [Test]
+        public void TestAnd()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new And(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(And.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
+
+        [Test]
+        public void TestOr()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Or(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(Or.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
+
+
+        [Test]
+        public void TestXor()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Xor(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(Xor.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
+
+        [Test]
+        public void TestNot()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Not(
+                        new Register(RegisterName.RD0)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(Not.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+        }
+
+        [Test]
+        public void TestShl()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Shl(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(Shl.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
+
+        [Test]
+        public void TestShr()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Shr(
+                        new Register(RegisterName.RD0),
+                        new Register(RegisterName.RD1)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var instruction = Serialization.Uint32FromBytesBigEndian(machine_code.ToArray());
+            var op_code = instruction & Serialization.Mask(16);
+            var second_operand_type = (instruction >> 12) & Serialization.Mask(2);
+            var first_operand_type = (instruction >> 14) & Serialization.Mask(2);
+            var second_register = (instruction >> 16) & Serialization.Mask(6);
+            var first_register = (instruction >> (16 + 6)) & Serialization.Mask(6);
+
+            Assert.That(op_code, Is.EqualTo(Shr.code));
+
+            Assert.That(first_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(first_register, Is.EqualTo((uint)RegisterName.RD0));
+
+            Assert.That(second_operand_type, Is.EqualTo((uint)OperandType.REGISTER));
+            Assert.That(second_register, Is.EqualTo((uint)RegisterName.RD1));
+        }
+
+        [Test]
         public void TestLabelJump()
         {
             Frontend frontend = new Frontend();
