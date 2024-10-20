@@ -13,13 +13,11 @@ namespace Bytom.Assembler
         {
         }
 
-        public Code compile(List<Node> nodes)
+        public Code compile(AbstractSyntaxTree ast)
         {
-            Log.Information($"Starting compilation of {nodes.Count} nodes.");
-            Dictionary<string, long> label_offsets = getLabelOffsets(nodes);
-            var instructions = expandLabels(nodes, label_offsets);
-
-
+            Log.Information($"Starting compilation of {ast.nodes.Count} nodes.");
+            Dictionary<string, long> label_offsets = getLabelOffsets(ast.nodes);
+            var instructions = expandLabels(ast.nodes, label_offsets);
             return new Code(instructions);
         }
 

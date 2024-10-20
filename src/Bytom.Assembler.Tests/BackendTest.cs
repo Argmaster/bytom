@@ -13,9 +13,11 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Nop()
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Nop()
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -30,9 +32,11 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Halt()
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Halt()
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -47,12 +51,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new MovRegReg(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new MovRegReg(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -69,12 +75,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new MovRegMem(
-                        new Register(RegisterID.RD0),
-                        new MemoryAddress(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new MovRegMem(
+                            new Register(RegisterID.RD0),
+                            new MemoryAddress(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -91,12 +99,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new MovMemReg(
-                        new MemoryAddress(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new MovMemReg(
+                            new MemoryAddress(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -109,12 +119,14 @@ namespace Bytom.Assembler.Tests
             int constant_value = 0xFF;
 
             var code = backend.compile(
-                [
-                    new MovRegCon(
-                        new Register(RegisterID.RD0),
-                        new ConstantInt(constant_value)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new MovRegCon(
+                            new Register(RegisterID.RD0),
+                            new ConstantInt(constant_value)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -139,12 +151,14 @@ namespace Bytom.Assembler.Tests
             Backend backend = new Backend();
             int constant_value = 0xFF;
             var code = backend.compile(
-                [
-                    new MovMemCon(
-                        new MemoryAddress(RegisterID.RD0),
-                        new ConstantInt(constant_value)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new MovMemCon(
+                            new MemoryAddress(RegisterID.RD0),
+                            new ConstantInt(constant_value)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -170,12 +184,14 @@ namespace Bytom.Assembler.Tests
 
             var constant_value = 0.5f;
             var code = backend.compile(
-                [
-                    new MovMemCon(
-                        new MemoryAddress(RegisterID.RD0),
-                        new ConstantFloat(constant_value)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new MovMemCon(
+                            new MemoryAddress(RegisterID.RD0),
+                            new ConstantFloat(constant_value)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -199,11 +215,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new PushReg(
-                        new Register(RegisterID.RD0)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new PushReg(
+                            new Register(RegisterID.RD0)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -220,11 +238,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new PushMem(
-                        new MemoryAddress(RegisterID.RD0)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new PushMem(
+                            new MemoryAddress(RegisterID.RD0)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -241,11 +261,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new PopReg(
-                        new Register(RegisterID.RD0)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new PopReg(
+                            new Register(RegisterID.RD0)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -262,12 +284,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Swap(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Swap(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -285,12 +309,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Add(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Add(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -308,12 +334,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Sub(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Sub(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -331,11 +359,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Inc(
-                        new Register(RegisterID.RD0)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Inc(
+                            new Register(RegisterID.RD0)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -352,11 +382,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Dec(
-                        new Register(RegisterID.RD0)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Dec(
+                            new Register(RegisterID.RD0)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -374,12 +406,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Mul(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Mul(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -396,12 +430,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new IMul(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new IMul(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -419,12 +455,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Div(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Div(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -442,12 +480,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new IDiv(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new IDiv(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -465,12 +505,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new And(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new And(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -488,12 +530,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Or(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Or(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -511,12 +555,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Xor(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Xor(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -534,11 +580,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Not(
-                        new Register(RegisterID.RD0)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Not(
+                            new Register(RegisterID.RD0)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -556,12 +604,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Shl(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Shl(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -579,12 +629,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Shr(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Shr(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -602,12 +654,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Fadd(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Fadd(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -625,12 +679,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Fsub(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Fsub(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -648,12 +704,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Fmul(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Fmul(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -671,12 +729,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Fdiv(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Fdiv(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -694,12 +754,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new Fcmp(
-                        new Register(RegisterID.RD0),
-                        new Register(RegisterID.RD1)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new Fcmp(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -716,11 +778,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new JmpMem(
-                        new MemoryAddress(RegisterID.RD0)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new JmpMem(
+                            new MemoryAddress(RegisterID.RD0)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -736,11 +800,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new JmpCon(
-                        new ConstantInt(0xFF)
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new JmpCon(
+                            new ConstantInt(0xFF)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -764,12 +830,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-                [
-                    new LabelNode("end"),
-                    new JmpLabel(
-                        new Label("end")
-                    )
-                ]
+                new AbstractSyntaxTree(
+                    [
+                        new LabelNode("end"),
+                        new JmpLabel(
+                            new Label("end")
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -793,11 +861,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            [
-                new JeqMem(
-                    new MemoryAddress(RegisterID.RD0)
+                new AbstractSyntaxTree(
+                    [
+                        new JeqMem(
+                            new MemoryAddress(RegisterID.RD0)
+                        )
+                    ]
                 )
-            ]
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -814,11 +884,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            [
-                new JeqCon(
-                    new ConstantInt(0xFF)
+                new AbstractSyntaxTree(
+                    [
+                        new JeqCon(
+                            new ConstantInt(0xFF)
+                        )
+                    ]
                 )
-            ]
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -842,12 +914,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            [
-                new LabelNode("end"),
-                new JeqLabel(
-                    new Label("end")
+                new AbstractSyntaxTree(
+                    [
+                        new LabelNode("end"),
+                        new JeqLabel(
+                            new Label("end")
+                        )
+                    ]
                 )
-            ]
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -871,12 +945,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new JneMem(
-                    new MemoryAddress(RegisterID.RD0)
+                new AbstractSyntaxTree(
+                    [
+                        new JneMem(
+                            new MemoryAddress(RegisterID.RD0)
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -893,12 +968,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new JneCon(
-                    new ConstantInt(0xFF)
+                new AbstractSyntaxTree(
+                    [
+                        new JneCon(
+                            new ConstantInt(0xFF)
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -922,13 +998,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new LabelNode("end"),
-                new JneLabel(
-                    new Label("end")
+                new AbstractSyntaxTree(
+                    [
+                        new LabelNode("end"),
+                        new JneLabel(
+                            new Label("end")
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -952,12 +1029,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new JltMem(
-                    new MemoryAddress(RegisterID.RD0)
-                )
-            }
+            new AbstractSyntaxTree(
+                [
+                    new JltMem(
+                        new MemoryAddress(RegisterID.RD0)
+                    )
+                ]
+            )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -974,12 +1052,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new JltCon(
-                    new ConstantInt(0xFF)
+                new AbstractSyntaxTree(
+                    [
+                        new JltCon(
+                            new ConstantInt(0xFF)
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -1003,13 +1082,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new LabelNode("end"),
-                new JltLabel(
-                    new Label("end")
+                new AbstractSyntaxTree(
+                    [
+                        new LabelNode("end"),
+                        new JltLabel(
+                            new Label("end")
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -1033,12 +1113,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new JleMem(
-                    new MemoryAddress(RegisterID.RD0)
+                new AbstractSyntaxTree(
+                    [
+                        new JleMem(
+                            new MemoryAddress(RegisterID.RD0)
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -1055,12 +1136,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new JleCon(
-                    new ConstantInt(0xFF)
+                new AbstractSyntaxTree(
+                    [
+                        new JleCon(
+                            new ConstantInt(0xFF)
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -1084,13 +1166,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new LabelNode("end"),
-                new JleLabel(
-                    new Label("end")
+                new AbstractSyntaxTree(
+                    [
+                        new LabelNode("end"),
+                        new JleLabel(
+                            new Label("end")
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -1114,12 +1197,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new JgeMem(
-                    new MemoryAddress(RegisterID.RD0)
-                )
-            }
+
+            new AbstractSyntaxTree(
+                [
+                    new JgeMem(
+                        new MemoryAddress(RegisterID.RD0)
+                    )
+                ]
+            )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -1136,12 +1221,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new JgeCon(
-                    new ConstantInt(0xFF)
+                new AbstractSyntaxTree(
+                    [
+                        new JgeCon(
+                            new ConstantInt(0xFF)
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -1165,13 +1251,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new LabelNode("end"),
-                new JgeLabel(
-                    new Label("end")
+                new AbstractSyntaxTree(
+                    [
+                        new LabelNode("end"),
+                        new JgeLabel(
+                            new Label("end")
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -1195,12 +1282,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new JgtMem(
-                    new MemoryAddress(RegisterID.RD0)
+                new AbstractSyntaxTree(
+                    [
+                        new JgtMem(
+                            new MemoryAddress(RegisterID.RD0)
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -1217,12 +1305,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new JgtCon(
-                    new ConstantInt(0xFF)
+                new AbstractSyntaxTree(
+                    [
+                        new JgtCon(
+                            new ConstantInt(0xFF)
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -1246,13 +1335,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new LabelNode("end"),
-                new JgtLabel(
-                    new Label("end")
+                new AbstractSyntaxTree(
+                    [
+                        new LabelNode("end"),
+                        new JgtLabel(
+                            new Label("end")
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -1276,12 +1366,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-            new CallMem(
-                new MemoryAddress(RegisterID.RD0)
-            )
-            }
+                new AbstractSyntaxTree(
+                    [
+                        new CallMem(
+                            new MemoryAddress(RegisterID.RD0)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -1298,12 +1389,13 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-            new CallCon(
-            new ConstantInt(0xFF)
-            )
-            }
+                new AbstractSyntaxTree(
+                    [
+                        new CallCon(
+                            new ConstantInt(0xFF)
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -1327,13 +1419,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-            new LabelNode("start"),
-            new CallLabel(
-                new Label("start")
-            )
-            }
+                new AbstractSyntaxTree(
+                    [
+                        new LabelNode("start"),
+                        new CallLabel(
+                            new Label("start")
+                        )
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(8));
@@ -1357,10 +1450,11 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new Ret()
-            }
+                new AbstractSyntaxTree(
+                    [
+                        new Ret()
+                    ]
+                )
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));
@@ -1377,13 +1471,14 @@ namespace Bytom.Assembler.Tests
         {
             Backend backend = new Backend();
             var code = backend.compile(
-            new List<Node>
-            {
-                new Cmp(
-                    new Register(RegisterID.RD0),
-                    new Register(RegisterID.RD1)
+                new AbstractSyntaxTree(
+                    [
+                        new Cmp(
+                            new Register(RegisterID.RD0),
+                            new Register(RegisterID.RD1)
+                        )
+                    ]
                 )
-            }
             );
             var machine_code = code.ToMachineCode();
             Assert.That(machine_code.Count, Is.EqualTo(4));

@@ -9,18 +9,35 @@ using Bytom.Hardware.CPU;
 
 namespace Bytom.Assembler
 {
+    public class AbstractSyntaxTree
+    {
+        public List<Node> nodes;
+        public AbstractSyntaxTree(List<Node> nodes)
+        {
+            this.nodes = nodes;
+        }
+    }
+
     public class Frontend
     {
+        private string? currentLine;
+        private uint lineIndex = 0;
+
         public Frontend()
         {
         }
 
-        public List<Node> parse(string source_code)
+        public AbstractSyntaxTree parse(string source_code)
         {
             List<Node> nodes = new List<Node>();
+            lineIndex = 0;
+
             // Requires that each instruction is on a new line, kind of standard right?
             foreach (string line in source_code.Split('\n'))
             {
+                currentLine = line;
+                lineIndex = lineIndex + 1;
+
                 string trimmed_line = line.Trim();
                 if (trimmed_line.Length == 0)
                 {
@@ -53,7 +70,7 @@ namespace Bytom.Assembler
                 nodes.Add(dispatchInstruction(instruction_name, instruction_parameters));
             }
 
-            return nodes;
+            return new AbstractSyntaxTree(nodes);
         }
 
         private Instruction dispatchInstruction(string instruction_name, string[] parameters)
@@ -212,142 +229,29 @@ namespace Bytom.Assembler
                         return new Fcmp(left, right);
                     }
                 case "jmp":
-                    {
-                        expectOperandsCount(parameters, 1);
-                        {
-                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JmpMem(destination);
-                            }
-                        }
-                        {
-                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JmpCon(destination);
-                            }
-                        }
-                        return new JmpLabel(new Label(parameters[0].Trim()));
-                    }
+                    return new ParseJumpInstruction<JmpMem, JmpCon, JmpLabel>(this).make(parameters);
+
                 case "jeq":
-                    {
-                        expectOperandsCount(parameters, 1);
-                        {
-                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JeqMem(destination);
-                            }
-                        }
-                        {
-                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JeqCon(destination);
-                            }
-                        }
-                        return new JeqLabel(new Label(parameters[0].Trim()));
-                    }
+                    return new ParseJumpInstruction<JeqMem, JeqCon, JeqLabel>(this).make(parameters);
+
                 case "jne":
-                    {
-                        expectOperandsCount(parameters, 1);
-                        {
-                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JneMem(destination);
-                            }
-                        }
-                        {
-                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JneCon(destination);
-                            }
-                        }
-                        return new JneLabel(new Label(parameters[0].Trim()));
-                    }
+                    return new ParseJumpInstruction<JneMem, JneCon, JneLabel>(this).make(parameters);
+
                 case "jlt":
-                    {
-                        expectOperandsCount(parameters, 1);
-                        {
-                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JltMem(destination);
-                            }
-                        }
-                        {
-                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JltCon(destination);
-                            }
-                        }
-                        return new JltLabel(new Label(parameters[0].Trim()));
-                    }
+                    return new ParseJumpInstruction<JltMem, JltCon, JltLabel>(this).make(parameters);
+
                 case "jle":
-                    {
-                        expectOperandsCount(parameters, 1);
-                        {
-                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JleMem(destination);
-                            }
-                        }
-                        {
-                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JleCon(destination);
-                            }
-                        }
-                        return new JleLabel(new Label(parameters[0].Trim()));
-                    }
+                    return new ParseJumpInstruction<JleMem, JleCon, JleLabel>(this).make(parameters);
+
                 case "jgt":
-                    {
-                        expectOperandsCount(parameters, 1);
-                        {
-                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JgtMem(destination);
-                            }
-                        }
-                        {
-                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JgtCon(destination);
-                            }
-                        }
-                        return new JgtLabel(new Label(parameters[0].Trim()));
-                    }
+                    return new ParseJumpInstruction<JgtMem, JgtCon, JgtLabel>(this).make(parameters);
+
                 case "jge":
-                    {
-                        expectOperandsCount(parameters, 1);
-                        {
-                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JgeMem(destination);
-                            }
-                        }
-                        {
-                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
-                            if (destination != null)
-                            {
-                                return new JgeCon(destination);
-                            }
-                        }
-                        return new JgeLabel(new Label(parameters[0].Trim()));
-                    }
+                    return new ParseJumpInstruction<JgeMem, JgeCon, JgeLabel>(this).make(parameters);
+
                 case "call":
-                    {
-                        return new ParseJumpInstruction<CallMem, CallCon, CallLabel>().make(parameters);
-                    }
+                    return new ParseJumpInstruction<CallMem, CallCon, CallLabel>(this).make(parameters);
+
                 case "ret":
                     expectOperandsCount(parameters, 0);
                     return new Ret();
@@ -359,7 +263,7 @@ namespace Bytom.Assembler
                         return new Cmp(left, right);
                     }
                 default:
-                    throw new Exception($"Invalid instruction {instruction_name}");
+                    throw new Exception($"Invalid instruction {instruction_name} in line {lineIndex}: '{currentLine}'");
             }
         }
 
@@ -368,20 +272,24 @@ namespace Bytom.Assembler
             where JCon : JumpConstantIntInstruction
             where JLabel : JumpLabelInstruction
         {
+            private Frontend frontend;
 
-            public ParseJumpInstruction() { }
+            public ParseJumpInstruction(Frontend frontend)
+            {
+                this.frontend = frontend;
+            }
             public Instruction make(string[] parameters)
             {
-                expectOperandsCount(parameters, 1);
+                frontend.expectOperandsCount(parameters, 1);
                 {
-                    MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
+                    MemoryAddress? destination = frontend.tryParseMemoryAddress(parameters[0]);
                     if (destination != null)
                     {
                         return (JMem)Activator.CreateInstance(typeof(JMem), destination);
                     }
                 }
                 {
-                    ConstantInt? destination = tryParseConstantInt(parameters[0]);
+                    ConstantInt? destination = frontend.tryParseConstantInt(parameters[0]);
                     if (destination != null)
                     {
                         return (JCon)Activator.CreateInstance(typeof(JCon), destination);
@@ -430,7 +338,7 @@ namespace Bytom.Assembler
                         break;
                     }
                 default:
-                    throw new Exception("Invalid destination operand");
+                    throw new Exception($"Invalid destination operand in line {lineIndex}: '{currentLine}'");
 
             }
             throw new NotImplementedException();
@@ -468,11 +376,11 @@ namespace Bytom.Assembler
             }
         }
 
-        private static void expectOperandsCount(string[] instruction_elements, uint n)
+        private void expectOperandsCount(string[] instruction_elements, uint n)
         {
             if (instruction_elements.Length != n)
             {
-                throw new Exception("Invalid number of operands");
+                throw new Exception($"Invalid number of operands in line {lineIndex}: '{currentLine}'");
             }
         }
 
@@ -503,10 +411,10 @@ namespace Bytom.Assembler
                 return operand;
             }
 
-            throw new Exception("Invalid number of operands");
+            throw new Exception($"Invalid operand in line {lineIndex}: '{currentLine}'");
         }
 
-        private static ConstantFloat? tryParseConstantFloat(string trimmed_source_code)
+        private ConstantFloat? tryParseConstantFloat(string trimmed_source_code)
         {
             Match match = Regex.Match(trimmed_source_code, @"^([-+]?[0-9]+\.[0-9]+)$");
             if (match.Success)
@@ -516,7 +424,7 @@ namespace Bytom.Assembler
             return null;
         }
 
-        private static ConstantInt? tryParseConstantInt(string trimmed_source_code)
+        private ConstantInt? tryParseConstantInt(string trimmed_source_code)
         {
             Match match = Regex.Match(trimmed_source_code, @"^0x([0-9A-Fa-f]+)$");
             if (match.Success)
@@ -534,7 +442,7 @@ namespace Bytom.Assembler
             return null;
         }
 
-        private static Register parseRegister(string source_code)
+        private Register parseRegister(string source_code)
         {
             string trimmed_source_code = source_code.Trim();
             var operand = tryParseRegister(trimmed_source_code);
@@ -542,7 +450,7 @@ namespace Bytom.Assembler
             {
                 return operand;
             }
-            throw new Exception("Invalid register");
+            throw new Exception($"Invalid register in line {lineIndex}: '{currentLine}'");
         }
 
         private static Register? tryParseRegister(string trimmed_source_code)
@@ -555,7 +463,7 @@ namespace Bytom.Assembler
             return null;
         }
 
-        private static MemoryAddress? tryParseMemoryAddress(string source)
+        private MemoryAddress? tryParseMemoryAddress(string source)
         {
             if (source.StartsWith("[") && source.EndsWith("]"))
             {
@@ -564,7 +472,7 @@ namespace Bytom.Assembler
                 {
                     return new MemoryAddress(register);
                 }
-                throw new Exception($"Invalid register name {register_name}");
+                throw new Exception($"Invalid register name {register_name} in line {lineIndex}: '{currentLine}'");
             }
             return null;
         }
