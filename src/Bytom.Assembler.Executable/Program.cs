@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.IO;
+using System.Linq;
 using Bytom.Assembler;
 
 using CommandLine;
@@ -6,13 +9,13 @@ using CommandLine;
 public class Options
 {
     [Value(0, MetaName = "file", HelpText = "Path to file to assemble.")]
-    public required string file { get; set; }
+    public string? file { get; set; }
 
     [Option('o', "output", Required = true, HelpText = "Output file name.")]
-    public required string output { get; set; }
+    public string? output { get; set; }
 
     [Option('d', "disassemble", Required = false, Default = false, HelpText = "Instead of assembling text file, disassemble input binary into assembly code.")]
-    public required bool disassemble { get; set; }
+    public bool disassemble { get; set; }
 
     [Option('v', "verbose", Default = false, HelpText = "Enable verbose logging.")]
     public bool Verbose { get; set; }
@@ -48,7 +51,7 @@ namespace Bytom.Assembler.Executable
                 File.WriteAllBytes(opts.output, machineCode.ToArray());
             }
         }
-        static void HandleParseError(IEnumerable<Error> errs)
+        static void HandleParseError(IEnumerable errs)
         {
             //handle errors
         }
