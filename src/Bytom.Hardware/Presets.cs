@@ -4,19 +4,27 @@ using Bytom.Hardware.RAM;
 
 namespace Bytom.Hardware
 {
-    public class BytomIncB1 : Package
+    public class BytomIncGen1Core : Core
     {
-        public BytomIncB1(Controller ram) : base(new List<Core>{
-            new Core(0, 200, new List<Cache>{
-                new Cache(256, 10),
-            }, ram)
-        })
-        {
-
-        }
+        public BytomIncGen1Core(Controller ram) : base(
+            0, 200, new List<Cache> { new Cache(256, 10) }, ram
+        )
+        { }
     }
 
-    public class BytomIncRam1K100 : Stick {
-        public BytomIncRam1K100() : base(1024, 100, 100, 8) {}
+    public class BytomIncGen1 : Package
+    {
+        public BytomIncGen1(Controller ram) : base(
+            new List<Core>{
+            new BytomIncGen1Core(ram),
+            },
+            4096
+        )
+        { }
+    }
+
+    public class BytomIncRam16KGen1 : MemoryChip
+    {
+        public BytomIncRam16KGen1() : base(1024, 100, 10) { }
     }
 }

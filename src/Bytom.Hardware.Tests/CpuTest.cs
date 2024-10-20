@@ -13,10 +13,10 @@ namespace Bytom.Hardware.Tests
         [Test]
         public void TestMotherboardConstruction()
         {
-            Controller ram = new Controller(new List<Stick>{
-                new BytomIncRam1K100(),
-            });
-            Package cpu = new BytomIncB1(ram);
+            Controller ram = new Controller([
+                new BytomIncRam16KGen1(),
+            ]);
+            Package cpu = new BytomIncGen1(ram);
 
             var core0 = cpu.cores[0];
             core0.registers[RegisterID.RD0].WriteInt32(0xFF);

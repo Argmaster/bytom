@@ -2,7 +2,7 @@ using System;
 
 namespace Bytom.Hardware
 {
-    public class Disk
+    public class Disk : Device
     {
         public uint capacity_bytes { get; set; }
 
