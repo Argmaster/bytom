@@ -214,82 +214,139 @@ namespace Bytom.Assembler
                 case "jmp":
                     {
                         expectOperandsCount(parameters, 1);
-                        MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                        if (destination != null)
                         {
-                            return new JmpMem(destination);
+                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JmpMem(destination);
+                            }
+                        }
+                        {
+                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JmpCon(destination);
+                            }
                         }
                         return new JmpLabel(new Label(parameters[0].Trim()));
                     }
                 case "jeq":
                     {
                         expectOperandsCount(parameters, 1);
-                        MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                        if (destination != null)
                         {
-                            return new JeqMem(destination);
+                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JeqMem(destination);
+                            }
+                        }
+                        {
+                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JeqCon(destination);
+                            }
                         }
                         return new JeqLabel(new Label(parameters[0].Trim()));
                     }
                 case "jne":
                     {
                         expectOperandsCount(parameters, 1);
-                        MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                        if (destination != null)
                         {
-                            return new JneMem(destination);
+                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JneMem(destination);
+                            }
+                        }
+                        {
+                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JneCon(destination);
+                            }
                         }
                         return new JneLabel(new Label(parameters[0].Trim()));
                     }
                 case "jlt":
                     {
                         expectOperandsCount(parameters, 1);
-                        MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                        if (destination != null)
                         {
-                            return new JltMem(destination);
+                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JltMem(destination);
+                            }
+                        }
+                        {
+                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JltCon(destination);
+                            }
                         }
                         return new JltLabel(new Label(parameters[0].Trim()));
                     }
                 case "jle":
                     {
                         expectOperandsCount(parameters, 1);
-                        MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                        if (destination != null)
                         {
-                            return new JleMem(destination);
+                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JleMem(destination);
+                            }
+                        }
+                        {
+                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JleCon(destination);
+                            }
                         }
                         return new JleLabel(new Label(parameters[0].Trim()));
                     }
                 case "jgt":
                     {
                         expectOperandsCount(parameters, 1);
-                        MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                        if (destination != null)
                         {
-                            return new JgtMem(destination);
+                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JgtMem(destination);
+                            }
+                        }
+                        {
+                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JgtCon(destination);
+                            }
                         }
                         return new JgtLabel(new Label(parameters[0].Trim()));
                     }
                 case "jge":
                     {
                         expectOperandsCount(parameters, 1);
-                        MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                        if (destination != null)
                         {
-                            return new JgeMem(destination);
+                            MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JgeMem(destination);
+                            }
+                        }
+                        {
+                            ConstantInt? destination = tryParseConstantInt(parameters[0]);
+                            if (destination != null)
+                            {
+                                return new JgeCon(destination);
+                            }
                         }
                         return new JgeLabel(new Label(parameters[0].Trim()));
                     }
                 case "call":
                     {
-                        expectOperandsCount(parameters, 1);
-                        MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
-                        if (destination != null)
-                        {
-                            return new CallMem(destination);
-                        }
-                        return new CallLabel(new Label(parameters[0].Trim()));
+                        return new ParseJumpInstruction<CallMem, CallCon, CallLabel>().make(parameters);
                     }
                 case "ret":
                     expectOperandsCount(parameters, 0);
@@ -303,6 +360,34 @@ namespace Bytom.Assembler
                     }
                 default:
                     throw new Exception($"Invalid instruction {instruction_name}");
+            }
+        }
+
+        internal class ParseJumpInstruction<JMem, JCon, JLabel>
+            where JMem : JumpMemoryAddressInstruction
+            where JCon : JumpConstantIntInstruction
+            where JLabel : JumpLabelInstruction
+        {
+
+            public ParseJumpInstruction() { }
+            public Instruction make(string[] parameters)
+            {
+                expectOperandsCount(parameters, 1);
+                {
+                    MemoryAddress? destination = tryParseMemoryAddress(parameters[0]);
+                    if (destination != null)
+                    {
+                        return (JMem)Activator.CreateInstance(typeof(JMem), destination);
+                    }
+                }
+                {
+                    ConstantInt? destination = tryParseConstantInt(parameters[0]);
+                    if (destination != null)
+                    {
+                        return (JCon)Activator.CreateInstance(typeof(JCon), destination);
+                    }
+                }
+                return (JLabel)Activator.CreateInstance(typeof(JLabel), new Label(parameters[0].Trim()));
             }
         }
 

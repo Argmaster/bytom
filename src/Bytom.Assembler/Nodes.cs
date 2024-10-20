@@ -1003,34 +1003,59 @@ namespace Bytom.Assembler.Nodes
     {
 
         public MemoryAddress destination { get; set; }
+
         public JumpMemoryAddressInstruction(MemoryAddress destination)
         {
             this.destination = destination;
         }
+
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(GetOpCode())
+                .SetFirstRegisterID(destination.register)
+                .GetInstruction();
+        }
     }
 
-    public class LabelJumpInstruction : Instruction
+    public class JumpConstantIntInstruction : Instruction
+    {
+
+        public ConstantInt destination { get; set; }
+
+        public JumpConstantIntInstruction(ConstantInt destination)
+        {
+            this.destination = destination;
+        }
+
+        public override uint GetSizeBits()
+        {
+            return 64;
+        }
+
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(GetOpCode())
+                .SetConstant(destination.GetBytes())
+                .GetInstruction();
+        }
+    }
+
+    public class JumpLabelInstruction : Instruction
     {
 
         public Label label { get; set; }
 
-        public LabelJumpInstruction(Label label)
+        public JumpLabelInstruction(Label label)
         {
             this.label = label;
         }
         public override uint GetSizeBits()
         {
-            // push RDE  // 32 bits
-            // push RDF  // 32 bits
-            // mov RDE, IP  // 32 bits
-            // mov RDF, <offset>  // 64 bits
-            // add RDE, RDF  // 32 bits
-            // pop RDE  // 32 bits
-            // <j> [RDE]  // 32 bits
-            return 32 + 32 + 32 + 64 + 32 + 32 + 32;
+            return 64;
         }
-        public virtual JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterID name = RegisterID.RDF
+
+        public virtual JumpConstantIntInstruction GetJumpInstruction(
+            int offset
         )
         {
             throw new NotImplementedException();
@@ -1045,7 +1070,7 @@ namespace Bytom.Assembler.Nodes
 
         public override OpCode GetOpCode()
         {
-            return OpCode.Jmp;
+            return OpCode.JmpMem;
         }
 
         public override string ToAssembly()
@@ -1054,18 +1079,36 @@ namespace Bytom.Assembler.Nodes
         }
     }
 
-    public class JmpLabel : LabelJumpInstruction
+    public class JmpCon : JumpConstantIntInstruction
+    {
+
+        public JmpCon(ConstantInt destination) : base(destination)
+        {
+        }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.JmpCon;
+        }
+
+        public override string ToAssembly()
+        {
+            return $"jmp {destination.ToAssembly()}";
+        }
+    }
+
+    public class JmpLabel : JumpLabelInstruction
     {
 
         public JmpLabel(Label label) : base(label)
         {
         }
 
-        public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterID name = RegisterID.RDF
+        public override JumpConstantIntInstruction GetJumpInstruction(
+            int offset
         )
         {
-            return new JmpMem(new MemoryAddress(name));
+            return new JmpCon(new ConstantInt(offset));
         }
 
         public override string ToAssembly()
@@ -1082,7 +1125,7 @@ namespace Bytom.Assembler.Nodes
 
         public override OpCode GetOpCode()
         {
-            return OpCode.Jeq;
+            return OpCode.JeqMem;
         }
 
         public override string ToAssembly()
@@ -1091,18 +1134,36 @@ namespace Bytom.Assembler.Nodes
         }
     }
 
-    public class JeqLabel : LabelJumpInstruction
+    public class JeqCon : JumpConstantIntInstruction
+    {
+
+        public JeqCon(ConstantInt destination) : base(destination)
+        {
+        }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.JeqCon;
+        }
+
+        public override string ToAssembly()
+        {
+            return $"jeq {destination.ToAssembly()}";
+        }
+    }
+
+    public class JeqLabel : JumpLabelInstruction
     {
 
         public JeqLabel(Label label) : base(label)
         {
         }
 
-        public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterID name = RegisterID.RDF
+        public override JumpConstantIntInstruction GetJumpInstruction(
+            int offset
         )
         {
-            return new JeqMem(new MemoryAddress(name));
+            return new JeqCon(new ConstantInt(offset));
         }
 
         public override string ToAssembly()
@@ -1119,7 +1180,7 @@ namespace Bytom.Assembler.Nodes
 
         public override OpCode GetOpCode()
         {
-            return OpCode.Jne;
+            return OpCode.JneMem;
         }
 
         public override string ToAssembly()
@@ -1128,18 +1189,36 @@ namespace Bytom.Assembler.Nodes
         }
     }
 
-    public class JneLabel : LabelJumpInstruction
+    public class JneCon : JumpConstantIntInstruction
+    {
+
+        public JneCon(ConstantInt destination) : base(destination)
+        {
+        }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.JneCon;
+        }
+
+        public override string ToAssembly()
+        {
+            return $"jne {destination.ToAssembly()}";
+        }
+    }
+
+    public class JneLabel : JumpLabelInstruction
     {
 
         public JneLabel(Label label) : base(label)
         {
         }
 
-        public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterID name = RegisterID.RDF
+        public override JumpConstantIntInstruction GetJumpInstruction(
+            int offset
         )
         {
-            return new JneMem(new MemoryAddress(name));
+            return new JneCon(new ConstantInt(offset));
         }
 
         public override string ToAssembly()
@@ -1156,7 +1235,7 @@ namespace Bytom.Assembler.Nodes
 
         public override OpCode GetOpCode()
         {
-            return OpCode.Jlt;
+            return OpCode.JltMem;
         }
 
         public override string ToAssembly()
@@ -1165,18 +1244,38 @@ namespace Bytom.Assembler.Nodes
         }
     }
 
-    public class JltLabel : LabelJumpInstruction
+    public class JltCon : JumpConstantIntInstruction
+    {
+
+        public JltCon(ConstantInt destination) : base(destination)
+        {
+        }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.JltCon;
+        }
+
+        public override string ToAssembly()
+        {
+            return $"jlt {destination.ToAssembly()}";
+        }
+    }
+
+    public class JltLabel : JumpLabelInstruction
     {
 
         public JltLabel(Label label) : base(label)
         {
         }
-        public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterID name = RegisterID.RDF
+
+        public override JumpConstantIntInstruction GetJumpInstruction(
+            int offset
         )
         {
-            return new JltMem(new MemoryAddress(name));
+            return new JltCon(new ConstantInt(offset));
         }
+
         public override string ToAssembly()
         {
             return $"jlt {label.ToAssembly()}";
@@ -1191,7 +1290,7 @@ namespace Bytom.Assembler.Nodes
 
         public override OpCode GetOpCode()
         {
-            return OpCode.Jle;
+            return OpCode.JleMem;
         }
 
         public override string ToAssembly()
@@ -1200,18 +1299,37 @@ namespace Bytom.Assembler.Nodes
         }
     }
 
-    public class JleLabel : LabelJumpInstruction
+    public class JleCon : JumpConstantIntInstruction
+    {
+
+        public JleCon(ConstantInt destination) : base(destination)
+        {
+        }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.JleCon;
+        }
+
+        public override string ToAssembly()
+        {
+            return $"jle {destination.ToAssembly()}";
+        }
+    }
+
+    public class JleLabel : JumpLabelInstruction
     {
 
         public JleLabel(Label label) : base(label)
         {
         }
 
-        public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterID name = RegisterID.RDF
+
+        public override JumpConstantIntInstruction GetJumpInstruction(
+            int offset
         )
         {
-            return new JleMem(new MemoryAddress(name));
+            return new JleCon(new ConstantInt(offset));
         }
 
         public override string ToAssembly()
@@ -1228,7 +1346,7 @@ namespace Bytom.Assembler.Nodes
 
         public override OpCode GetOpCode()
         {
-            return OpCode.Jgt;
+            return OpCode.JgtMem;
         }
 
         public override string ToAssembly()
@@ -1237,18 +1355,38 @@ namespace Bytom.Assembler.Nodes
         }
     }
 
-    public class JgtLabel : LabelJumpInstruction
+    public class JgtCon : JumpConstantIntInstruction
+    {
+
+        public JgtCon(ConstantInt destination) : base(destination)
+        {
+        }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.JgtCon;
+        }
+
+        public override string ToAssembly()
+        {
+            return $"jgt {destination.ToAssembly()}";
+        }
+    }
+
+    public class JgtLabel : JumpLabelInstruction
     {
 
         public JgtLabel(Label label) : base(label)
         {
         }
-        public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterID name = RegisterID.RDF
+
+        public override JumpConstantIntInstruction GetJumpInstruction(
+            int offset
         )
         {
-            return new JgtMem(new MemoryAddress(name));
+            return new JgtCon(new ConstantInt(offset));
         }
+
         public override string ToAssembly()
         {
             return $"jgt {label.ToAssembly()}";
@@ -1263,7 +1401,7 @@ namespace Bytom.Assembler.Nodes
 
         public override OpCode GetOpCode()
         {
-            return OpCode.Jge;
+            return OpCode.JgeMem;
         }
 
         public override string ToAssembly()
@@ -1272,18 +1410,37 @@ namespace Bytom.Assembler.Nodes
         }
     }
 
-    public class JgeLabel : LabelJumpInstruction
+    public class JgeCon : JumpConstantIntInstruction
+    {
+
+        public JgeCon(ConstantInt destination) : base(destination)
+        {
+        }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.JgeCon;
+        }
+
+        public override string ToAssembly()
+        {
+            return $"jge {destination.ToAssembly()}";
+        }
+    }
+
+    public class JgeLabel : JumpLabelInstruction
     {
 
         public JgeLabel(Label label) : base(label)
         {
         }
 
-        public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterID name = RegisterID.RDF
+
+        public override JumpConstantIntInstruction GetJumpInstruction(
+            int offset
         )
         {
-            return new JgeMem(new MemoryAddress(name));
+            return new JgeCon(new ConstantInt(offset));
         }
 
         public override string ToAssembly()
@@ -1300,7 +1457,7 @@ namespace Bytom.Assembler.Nodes
 
         public override OpCode GetOpCode()
         {
-            return OpCode.Call;
+            return OpCode.CallMem;
         }
 
         public override string ToAssembly()
@@ -1309,18 +1466,37 @@ namespace Bytom.Assembler.Nodes
         }
     }
 
-    public class CallLabel : LabelJumpInstruction
+    public class CallCon : JumpConstantIntInstruction
+    {
+
+        public CallCon(ConstantInt destination) : base(destination)
+        {
+        }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.CallCon;
+        }
+
+        public override string ToAssembly()
+        {
+            return $"call {destination.ToAssembly()}";
+        }
+    }
+
+    public class CallLabel : JumpLabelInstruction
     {
 
         public CallLabel(Label label) : base(label)
         {
         }
 
-        public override JumpMemoryAddressInstruction GetJumpInstruction(
-            RegisterID name = RegisterID.RDF
+
+        public override JumpConstantIntInstruction GetJumpInstruction(
+            int offset
         )
         {
-            return new CallMem(new MemoryAddress(name));
+            return new CallCon(new ConstantInt(offset));
         }
 
         public override string ToAssembly()
@@ -1338,6 +1514,12 @@ namespace Bytom.Assembler.Nodes
         public override OpCode GetOpCode()
         {
             return OpCode.Ret;
+        }
+
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(GetOpCode())
+                .GetInstruction();
         }
 
         public override string ToAssembly()
@@ -1360,6 +1542,14 @@ namespace Bytom.Assembler.Nodes
         public override OpCode GetOpCode()
         {
             return OpCode.Cmp;
+        }
+
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(GetOpCode())
+                .SetFirstRegisterID(left.name)
+                .SetSecondRegisterID(right.name)
+                .GetInstruction();
         }
 
         public override string ToAssembly()

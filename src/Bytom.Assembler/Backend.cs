@@ -49,48 +49,14 @@ namespace Bytom.Assembler
 
             foreach (Node node in nodes)
             {
-                if (node is LabelJumpInstruction)
+                if (node is JumpLabelInstruction)
                 {
-                    // push RDE  // 32 bits
-                    // push RDF  // 32 bits
-                    // mov RDF, IP  // 32 bits
-                    // mov RDE, <offset>  // 64 bits
-                    // add RDF, RDE  // 32 bits
-                    // pop RDE  // 32 bits
-                    // <j> [RDF]  // 32 bits
-                    var push_rde = new PushReg(new Register(RegisterID.RDE));
-                    var push_rdf = new PushReg(new Register(RegisterID.RDF));
-                    var mov_rdf_ip = new MovRegReg(
-                        new Register(RegisterID.RDF),
-                        new Register(RegisterID.IP)
-                    );
-                    var mov_rde_offset = new MovRegCon(
-                        new Register(RegisterID.RDE),
-                        new ConstantInt(0)
-                    );
-                    var add_rdf_rde = new Add(
-                        new Register(RegisterID.RDF),
-                        new Register(RegisterID.RDE)
-                    );
-                    var pop_rde = new PopReg(new Register(RegisterID.RDE));
-                    var jmp_rdf = ((LabelJumpInstruction)node).GetJumpInstruction(RegisterID.RDF);
-
-                    string label_name = ((LabelJumpInstruction)node).label.name;
+                    string label_name = ((JumpLabelInstruction)node).label.name;
                     long label_offset = label_offsets[label_name];
-                    long jmp_offset = current_offset;
-                    jmp_offset += push_rde.GetSizeBytes();
-                    jmp_offset += push_rdf.GetSizeBytes();
 
-                    long relative_offset = label_offset - jmp_offset;
-                    ((ConstantInt)mov_rde_offset.source).value = (int)relative_offset;
+                    var jmp_con = ((JumpLabelInstruction)node).GetJumpInstruction((int)label_offset);
 
-                    new_nodes.Add(push_rde);
-                    new_nodes.Add(push_rdf);
-                    new_nodes.Add(mov_rdf_ip);
-                    new_nodes.Add(mov_rde_offset);
-                    new_nodes.Add(add_rdf_rde);
-                    new_nodes.Add(pop_rde);
-                    new_nodes.Add(jmp_rdf);
+                    new_nodes.Add(jmp_con);
                 }
                 else if (node is Instruction)
                 {
@@ -121,7 +87,7 @@ namespace Bytom.Assembler
                 }
                 else if (node is LabelNode)
                 {
-                    // Do nothing
+                    // Do nothing, discard label nodes, they are not part of machine code.
                 }
                 else
                 {

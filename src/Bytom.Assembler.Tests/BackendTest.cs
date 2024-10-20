@@ -9,6 +9,40 @@ namespace Bytom.Assembler.Tests
     public class BackendTest
     {
         [Test]
+        public void TestNop()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Nop()
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var decoder = new InstructionDecoder(machine_code.ToArray());
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.Nop));
+        }
+
+        [Test]
+        public void TestHalt()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new Halt()
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var decoder = new InstructionDecoder(machine_code.ToArray());
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.Halt));
+        }
+
+        [Test]
         public void TestMovRegReg()
         {
             Backend backend = new Backend();
@@ -678,6 +712,690 @@ namespace Bytom.Assembler.Tests
         }
 
         [Test]
+        public void TestJmpMem()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new JmpMem(
+                        new MemoryAddress(RegisterID.RD0)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var decoder = new InstructionDecoder(machine_code.ToArray());
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JmpMem));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.RD0));
+        }
+
+        [Test]
+        public void TestJmpCon()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new JmpCon(
+                        new ConstantInt(0xFF)
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+                machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JmpCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+                machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0xFF));
+        }
+
+        [Test]
+        public void TestJmpLabel()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+                [
+                    new LabelNode("end"),
+                    new JmpLabel(
+                        new Label("end")
+                    )
+                ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+                machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JmpCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+                machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TestJeqMem()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            [
+                new JeqMem(
+                    new MemoryAddress(RegisterID.RD0)
+                )
+            ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var decoder = new InstructionDecoder(machine_code.ToArray());
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JeqMem));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.RD0));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+        }
+
+        [Test]
+        public void TestJeqCon()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            [
+                new JeqCon(
+                    new ConstantInt(0xFF)
+                )
+            ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JeqCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0xFF));
+        }
+
+        [Test]
+        public void TestJeqLabel()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            [
+                new LabelNode("end"),
+                new JeqLabel(
+                    new Label("end")
+                )
+            ]
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JeqCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TestJneMem()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new JneMem(
+                    new MemoryAddress(RegisterID.RD0)
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var decoder = new InstructionDecoder(machine_code.ToArray());
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JneMem));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.RD0));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+        }
+
+        [Test]
+        public void TestJneCon()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new JneCon(
+                    new ConstantInt(0xFF)
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JneCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0xFF));
+        }
+
+        [Test]
+        public void TestJneLabel()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new LabelNode("end"),
+                new JneLabel(
+                    new Label("end")
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JneCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TestJltMem()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new JltMem(
+                    new MemoryAddress(RegisterID.RD0)
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var decoder = new InstructionDecoder(machine_code.ToArray());
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JltMem));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.RD0));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+        }
+
+        [Test]
+        public void TestJltCon()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new JltCon(
+                    new ConstantInt(0xFF)
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JltCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0xFF));
+        }
+
+        [Test]
+        public void TestJltLabel()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new LabelNode("end"),
+                new JltLabel(
+                    new Label("end")
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JltCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TestJleMem()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new JleMem(
+                    new MemoryAddress(RegisterID.RD0)
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var decoder = new InstructionDecoder(machine_code.ToArray());
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JleMem));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.RD0));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+        }
+
+        [Test]
+        public void TestJleCon()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new JleCon(
+                    new ConstantInt(0xFF)
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JleCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0xFF));
+        }
+
+        [Test]
+        public void TestJleLabel()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new LabelNode("end"),
+                new JleLabel(
+                    new Label("end")
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JleCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TestJgeMem()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new JgeMem(
+                    new MemoryAddress(RegisterID.RD0)
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var decoder = new InstructionDecoder(machine_code.ToArray());
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JgeMem));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.RD0));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+        }
+
+        [Test]
+        public void TestJgeCon()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new JgeCon(
+                    new ConstantInt(0xFF)
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JgeCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0xFF));
+        }
+
+        [Test]
+        public void TestJgeLabel()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new LabelNode("end"),
+                new JgeLabel(
+                    new Label("end")
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JgeCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TestJgtMem()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new JgtMem(
+                    new MemoryAddress(RegisterID.RD0)
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var decoder = new InstructionDecoder(machine_code.ToArray());
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JgtMem));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.RD0));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+        }
+
+        [Test]
+        public void TestJgtCon()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new JgtCon(
+                    new ConstantInt(0xFF)
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JgtCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0xFF));
+        }
+
+        [Test]
+        public void TestJgtLabel()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new LabelNode("end"),
+                new JgtLabel(
+                    new Label("end")
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.JgtCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TestCallMem()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+            new CallMem(
+                new MemoryAddress(RegisterID.RD0)
+            )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var decoder = new InstructionDecoder(machine_code.ToArray());
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.CallMem));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.RD0));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+        }
+
+        [Test]
+        public void TestCallCon()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+            new CallCon(
+            new ConstantInt(0xFF)
+            )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.CallCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0xFF));
+        }
+
+        [Test]
+        public void TestCallLabel()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+            new LabelNode("start"),
+            new CallLabel(
+                new Label("start")
+            )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(8));
+
+            var decoder = new InstructionDecoder(
+            machine_code.GetRange(0, 4).ToArray()
+            );
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.CallCon));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+            var constant = Serialization.Int32FromBytesBigEndian(
+            machine_code.GetRange(4, 4).ToArray()
+            );
+            Assert.That(constant, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TestRet()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new Ret()
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var decoder = new InstructionDecoder(machine_code.ToArray());
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.Ret));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+        }
+
+        [Test]
+        public void TestCmp()
+        {
+            Backend backend = new Backend();
+            var code = backend.compile(
+            new List<Node>
+            {
+                new Cmp(
+                    new Register(RegisterID.RD0),
+                    new Register(RegisterID.RD1)
+                )
+            }
+            );
+            var machine_code = code.ToMachineCode();
+            Assert.That(machine_code.Count, Is.EqualTo(4));
+
+            var decoder = new InstructionDecoder(machine_code.ToArray());
+
+            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.Cmp));
+            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.RD0));
+            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.RD1));
+        }
+
+        [Test]
         public void TestLabelJump()
         {
             Frontend frontend = new Frontend();
@@ -693,13 +1411,7 @@ namespace Bytom.Assembler.Tests
             var code = backend.compile(instructions);
 
             Assert.That(code.ToAssembly(), Is.EqualTo(@"mov RD0, 255
-push RDE
-push RDF
-mov RDF, IP
-mov RDE, 24
-add RDF, RDE
-pop RDE
-jmp [RDF]
+jmp 16
 halt
 "
             ));

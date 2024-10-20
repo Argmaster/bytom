@@ -4,11 +4,6 @@ using Bytom.Tools;
 
 namespace Bytom.Assembler
 {
-    public enum InstructionSize
-    {
-        BITS_32 = 32,
-        BITS_64 = 64
-    }
 
     public class MachineInstructionBuilder
     {
@@ -31,19 +26,6 @@ namespace Bytom.Assembler
             {
                 instruction &= (uint)~(1 << bit);
             }
-        }
-
-        public MachineInstructionBuilder SetInstructionSize(InstructionSize size)
-        {
-            if (size == InstructionSize.BITS_32)
-            {
-                SetBit(31, false);
-            }
-            else if (size == InstructionSize.BITS_64)
-            {
-                SetBit(31, true);
-            }
-            return this;
         }
 
         public MachineInstructionBuilder SetFirstRegisterID(RegisterID id)

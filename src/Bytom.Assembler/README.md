@@ -20,6 +20,14 @@ in 64 bit instructions
 
 ## Registers
 
+Only 32-bit registers can be used in arithmetic operations, jumps etc.
+16-bit and 8-bit registers can be only used to read and write to RAM and other registers.
+16-bit and 8-bit registers are mapped to values in 32-bit registers.
+When writing 16-bit register to different 32 bit register, it is always written to lower 16 bits.
+When writing 8-bit register to different 32 bit register, it is always written to lower 8 bits.
+When writing 32-bit register to 16-bit register, always lower 16 bits are taken.
+When writing 32-bit register to 8-bit register, always lower 16 bits are taken.
+
 ### 32-bit General purpose registers
 
 - byte - 8 bits
@@ -43,6 +51,18 @@ in 64 bit instructions
 - `RDD` `0b00_1110`
 - `RDE` `0b00_1111`
 - `RDF` `0b01_0000`
+
+### 16-bit register access
+
+- `RW0H` `0b10_0000` - High word of `RD0`
+- `RW0L` `0b10_0001` - Low word of `RD0`
+
+### 8-bit register access
+
+- `RB0HH` `0b10_1000` - High byte of `RW0H`
+- `RB0HL` `0b10_1001` - Low byte of `RW0H`
+- `RB0LH` `0b10_1010` - High byte of `RW0L`
+- `RB0LL` `0b10_1011` - Low byte of `RW0L`
 
 ### Special registers
 
@@ -88,8 +108,8 @@ stored to the destination memory address.
 - `mov <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0010_0000` # 32 bit
 - `mov <reg>,<mem>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0010_0001` # 32 bit
 - `mov <mem>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0010_0100` # 32 bit
-- `mov <reg>,<con>` - `0b1000_xxxx_xx00_0000_0000_0000_0010_0010` # 64 bit
-- `mov <mem>,<con>` - `0b1000_xxxx_xx00_0000_0000_0000_0010_0110` # 64 bit
+- `mov <reg>,<con>` - `0b0000_xxxx_xx00_0000_0000_0000_0010_0010` # 64 bit
+- `mov <mem>,<con>` - `0b0000_xxxx_xx00_0000_0000_0000_0010_0110` # 64 bit
 
 ### push
 
@@ -101,7 +121,7 @@ addresses to lower addresses.
 
 - `push <reg>` - `0b0000_xxxx_xx00_0000_0000_0000_0011_0000` # 32 bit
 - `push <mem>` - `0b0000_xxxx_xx00_0000_0100_0000_0011_0000` # 32 bit
-- `push <con>` - `0b1000_0000_0000_0000_1000_0000_0011_0000` # 64 bit
+- `push <con>` - `0b0000_0000_0000_0000_1000_0000_0011_0000` # 64 bit
 
 ### pop
 
@@ -274,6 +294,7 @@ The jmp instruction unconditionally transfers control to the instruction at the 
 specified by its operand.
 
 - `jmp <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0000_0000` # 32 bit
+- `jmp <con>` - `0b0000_0000_0000_0000_0000_0010_0000_0001` # 64 bit, constant is threated as address
 
 ### jeq
 
@@ -281,6 +302,7 @@ The jeq instruction transfers control to the instruction at the address specifie
 operand if the two operands are equal.
 
 - `jeq <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0001_0000` # 32 bit
+- `jeq <mem>` - `0b0000_0000_0000_0000_0000_0010_0001_0001` # 64 bit, constant is threated as address
 
 ### jne
 
@@ -288,6 +310,7 @@ The jne instruction transfers control to the instruction at the address specifie
 operand if the two operands are not equal.
 
 - `jne <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0010_0000` # 32 bit
+- `jne <mem>` - `0b0000_0000_0000_0000_0000_0010_0010_0001` # 64 bit, constant is threated as address
 
 ### jlt
 
@@ -295,6 +318,7 @@ The jlt instruction transfers control to the instruction at the address specifie
 operand if the first operand is less than the second operand.
 
 - `jlt <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0011_0000` # 32 bit
+- `jlt <mem>` - `0b0000_0000_0000_0000_0000_0010_0011_0001` # 64 bit, constant is threated as address
 
 ### jle
 
@@ -302,6 +326,7 @@ The jle instruction transfers control to the instruction at the address specifie
 operand if the first operand is less than or equal to the second operand.
 
 - `jle <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0100_0000` # 32 bit
+- `jle <mem>` - `0b0000_0000_0000_0000_0000_0010_0100_0001` # 64 bit, constant is threated as address
 
 ### jgt
 
@@ -309,6 +334,7 @@ The jgt instruction transfers control to the instruction at the address specifie
 operand if the first operand is greater than the second operand.
 
 - `jgt <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0101_0000` # 32 bit
+- `jgt <mem>` - `0b0000_0000_0000_0000_0000_0010_0101_0001` # 64 bit, constant is threated as address
 
 ### jge
 
@@ -316,6 +342,7 @@ The jge instruction transfers control to the instruction at the address specifie
 operand if the first operand is greater than or equal to the second operand.
 
 - `jge <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0110_0000` # 32 bit
+- `jge <mem>` - `0b0000_0000_0000_0000_0000_0010_0110_0001` # 64 bit, constant is threated as address
 
 ### call
 
@@ -326,6 +353,7 @@ simple jump instructions, the call instruction saves the location to return to w
 subroutine completes.
 
 - `call <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_1000_0000` # 32 bit
+- `call <con>` - `0b0000_0000_0000_0000_0000_0010_1000_0001` # 64 bit, constant is threated as address
 
 ### ret
 
@@ -349,10 +377,11 @@ first operand.
 
 ### in
 
-The in instruction reads a byte from the I/O port specified by the first operand and
-stores it in the second operand.
+The in instruction reads a byte from the I/O port specified by the second operand and
+stores it in the first operand.
 
 - `in <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_1000_0001_0000` # 32 bit
+- `in <reg>,<con>` - `0b0000_xxxx_xx00_0000_0000_1000_0001_0001` # 64 bit
 
 ### out
 
@@ -360,6 +389,9 @@ The out instruction writes a byte from the second operand to the I/O port specif
 the first operand.
 
 - `out <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_1000_0010_0000` # 32 bit
+- `out <reg>,<con>` - `0b0000_xxxx_xx00_0000_0000_1000_0010_0001` # 64 bit
+- `out <con>,<reg>` - `0b0000_xxxx_xx00_0000_0000_1000_0010_0010` # 64 bit
+- `out <con>,<con>` - `0b0000_xxxx_xx00_0000_0000_1000_0010_0011` # 64 bit
 
 ### Address translation
 
