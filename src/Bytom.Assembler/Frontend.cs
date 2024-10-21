@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Bytom.Assembler.Nodes;
 using Bytom.Assembler.Operands;
@@ -437,7 +438,7 @@ namespace Bytom.Assembler
             match = Regex.Match(trimmed_source_code, @"^([-+]?[0-9A-Fa-f]+)$");
             if (match.Success)
             {
-                return new ConstantInt(int.Parse(match.Groups[0].Value, NumberStyles.HexNumber));
+                return new ConstantInt(int.Parse(match.Groups[0].Value));
             }
             return null;
         }
@@ -456,8 +457,9 @@ namespace Bytom.Assembler
         private static Register? tryParseRegister(string trimmed_source_code)
         {
             var register_name = trimmed_source_code.ToUpper();
-            if (Enum.TryParse(register_name, out RegisterID register))
+            if (Enum.GetNames(typeof(RegisterID)).Contains(register_name))
             {
+                Enum.TryParse(register_name, out RegisterID register);
                 return new Register(register);
             }
             return null;

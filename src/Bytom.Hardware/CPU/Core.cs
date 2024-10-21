@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bytom.Hardware.RAM;
+using Bytom.Tools;
 
 namespace Bytom.Hardware.CPU
 {
@@ -28,7 +29,13 @@ namespace Bytom.Hardware.CPU
         CSBP = 0b10_0101,
         VATTA = 0b10_0110,
         IDT = 0b10_0111,
+        IRA = 0b10_1000,
         IP = 0b10_1001,
+        TRA = 0b10_1010, // Task Descriptor Address (address of currently running task)
+        TDTA = 0b10_1011, // Task Descriptor Table Address
+        KERNEL_CSTP = 0b11_1010,
+        KERNEL_CSBP = 0b11_1011,
+        KERNEL_IP = 0b11_1100,
     }
 
     public class Core
@@ -64,7 +71,13 @@ namespace Bytom.Hardware.CPU
         public Register32 CSBP;
         public Register32 VATTA;
         public Register32 IDT;
+        public Register32 IRA;
         public Register32 IP;
+        public Register32 TRA;
+        public Register32 TDTA;
+        public Register32 KERNEL_CSTP;
+        public Register32 KERNEL_CSBP;
+        public Register32 KERNEL_IP;
 
         public Dictionary<RegisterID, Register32> registers;
 
@@ -83,29 +96,36 @@ namespace Bytom.Hardware.CPU
             power_status = PowerStatus.OFF;
             clock = new Clock(clock_speed_hz);
 
-            RD0 = new Register32();
-            RD1 = new Register32();
-            RD2 = new Register32();
-            RD3 = new Register32();
-            RD4 = new Register32();
-            RD5 = new Register32();
-            RD6 = new Register32();
-            RD7 = new Register32();
-            RD8 = new Register32();
-            RD9 = new Register32();
-            RDA = new Register32();
-            RDB = new Register32();
-            RDC = new Register32();
-            RDD = new Register32();
-            RDE = new Register32();
-            RDF = new Register32();
+            RD0 = new Register32(0);
+            RD1 = new Register32(0);
+            RD2 = new Register32(0);
+            RD3 = new Register32(0);
+            RD4 = new Register32(0);
+            RD5 = new Register32(0);
+            RD6 = new Register32(0);
+            RD7 = new Register32(0);
+            RD8 = new Register32(0);
+            RD9 = new Register32(0);
+            RDA = new Register32(0);
+            RDB = new Register32(0);
+            RDC = new Register32(0);
+            RDD = new Register32(0);
+            RDE = new Register32(0);
+            RDF = new Register32(0);
 
-            CR0 = new Register32();
-            CSTP = new Register32();
-            CSBP = new Register32();
-            VATTA = new Register32();
-            IDT = new Register32();
-            IP = new Register32();
+            CR0 = new Register32(1 << 31);
+            CSTP = new Register32(0);
+            CSBP = new Register32(0);
+            VATTA = new Register32(0);
+            IDT = new Register32(0);
+            IRA = new Register32(0);
+            IP = new Register32(0);
+            TRA = new Register32(0);
+            TDTA = new Register32(0);
+            KERNEL_CSTP = new Register32(0);
+            KERNEL_CSBP = new Register32(0);
+            KERNEL_IP = new Register32(0);
+
 
             registers = new Dictionary<RegisterID, Register32>{
                 { RegisterID.RD0, RD0 },
@@ -129,7 +149,13 @@ namespace Bytom.Hardware.CPU
                 { RegisterID.CSBP, CSBP },
                 { RegisterID.VATTA, VATTA },
                 { RegisterID.IDT, IDT },
+                { RegisterID.IRA, IRA },
                 { RegisterID.IP, IP },
+                { RegisterID.TRA, TRA },
+                { RegisterID.TDTA, TDTA },
+                { RegisterID.KERNEL_CSTP, KERNEL_CSTP },
+                { RegisterID.KERNEL_CSBP, KERNEL_CSBP },
+                { RegisterID.KERNEL_IP, KERNEL_IP },
             };
         }
 
@@ -161,13 +187,48 @@ namespace Bytom.Hardware.CPU
                         }
                         break;
                     }
+                case OpCode.MovRegReg:
+                    {
+                        await writeBytesToRegister(
+                            decoder.GetFirstRegisterID(),
+                            await readBytesFromRegister(decoder.GetSecondRegisterID())
+                        );
+                        break;
+                    }
+                case OpCode.MovRegMem:
+                    {
+                        await writeBytesToRegister(
+                            decoder.GetFirstRegisterID(),
+                            await readBytesFromMemory(
+                                await readUInt32FromRegister(decoder.GetSecondRegisterID()),
+                                4
+                            )
+                        );
+                        break;
+                    }
+                case OpCode.MovMemReg:
+                    {
+                        await writeBytesToMemory(
+                            await readUInt32FromRegister(decoder.GetFirstRegisterID()),
+                            await readBytesFromRegister(decoder.GetSecondRegisterID())
+                        );
+                        break;
+                    }
                 case OpCode.MovRegCon:
                     {
-                        RegisterID register_name = decoder.GetFirstRegisterID();
-                        byte[] constant_bytes = await ram.readAll(instruction_pointer, 4);
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
                         instruction_pointer += 4;
-
-                        registers[register_name].WriteBytes(constant_bytes);
+                        await writeBytesToRegister(decoder.GetFirstRegisterID(), constant_bytes);
+                        break;
+                    }
+                case OpCode.MovMemCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        instruction_pointer += 4;
+                        await writeBytesToMemory(
+                            await readUInt32FromRegister(decoder.GetFirstRegisterID()),
+                            constant_bytes
+                        );
                         break;
                     }
                 default:
@@ -177,33 +238,145 @@ namespace Bytom.Hardware.CPU
             IP.WriteUInt32(instruction_pointer);
         }
 
+        public async Task<byte[]> readBytesFromMemory(uint instruction_pointer, uint length)
+        {
+            return await ram.readAll(instruction_pointer, length);
+        }
+
+        public async Task writeBytesToMemory(uint address, byte[] value)
+        {
+            await ram.writeAll(address, value);
+        }
+
+        public async Task writeBytesToRegister(RegisterID register_name, byte[] value)
+        {
+            await Task.Delay(0);
+            var register = registers[register_name];
+
+            if (register.no_move_write)
+            {
+                throw new System.Exception($"Register {register_name} cannot be directly written to.");
+            }
+            if (register.write_kernel_only && !isKernelMode())
+            {
+                throw new System.Exception($"Register {register_name} can only be written in kernel mode.");
+            }
+            register.WriteBytes(value);
+            return;
+        }
+
+        public async Task writeInt32ToRegister(RegisterID register_name, int value)
+        {
+            await Task.Delay(0);
+            var register = registers[register_name];
+
+            if (register.no_move_write)
+            {
+                throw new System.Exception($"Register {register_name} cannot be directly written to.");
+            }
+            if (register.write_kernel_only && !isKernelMode())
+            {
+                throw new System.Exception($"Register {register_name} can only be written in kernel mode.");
+            }
+            register.WriteInt32(value);
+            return;
+        }
+
+        public async Task writeUInt32ToRegister(RegisterID register_name, uint value)
+        {
+            await Task.Delay(0);
+            var register = registers[register_name];
+
+            if (register.no_move_write)
+            {
+                throw new System.Exception($"Register {register_name} cannot be directly written to.");
+            }
+            if (register.write_kernel_only && !isKernelMode())
+            {
+                throw new System.Exception($"Register {register_name} can only be written in kernel mode.");
+            }
+            register.WriteUInt32(value);
+            return;
+        }
+
+        public async Task writeFloat32ToRegister(RegisterID register_name, float value)
+        {
+            await Task.Delay(0);
+            var register = registers[register_name];
+
+            if (register.no_move_write)
+            {
+                throw new System.Exception($"Register {register_name} cannot be directly written to.");
+            }
+            if (register.write_kernel_only && !isKernelMode())
+            {
+                throw new System.Exception($"Register {register_name} can only be written in kernel mode.");
+            }
+            register.WriteFloat32(value);
+            return;
+        }
+
+        public async Task<byte[]> readBytesFromRegister(RegisterID register_name)
+        {
+            await Task.Delay(0);
+            var register = registers[register_name];
+
+            if (register.read_kernel_only && !isKernelMode())
+            {
+                throw new System.Exception($"Register {register_name} can only be read in kernel mode.");
+            }
+            return register.ReadBytes();
+        }
+
+        public async Task<int> readInt32FromRegister(RegisterID register_name)
+        {
+            await Task.Delay(0);
+            var register = registers[register_name];
+
+            if (register.read_kernel_only && !isKernelMode())
+            {
+                throw new System.Exception($"Register {register_name} can only be read in kernel mode.");
+            }
+            return register.ReadInt32();
+        }
+
+        public async Task<uint> readUInt32FromRegister(RegisterID register_name)
+        {
+            await Task.Delay(0);
+            var register = registers[register_name];
+
+            if (register.read_kernel_only && !isKernelMode())
+            {
+                throw new System.Exception($"Register {register_name} can only be read in kernel mode.");
+            }
+            return register.ReadUInt32();
+        }
+
+        public async Task<float> readFloat32FromRegister(RegisterID register_name)
+        {
+            await Task.Delay(0);
+            var register = registers[register_name];
+
+            if (register.read_kernel_only && !isKernelMode())
+            {
+                throw new System.Exception($"Register {register_name} can only be read in kernel mode.");
+            }
+            return register.ReadFloat32();
+        }
+
+        public bool isKernelMode()
+        {
+            return (CR0.ReadUInt32() & Serialization.Mask(31)) == 0;
+        }
+
         public async Task powerOn()
         {
             power_status = PowerStatus.ON;
 
-            RD0.WriteUInt32(0);
-            RD1.WriteUInt32(0);
-            RD2.WriteUInt32(0);
-            RD3.WriteUInt32(0);
-            RD4.WriteUInt32(0);
-            RD5.WriteUInt32(0);
-            RD6.WriteUInt32(0);
-            RD7.WriteUInt32(0);
-            RD8.WriteUInt32(0);
-            RD9.WriteUInt32(0);
-            RDA.WriteUInt32(0);
-            RDB.WriteUInt32(0);
-            RDC.WriteUInt32(0);
-            RDD.WriteUInt32(0);
-            RDE.WriteUInt32(0);
-            RDF.WriteUInt32(0);
-
-            CR0.WriteUInt32(0);
-            CSTP.WriteUInt32(0);
-            CSBP.WriteUInt32(0);
-            VATTA.WriteUInt32(0);
-            IDT.WriteUInt32(0);
-            IP.WriteUInt32(0);
+            foreach (var reg in registers.Values)
+            {
+                reg.reset();
+            }
 
             while (!requested_power_off)
             {

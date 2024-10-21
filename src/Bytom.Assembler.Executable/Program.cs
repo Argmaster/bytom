@@ -37,6 +37,16 @@ namespace Bytom.Assembler.Executable
             {
                 //enable verbose logging
             }
+            if (opts.file == null)
+            {
+                Console.WriteLine("No file specified.");
+                return;
+            }
+            if (opts.output == null)
+            {
+                Console.WriteLine("No output file specified.");
+                return;
+            }
             if (opts.disassemble)
             {
                 var machineCode = File.ReadAllBytes(opts.file);

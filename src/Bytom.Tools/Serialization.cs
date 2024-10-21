@@ -4,7 +4,7 @@ namespace Bytom.Tools
 {
     public class Serialization
     {
-        public static byte[] ToBytesBigEndian(uint value)
+        public static byte[] UInt32ToBytesBigEndian(uint value)
         {
             byte[] bytes = BitConverter.GetBytes(value);
             if (BitConverter.IsLittleEndian)
@@ -13,7 +13,7 @@ namespace Bytom.Tools
             }
             return bytes;
         }
-        public static byte[] ToBytesBigEndian(int value)
+        public static byte[] Int32ToBytesBigEndian(int value)
         {
             byte[] bytes = BitConverter.GetBytes(value);
             if (BitConverter.IsLittleEndian)
@@ -22,7 +22,7 @@ namespace Bytom.Tools
             }
             return bytes;
         }
-        public static byte[] ToBytesBigEndian(float value)
+        public static byte[] Float32ToBytesBigEndian(float value)
         {
             byte[] bytes = BitConverter.GetBytes(value);
             if (BitConverter.IsLittleEndian)

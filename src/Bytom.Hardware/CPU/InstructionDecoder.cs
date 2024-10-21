@@ -57,7 +57,16 @@ namespace Bytom.Hardware.CPU
         Ret = 0b0000_0010_1001_0000,
         Cmp = 0b0000_0001_1111_0000,
         InRegReg = 0b0000_1000_0001_0000,
+        InRegCon = 0b0000_1000_0001_0001,
+        InConReg = 0b0000_1000_0001_0010,
+        InConCon = 0b0000_1000_0001_0011,
         OutRegReg = 0b0000_1000_0010_0000,
+        OutRegCon = 0b0000_1000_0010_0001,
+        OutConReg = 0b0000_1000_0010_0010,
+        OutConCon = 0b0000_1000_0010_0011,
+        // Kernel related instructions
+        Int = 0b1000_0000_0000_0000,
+        IRet = 0b1000_0000_0000_0001,
     }
 
     internal class Util

@@ -25,6 +25,6 @@ namespace Bytom.Hardware
 
     public class BytomIncRam16KGen1 : MemoryChip
     {
-        public BytomIncRam16KGen1() : base(1024, 100, 10) { }
+        public BytomIncRam16KGen1() : base(16 * 1024, 100, 10) { }
     }
 }

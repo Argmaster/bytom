@@ -45,7 +45,7 @@ namespace Bytom.Assembler
         }
         public byte[] GetInstruction()
         {
-            return Serialization.ToBytesBigEndian(instruction).Concat(constant).ToArray();
+            return Serialization.UInt32ToBytesBigEndian(instruction).Concat(constant).ToArray();
         }
     }
 }

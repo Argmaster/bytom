@@ -20,13 +20,13 @@ in 64 bit instructions
 
 ## Registers
 
-Only 32-bit registers can be used in arithmetic operations, jumps etc.
-16-bit and 8-bit registers can be only used to read and write to RAM and other registers.
-16-bit and 8-bit registers are mapped to values in 32-bit registers.
-When writing 16-bit register to different 32 bit register, it is always written to lower 16 bits.
-When writing 8-bit register to different 32 bit register, it is always written to lower 8 bits.
-When writing 32-bit register to 16-bit register, always lower 16 bits are taken.
-When writing 32-bit register to 8-bit register, always lower 16 bits are taken.
+Only 32-bit registers can be used in arithmetic operations, jumps etc. 16-bit and 8-bit
+registers can be only used to read and write to RAM and other registers. 16-bit and
+8-bit registers are mapped to values in 32-bit registers. When writing 16-bit register
+to different 32 bit register, it is always written to lower 16 bits. When writing 8-bit
+register to different 32 bit register, it is always written to lower 8 bits. When
+writing 32-bit register to 16-bit register, always lower 16 bits are taken. When writing
+32-bit register to 8-bit register, always lower 16 bits are taken.
 
 ### 32-bit General purpose registers
 
@@ -66,17 +66,28 @@ When writing 32-bit register to 8-bit register, always lower 16 bits are taken.
 
 ### Special registers
 
-- `CR0` `0b10_0000` - Configuration Register 0
+- `CR0` `0b10_0000` - Configuration Register 0 [kmd-only]
   - bit 0: enable virtual memory
   - bit 31: supervisor bit
 - `CSTP` `0b10_0100` - Call Stack Top Pointer containing virtual address of top of the
-  call stack.
+  call stack. (direct write disallowed, use push and pop)
 - `CSBP` `0b10_0101` - Call Stack Base Pointer containing virtual address of the bottom
-  of the call stack.
-- `VATTA` `0b10_0110` - Virtual Address Translation Table Physical Address
-- `IDT` `0b10_0111` - Interrupt Descriptor Table containing virtual address of the Interrupt Handlers
-- `IRA` `0b10_1000` - Interrupt Return Address containing virtual address of the next instruction after the interrupt
+  of the call stack. [kmd-only]
+- `VATTA` `0b10_0110` - Virtual Address Translation Table Physical Address [kmd-only]
+- `IDT` `0b10_0111` - Interrupt Descriptor Table containing virtual address of the
+  Interrupt Handlers [kmd-only]
+- `IRA` `0b10_1000` - Interrupt Return Address containing virtual address of the next
+  instruction after the interrupt [kmd-only]
 - `IP` `0b10_1001` - Instruction Pointer containing virtual address of next instruction
+  (direct write disallowed, use jump instructions)
+- `TRA` `0b10_1010` - Task Descriptor Address (address of currently running task)
+- `TDTA` `0b10_1011` - Task Descriptor Table Address
+- `KERNEL_CSTP` `0b11_1010` - Kernel Call Stack Top Pointer containing virtual address
+  of top of the kernel call stack.
+- `KERNEL_CSBP` `0b11_1011` - Kernel Call Stack Base Pointer containing virtual address
+  of the bottom of the kernel call stack.
+- `KERNEL_IP` `0b11_1100` - Kernel Instruction Pointer containing virtual address of
+  next instruction to be executed in kernel mode.
 
 ## Declaration syntax
 
@@ -131,7 +142,7 @@ It first moves the 4 bytes located at memory location [CSTP] into the specified 
 or memory location, and then increments CSTP by 4.
 
 - `pop <reg>` - `0b0000_xxxx_xx00_0000_0000_0000_0100_0000` # 32 bit
-- `pop <mem>` - `0b0000_xxxx_xx00_0000_0100_0000_0100_0000` # 32 bit
+- `pop <mem>` - `0b0000_xxxx_xx00_0000_0000_0000_0100_0100` # 32 bit
 
 ### swap
 
@@ -294,7 +305,8 @@ The jmp instruction unconditionally transfers control to the instruction at the 
 specified by its operand.
 
 - `jmp <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0000_0000` # 32 bit
-- `jmp <con>` - `0b0000_0000_0000_0000_0000_0010_0000_0001` # 64 bit, constant is threated as address
+- `jmp <con>` - `0b0000_0000_0000_0000_0000_0010_0000_0001` # 64 bit, constant is
+  threated as address
 
 ### jeq
 
@@ -302,7 +314,8 @@ The jeq instruction transfers control to the instruction at the address specifie
 operand if the two operands are equal.
 
 - `jeq <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0001_0000` # 32 bit
-- `jeq <mem>` - `0b0000_0000_0000_0000_0000_0010_0001_0001` # 64 bit, constant is threated as address
+- `jeq <mem>` - `0b0000_0000_0000_0000_0000_0010_0001_0001` # 64 bit, constant is
+  threated as address
 
 ### jne
 
@@ -310,7 +323,8 @@ The jne instruction transfers control to the instruction at the address specifie
 operand if the two operands are not equal.
 
 - `jne <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0010_0000` # 32 bit
-- `jne <mem>` - `0b0000_0000_0000_0000_0000_0010_0010_0001` # 64 bit, constant is threated as address
+- `jne <mem>` - `0b0000_0000_0000_0000_0000_0010_0010_0001` # 64 bit, constant is
+  threated as address
 
 ### jlt
 
@@ -318,7 +332,8 @@ The jlt instruction transfers control to the instruction at the address specifie
 operand if the first operand is less than the second operand.
 
 - `jlt <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0011_0000` # 32 bit
-- `jlt <mem>` - `0b0000_0000_0000_0000_0000_0010_0011_0001` # 64 bit, constant is threated as address
+- `jlt <mem>` - `0b0000_0000_0000_0000_0000_0010_0011_0001` # 64 bit, constant is
+  threated as address
 
 ### jle
 
@@ -326,7 +341,8 @@ The jle instruction transfers control to the instruction at the address specifie
 operand if the first operand is less than or equal to the second operand.
 
 - `jle <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0100_0000` # 32 bit
-- `jle <mem>` - `0b0000_0000_0000_0000_0000_0010_0100_0001` # 64 bit, constant is threated as address
+- `jle <mem>` - `0b0000_0000_0000_0000_0000_0010_0100_0001` # 64 bit, constant is
+  threated as address
 
 ### jgt
 
@@ -334,7 +350,8 @@ The jgt instruction transfers control to the instruction at the address specifie
 operand if the first operand is greater than the second operand.
 
 - `jgt <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0101_0000` # 32 bit
-- `jgt <mem>` - `0b0000_0000_0000_0000_0000_0010_0101_0001` # 64 bit, constant is threated as address
+- `jgt <mem>` - `0b0000_0000_0000_0000_0000_0010_0101_0001` # 64 bit, constant is
+  threated as address
 
 ### jge
 
@@ -342,7 +359,8 @@ The jge instruction transfers control to the instruction at the address specifie
 operand if the first operand is greater than or equal to the second operand.
 
 - `jge <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0110_0000` # 32 bit
-- `jge <mem>` - `0b0000_0000_0000_0000_0000_0010_0110_0001` # 64 bit, constant is threated as address
+- `jge <mem>` - `0b0000_0000_0000_0000_0000_0010_0110_0001` # 64 bit, constant is
+  threated as address
 
 ### call
 
@@ -353,7 +371,8 @@ simple jump instructions, the call instruction saves the location to return to w
 subroutine completes.
 
 - `call <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_1000_0000` # 32 bit
-- `call <con>` - `0b0000_0000_0000_0000_0000_0010_1000_0001` # 64 bit, constant is threated as address
+- `call <con>` - `0b0000_0000_0000_0000_0000_0010_1000_0001` # 64 bit, constant is
+  threated as address
 
 ### ret
 
@@ -371,7 +390,6 @@ instruction, except the result of the subtraction is discarded instead of replac
 first operand.
 
 - `cmp <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0001_1111_0000` # 32 bit
-
 
 ## I/O Instructions
 
@@ -392,6 +410,16 @@ the first operand.
 - `out <reg>,<con>` - `0b0000_xxxx_xx00_0000_0000_1000_0010_0001` # 64 bit
 - `out <con>,<reg>` - `0b0000_xxxx_xx00_0000_0000_1000_0010_0010` # 64 bit
 - `out <con>,<con>` - `0b0000_xxxx_xx00_0000_0000_1000_0010_0011` # 64 bit
+
+### Special Instructions
+
+### sysenter
+
+The sysenter instruction is used to enter the kernel mode. It is used to call the
+operating system kernel. The operating system kernel is responsible for handling system
+calls. The sysenter instruction is used to switch from user mode to kernel mode.
+
+- `sysenter` - `0b0000_0000_0000_0000_1000_1000_0010_0000` # 32 bit
 
 ### Address translation
 

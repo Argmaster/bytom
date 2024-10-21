@@ -28,7 +28,9 @@ namespace Bytom.Assembler.Tests
         [TestCase("MOV [RD0], RD1", typeof(MovMemReg), 32u)]
         [TestCase("MOV RD0, 0xFF", typeof(MovRegCon), 64u)]
         [TestCase("MOV RD0, 0.44", typeof(MovRegCon), 64u)]
+        [TestCase("MOV RD0, 63", typeof(MovRegCon), 64u)]
         [TestCase("MOV [RD0], 0xFF", typeof(MovMemCon), 64u)]
+        [TestCase("MOV [RD0], 255", typeof(MovMemCon), 64u)]
         [TestCase("MOV [RD0], 0.44", typeof(MovMemCon), 64u)]
         public void TestMov(
             string instructionString,

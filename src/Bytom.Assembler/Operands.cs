@@ -61,7 +61,7 @@ namespace Bytom.Assembler.Operands
         }
         public override byte[] GetBytes()
         {
-            return Serialization.ToBytesBigEndian(value);
+            return Serialization.Int32ToBytesBigEndian(value);
         }
         public override string ToAssembly()
         {
@@ -79,7 +79,7 @@ namespace Bytom.Assembler.Operands
         }
         public override byte[] GetBytes()
         {
-            return Serialization.ToBytesBigEndian(value);
+            return Serialization.Float32ToBytesBigEndian(value);
         }
         public override string ToAssembly()
         {
