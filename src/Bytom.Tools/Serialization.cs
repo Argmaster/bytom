@@ -85,7 +85,7 @@ namespace Bytom.Tools
 
         public static uint Mask(uint length)
         {
-            return (uint)((1 << (int)length) - 1);
+            return ~(1u << (int)length);
         }
     }
 }

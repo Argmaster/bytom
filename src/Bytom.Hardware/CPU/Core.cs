@@ -113,7 +113,7 @@ namespace Bytom.Hardware.CPU
             RDE = new Register32(0);
             RDF = new Register32(0);
 
-            CR0 = new Register32(1 << 31);
+            CR0 = new Register32(0b10000000_00000000_00000000_00000000);
             CSTP = new Register32(0);
             CSBP = new Register32(0);
             VATTA = new Register32(0);
@@ -161,7 +161,7 @@ namespace Bytom.Hardware.CPU
 
         public async Task executeNext()
         {
-            uint instruction_pointer = IP.ReadUInt32();
+            uint instruction_pointer = IP.readUInt32();
             byte[] instruction = await ram.readAll(instruction_pointer, 4);
             instruction_pointer += 4;
 
@@ -235,7 +235,7 @@ namespace Bytom.Hardware.CPU
                     throw new System.Exception($"Opcode {decoder.GetOpCode()} not implemented.");
             }
 
-            IP.WriteUInt32(instruction_pointer);
+            IP.writeUInt32(instruction_pointer);
         }
 
         public async Task<byte[]> readBytesFromMemory(uint instruction_pointer, uint length)
@@ -261,7 +261,7 @@ namespace Bytom.Hardware.CPU
             {
                 throw new System.Exception($"Register {register_name} can only be written in kernel mode.");
             }
-            register.WriteBytes(value);
+            register.writeBytes(value);
             return;
         }
 
@@ -278,7 +278,7 @@ namespace Bytom.Hardware.CPU
             {
                 throw new System.Exception($"Register {register_name} can only be written in kernel mode.");
             }
-            register.WriteInt32(value);
+            register.writeInt32(value);
             return;
         }
 
@@ -295,7 +295,7 @@ namespace Bytom.Hardware.CPU
             {
                 throw new System.Exception($"Register {register_name} can only be written in kernel mode.");
             }
-            register.WriteUInt32(value);
+            register.writeUInt32(value);
             return;
         }
 
@@ -312,7 +312,7 @@ namespace Bytom.Hardware.CPU
             {
                 throw new System.Exception($"Register {register_name} can only be written in kernel mode.");
             }
-            register.WriteFloat32(value);
+            register.writeFloat32(value);
             return;
         }
 
@@ -325,7 +325,7 @@ namespace Bytom.Hardware.CPU
             {
                 throw new System.Exception($"Register {register_name} can only be read in kernel mode.");
             }
-            return register.ReadBytes();
+            return register.readBytes();
         }
 
         public async Task<int> readInt32FromRegister(RegisterID register_name)
@@ -337,7 +337,7 @@ namespace Bytom.Hardware.CPU
             {
                 throw new System.Exception($"Register {register_name} can only be read in kernel mode.");
             }
-            return register.ReadInt32();
+            return register.readInt32();
         }
 
         public async Task<uint> readUInt32FromRegister(RegisterID register_name)
@@ -349,7 +349,7 @@ namespace Bytom.Hardware.CPU
             {
                 throw new System.Exception($"Register {register_name} can only be read in kernel mode.");
             }
-            return register.ReadUInt32();
+            return register.readUInt32();
         }
 
         public async Task<float> readFloat32FromRegister(RegisterID register_name)
@@ -361,12 +361,17 @@ namespace Bytom.Hardware.CPU
             {
                 throw new System.Exception($"Register {register_name} can only be read in kernel mode.");
             }
-            return register.ReadFloat32();
+            return register.readFloat32();
         }
 
         public bool isKernelMode()
         {
-            return (CR0.ReadUInt32() & Serialization.Mask(31)) == 0;
+            return CR0.readBit(31);
+        }
+
+        public void setKernelModeBit(bool value)
+        {
+            CR0.writeBit(31, value);
         }
 
         public async Task powerOn()

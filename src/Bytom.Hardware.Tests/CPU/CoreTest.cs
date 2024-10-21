@@ -35,6 +35,13 @@ namespace Bytom.Hardware.Tests
             return core;
         }
 
+        [Test]
+        public void TestKernelMode()
+        {
+            var core = createBytomIncB1("");
+            Assert.That(core.isKernelMode(), Is.EqualTo(true));
+        }
+
         [TestCase(1, 1u, 1)]
         [TestCase(int.MaxValue, uint.MaxValue / 2, int.MaxValue)]
         [TestCase(int.MinValue, uint.MaxValue / 2 + 1, int.MinValue)]
@@ -42,11 +49,11 @@ namespace Bytom.Hardware.Tests
         {
             var core = createBytomIncB1($"mov RD1, RD0");
 
-            core.RD0.WriteInt32(value);
+            core.RD0.writeInt32(value);
             core.executeNext().Wait();
 
-            Assert.That(core.RD1.ReadUInt32(), Is.EqualTo(expected_unsigned_value));
-            Assert.That(core.RD1.ReadInt32(), Is.EqualTo(expected_signed_value));
+            Assert.That(core.RD1.readUInt32(), Is.EqualTo(expected_unsigned_value));
+            Assert.That(core.RD1.readInt32(), Is.EqualTo(expected_signed_value));
         }
 
         [TestCase(1, 1u, 1)]
@@ -58,12 +65,12 @@ namespace Bytom.Hardware.Tests
             // Write some random memory address to RD0
             uint address = 0x100;
             core.writeBytesToMemory(address, Serialization.Int32ToBytesBigEndian(value)).Wait();
-            core.RD0.WriteUInt32(address);
+            core.RD0.writeUInt32(address);
 
             core.executeNext().Wait();
 
-            Assert.That(core.RD1.ReadUInt32(), Is.EqualTo(expected_unsigned_value));
-            Assert.That(core.RD1.ReadInt32(), Is.EqualTo(expected_signed_value));
+            Assert.That(core.RD1.readUInt32(), Is.EqualTo(expected_unsigned_value));
+            Assert.That(core.RD1.readInt32(), Is.EqualTo(expected_signed_value));
         }
 
         [TestCase(1, 1u, 1)]
@@ -74,8 +81,8 @@ namespace Bytom.Hardware.Tests
             var core = createBytomIncB1($"mov [RD0], RD1");
             // Write some random memory address to RD0
             uint address = 0x100;
-            core.RD0.WriteUInt32(address);
-            core.RD1.WriteInt32(value);
+            core.RD0.writeUInt32(address);
+            core.RD1.writeInt32(value);
 
             await core.executeNext();
 
@@ -104,8 +111,8 @@ namespace Bytom.Hardware.Tests
 
             core.executeNext().Wait();
 
-            Assert.That(core.RD0.ReadUInt32(), Is.EqualTo(expected_unsigned_value));
-            Assert.That(core.RD0.ReadInt32(), Is.EqualTo(expected_signed_value));
+            Assert.That(core.RD0.readUInt32(), Is.EqualTo(expected_unsigned_value));
+            Assert.That(core.RD0.readInt32(), Is.EqualTo(expected_signed_value));
         }
 
         [TestCase(1, 1u, 1)]
@@ -116,7 +123,7 @@ namespace Bytom.Hardware.Tests
             var core = createBytomIncB1($"mov [RD0], {value}");
             // Write some random memory address to RD0
             uint address = 0x100;
-            core.RD0.WriteUInt32(address);
+            core.RD0.writeUInt32(address);
 
             await core.executeNext();
 
