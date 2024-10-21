@@ -92,13 +92,6 @@ namespace Bytom.Assembler
                 case "pop":
                     expectOperandsCount(parameters, 1);
                     return dispatchPop(parameters);
-                case "swap":
-                    {
-                        expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
-                        return new Swap(destination, source);
-                    }
                 case "add":
                     {
                         expectOperandsCount(parameters, 2);

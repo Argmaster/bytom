@@ -280,31 +280,6 @@ namespace Bytom.Assembler.Tests
         }
 
         [Test]
-        public void TestSwap()
-        {
-            Backend backend = new Backend();
-            var code = backend.compile(
-                new AbstractSyntaxTree(
-                    [
-                        new Swap(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
-                        )
-                    ]
-                )
-            );
-            var machine_code = code.ToMachineCode();
-            Assert.That(machine_code.Count, Is.EqualTo(4));
-
-            var decoder = new InstructionDecoder(machine_code.ToArray());
-
-            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.Swap));
-            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.RD0));
-            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.RD1));
-        }
-
-
-        [Test]
         public void TestAdd()
         {
             Backend backend = new Backend();

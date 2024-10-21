@@ -406,38 +406,6 @@ namespace Bytom.Assembler.Nodes
         }
     }
 
-
-
-    public class Swap : Instruction
-    {
-        public Register destination { get; set; }
-        public Register source { get; set; }
-
-        public Swap(Register destination, Register source)
-        {
-            this.destination = destination;
-            this.source = source;
-        }
-
-        public override OpCode GetOpCode()
-        {
-            return OpCode.Swap;
-        }
-
-        public override string ToAssembly()
-        {
-            return $"swap {destination.ToAssembly()}, {source.ToAssembly()}";
-        }
-
-        public override byte[] ToMachineCode()
-        {
-            return new MachineInstructionBuilder(GetOpCode())
-                .SetFirstRegisterID(destination.name)
-                .SetSecondRegisterID(source.name)
-                .GetInstruction();
-        }
-    }
-
     public class Add : Instruction
     {
         public Register destination { get; set; }

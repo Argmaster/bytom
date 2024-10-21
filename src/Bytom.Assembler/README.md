@@ -146,12 +146,6 @@ or memory location, and then increments STP by 4.
 - `pop <reg>` - `0b0000_xxxx_xx00_0000_0000_0000_0100_0000` # 32 bit
 - `pop <mem>` - `0b0000_xxxx_xx00_0000_0000_0000_0100_0100` # 32 bit
 
-### swap
-
-The swap instruction exchanges the values of two registers.
-
-- `swap <reg>,<reg>` - `0b0000_xxxx_xxyy_yyyy_0000_0000_0101_0000` # 32 bit
-
 ## 32-bit Integer Arithmetic and Logic Instructions
 
 ### add

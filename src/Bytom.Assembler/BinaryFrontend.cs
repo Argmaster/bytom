@@ -92,12 +92,6 @@ namespace Bytom.Assembler
                             new MemoryAddress(decoder.GetFirstRegisterID())
                         ));
                         break;
-                    case OpCode.Swap:
-                        nodes.Add(new Swap(
-                            new Register(decoder.GetFirstRegisterID()),
-                            new Register(decoder.GetSecondRegisterID())
-                        ));
-                        break;
                     case OpCode.Add:
                         nodes.Add(new Add(
                             new Register(decoder.GetFirstRegisterID()),

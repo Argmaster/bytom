@@ -73,15 +73,6 @@ namespace Bytom.Assembler.Tests
         }
 
         [Test]
-        public void TestSwap()
-        {
-            Frontend frontend = new Frontend();
-            var instructions = frontend.parse("SWAP RD0, RD1").nodes;
-            Assert.That(instructions.Count, Is.EqualTo(1));
-            Assert.IsInstanceOf<Swap>(instructions[0]);
-        }
-
-        [Test]
         public void TestAdd()
         {
             Frontend frontend = new Frontend();
