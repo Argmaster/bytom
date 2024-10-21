@@ -251,6 +251,34 @@ namespace Bytom.Hardware.CPU
                         STP.writeUInt32(newAddress);
                         break;
                     }
+                case OpCode.PushMem:
+                    {
+                        byte[] memory = await readBytesFromMemory(
+                            await readUInt32FromRegister(decoder.GetFirstRegisterID()),
+                            4
+                        );
+                        uint newAddress = STP.readUInt32() - 4;
+                        await writeBytesToMemory(newAddress, memory);
+                        STP.writeUInt32(newAddress);
+                        break;
+                    }
+                case OpCode.PopReg:
+                    {
+                        byte[] memory = await readBytesFromMemory(STP.readUInt32(), 4);
+                        await writeBytesToRegister(decoder.GetFirstRegisterID(), memory);
+                        STP.writeUInt32(STP.readUInt32() + 4);
+                        break;
+                    }
+                case OpCode.PopMem:
+                    {
+                        byte[] memory = await readBytesFromMemory(STP.readUInt32(), 4);
+                        await writeBytesToMemory(
+                            await readUInt32FromRegister(decoder.GetFirstRegisterID()),
+                            memory
+                        );
+                        STP.writeUInt32(STP.readUInt32() + 4);
+                        break;
+                    }
                 default:
                     throw new System.Exception($"Opcode {decoder.GetOpCode()} not implemented.");
             }

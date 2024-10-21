@@ -88,7 +88,7 @@ namespace Bytom.Hardware.CPU
             {
                 throw new System.ArgumentException("Instruction must be 4 bytes long");
             }
-            this.instruction = Serialization.Uint32FromBytesBigEndian(instruction);
+            this.instruction = Serialization.UInt32FromBytesBigEndian(instruction);
         }
         public OpCode GetOpCode()
         {

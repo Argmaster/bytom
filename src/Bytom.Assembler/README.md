@@ -93,19 +93,21 @@ writing 32-bit register to 16-bit register, always lower 16 bits are taken. When
 
 Arithmetic operations in parameters are not allowed
 
-- `<reg>` 32 bit register RD0-RD7 or special register
+- `<reg>` 32 bit register RD0-RDF or special register
 - `<mem>` A memory address loaded from register
 - `<con>` 32-bit constant
 
 Hardware only supports 32-bit operations
 
-## Data Movement Instructions
+`xxxx_xx` mark first operand, destination. `yy_yyyy` mark second operand, source.
+
+## General Instructions
 
 `nop` - `0b0000_0000_0000_0000_0000_0000_0000_0000` # 32 bit
 
 `halt` - `0b0000_0000_0000_0000_0000_0000_0001_0000` # 32 bit
 
-`xxxx_xx` mark first operand, destination. `yy_yyyy` mark second operand, source.
+## Data Movement Instructions
 
 ### mov
 
@@ -411,17 +413,23 @@ the first operand.
 - `out <con>,<reg>` - `0b0000_xxxx_xx00_0000_0000_1000_0010_0010` # 64 bit
 - `out <con>,<con>` - `0b0000_xxxx_xx00_0000_0000_1000_0010_0011` # 64 bit
 
-### Special Instructions
+## Special Instructions
 
-### sysenter
+### int
 
-The sysenter instruction is used to enter the kernel mode. It is used to call the
-operating system kernel. The operating system kernel is responsible for handling system
-calls. The sysenter instruction is used to switch from user mode to kernel mode.
+Software interrupt. The int instruction generates a software interrupt by invoking the
+interrupt handler specified by the interrupt code in the second operand.
 
-- `sysenter` - `0b0000_0000_0000_0000_1000_1000_0010_0000` # 32 bit
+- `int <reg>` - `0b0000_xxxx_xx00_0000_1000_0000_0000_0000` # 32 bit
+- `int <con>` - `0b0000_0000_zzzz_zzzz_1000_0000_0000_0000` # 32 bit (zzzz_zzzz is 8 bit interrupt code)
 
-### Address translation
+### iret
+
+Return to the instruction following the last interrupt.
+
+- `iret` - `0b0000_0000_0000_0000_1000_0000_0000_0001` # 32 bit
+
+## Address translation
 
 32-bit virtual address space
 

@@ -89,7 +89,7 @@ namespace Bytom.Hardware.Tests
             byte[] memory = await core.readBytesFromMemory(address, 4);
 
             Assert.That(
-                Serialization.Uint32FromBytesBigEndian(memory),
+                Serialization.UInt32FromBytesBigEndian(memory),
                 Is.EqualTo(expected_unsigned_value)
             );
             Assert.That(
@@ -130,7 +130,7 @@ namespace Bytom.Hardware.Tests
             byte[] memory = await core.readBytesFromMemory(address, 4);
 
             Assert.That(
-                Serialization.Uint32FromBytesBigEndian(memory),
+                Serialization.UInt32FromBytesBigEndian(memory),
                 Is.EqualTo(expected_unsigned_value)
             );
             Assert.That(
@@ -151,7 +151,7 @@ namespace Bytom.Hardware.Tests
 
             byte[] constant_bytes = await core.readBytesFromMemory(core.STP.readUInt32(), 4);
 
-            Assert.That(Serialization.Uint32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_unsigned_value));
+            Assert.That(Serialization.UInt32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_unsigned_value));
             Assert.That(Serialization.Int32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_signed_value));
         }
 
@@ -166,8 +166,65 @@ namespace Bytom.Hardware.Tests
 
             byte[] constant_bytes = await core.readBytesFromMemory(core.STP.readUInt32(), 4);
 
-            Assert.That(Serialization.Uint32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_unsigned_value));
+            Assert.That(Serialization.UInt32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_unsigned_value));
             Assert.That(Serialization.Int32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_signed_value));
+        }
+
+        [TestCase(1, 1u, 1)]
+        [TestCase(int.MaxValue, uint.MaxValue / 2, int.MaxValue)]
+        [TestCase(int.MinValue, uint.MaxValue / 2 + 1, int.MinValue)]
+        public async Task TestPushMem(int value, uint expected_unsigned_value, int expected_signed_value)
+        {
+            var core = createBytomIncB1($"push [RD0]");
+            // Write some random memory address to RD0
+            uint address = 0x100;
+            await core.writeBytesToMemory(address, Serialization.Int32ToBytesBigEndian(value));
+            core.RD0.writeUInt32(address);
+
+            await core.executeNext();
+
+            byte[] constant_bytes = await core.readBytesFromMemory(core.STP.readUInt32(), 4);
+
+            Assert.That(Serialization.UInt32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_unsigned_value));
+            Assert.That(Serialization.Int32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_signed_value));
+        }
+
+        [TestCase(1, 1u, 1)]
+        [TestCase(int.MaxValue, uint.MaxValue / 2, int.MaxValue)]
+        [TestCase(int.MinValue, uint.MaxValue / 2 + 1, int.MinValue)]
+        public void TestPopReg(int value, uint expected_unsigned_value, int expected_signed_value)
+        {
+            var core = createBytomIncB1($@"
+                push {value}
+                pop RD0
+            ");
+
+            core.executeNext().Wait();
+            core.executeNext().Wait();
+
+            Assert.That(core.RD0.readUInt32(), Is.EqualTo(expected_unsigned_value));
+            Assert.That(core.RD0.readInt32(), Is.EqualTo(expected_signed_value));
+        }
+
+        [TestCase(1, 1u, 1)]
+        [TestCase(int.MaxValue, uint.MaxValue / 2, int.MaxValue)]
+        [TestCase(int.MinValue, uint.MaxValue / 2 + 1, int.MinValue)]
+        public async Task TestPopMem(int value, uint expected_unsigned_value, int expected_signed_value)
+        {
+            var core = createBytomIncB1($@"
+                push {value}
+                pop [RD0]
+            ");
+            uint address = 0x100;
+            core.RD0.writeUInt32(address);
+
+            core.executeNext().Wait();
+            core.executeNext().Wait();
+
+            byte[] memory = await core.readBytesFromMemory(address, 4);
+
+            Assert.That(Serialization.UInt32FromBytesBigEndian(memory), Is.EqualTo(expected_unsigned_value));
+            Assert.That(Serialization.Int32FromBytesBigEndian(memory), Is.EqualTo(expected_signed_value));
         }
     }
 }

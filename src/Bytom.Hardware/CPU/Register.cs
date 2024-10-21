@@ -41,7 +41,7 @@ namespace Bytom.Hardware.CPU
 
         public uint readUInt32()
         {
-            return Serialization.Uint32FromBytesBigEndian(value);
+            return Serialization.UInt32FromBytesBigEndian(value);
         }
 
         public void writeInt32(int value)

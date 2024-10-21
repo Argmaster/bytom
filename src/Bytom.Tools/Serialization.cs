@@ -32,7 +32,7 @@ namespace Bytom.Tools
             return bytes;
         }
 
-        public static uint Uint32FromBytesBigEndian(byte[] bytes)
+        public static uint UInt32FromBytesBigEndian(byte[] bytes)
         {
             if (bytes.Length != 4)
             {
