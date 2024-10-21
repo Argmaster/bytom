@@ -241,6 +241,16 @@ namespace Bytom.Hardware.CPU
                         STP.writeUInt32(newAddress);
                         break;
                     }
+                case OpCode.PushCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        instruction_pointer += 4;
+
+                        uint newAddress = STP.readUInt32() - 4;
+                        await writeBytesToMemory(newAddress, constant_bytes);
+                        STP.writeUInt32(newAddress);
+                        break;
+                    }
                 default:
                     throw new System.Exception($"Opcode {decoder.GetOpCode()} not implemented.");
             }

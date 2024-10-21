@@ -70,8 +70,9 @@ writing 32-bit register to 16-bit register, always lower 16 bits are taken. When
   - bit 0: enable virtual memory
   - bit 31: supervisor bit
 - `STP` `0b10_0100` - Call Stack Top Pointer containing virtual address of top of the
-  call stack. (direct write disallowed, use push and pop)
-- `FBP` `0b10_0101` - Frame Base Pointer containing address of the base of the stack frame. [kmd-only]
+  call stack. (use push and pop to modify) (In x86 `ESP`)
+- `FBP` `0b10_0101` - Frame Base Pointer containing address of the base of the stack
+  frame. (use call and ret to modify) (In x86 `EPB`)
 - `VATTA` `0b10_0110` - Virtual Address Translation Table Physical Address [kmd-only]
 - `IDT` `0b10_0111` - Interrupt Descriptor Table containing virtual address of the
   Interrupt Handlers [kmd-only]

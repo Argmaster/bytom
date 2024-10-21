@@ -154,5 +154,20 @@ namespace Bytom.Hardware.Tests
             Assert.That(Serialization.Uint32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_unsigned_value));
             Assert.That(Serialization.Int32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_signed_value));
         }
+
+        [TestCase(1, 1u, 1)]
+        [TestCase(int.MaxValue, uint.MaxValue / 2, int.MaxValue)]
+        [TestCase(int.MinValue, uint.MaxValue / 2 + 1, int.MinValue)]
+        public async Task TestPushCon(int value, uint expected_unsigned_value, int expected_signed_value)
+        {
+            var core = createBytomIncB1($"push {value}");
+
+            core.executeNext().Wait();
+
+            byte[] constant_bytes = await core.readBytesFromMemory(core.STP.readUInt32(), 4);
+
+            Assert.That(Serialization.Uint32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_unsigned_value));
+            Assert.That(Serialization.Int32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_signed_value));
+        }
     }
 }
