@@ -54,14 +54,14 @@ namespace Bytom.Assembler.Operands
     public class ConstantInt : Constant
     {
         public static readonly int operand_type_code = 0b0010;
-        public int value { get; set; }
-        public ConstantInt(int value)
+        public long value { get; set; }
+        public ConstantInt(long value)
         {
             this.value = value;
         }
         public override byte[] GetBytes()
         {
-            return Serialization.Int32ToBytesBigEndian(value);
+            return Serialization.Int32ToBytesBigEndian((int)value);
         }
         public override string ToAssembly()
         {

@@ -424,14 +424,14 @@ namespace Bytom.Assembler
             if (match.Success)
             {
                 return new ConstantInt(
-                    int.Parse(match.Groups[1].Value, NumberStyles.HexNumber)
+                    long.Parse(match.Groups[1].Value, NumberStyles.HexNumber)
                 );
             }
 
             match = Regex.Match(trimmed_source_code, @"^([-+]?[0-9A-Fa-f]+)$");
             if (match.Success)
             {
-                return new ConstantInt(int.Parse(match.Groups[0].Value));
+                return new ConstantInt(long.Parse(match.Groups[0].Value));
             }
             return null;
         }

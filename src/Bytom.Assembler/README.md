@@ -66,8 +66,16 @@ writing 32-bit register to 16-bit register, always lower 16 bits are taken. When
 
 ### Special registers
 
+- `CCR` `0b01_1111` - Condition Code Register
+
+  - bit 0: zero flag
+  - bit 1: carry flag
+  - bit 2: sign flag
+  - bit 3: overflow flag
+
 - `CR0` `0b10_0000` - Configuration Register 0 [kmd-only]
   - bit 0: enable virtual memory
+  - bit 1: interrupt flag
   - bit 31: supervisor bit
 - `STP` `0b10_0100` - Call Stack Top Pointer containing virtual address of top of the
   call stack. (use push and pop to modify) (In x86 `ESP`)
@@ -322,10 +330,46 @@ operand if the two operands are not equal.
 - `jne <mem>` - `0b0000_0000_0000_0000_0000_0010_0010_0001` # 64 bit, constant is
   threated as address
 
+### jb
+
+The jb instruction transfers control to the instruction at the address specified by its
+operand if the first operand is less than the second operand. [unsigned]
+
+- `jb <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_1001_0000` # 32 bit
+- `jb <mem>` - `0b0000_0000_0000_0000_0000_0010_1001_0001` # 64 bit, constant is
+  threated as address
+
+### jbe
+
+The jbe instruction transfers control to the instruction at the address specified by its
+operand if the first operand is less than or equal to the second operand. [unsigned]
+
+- `jbe <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_1010_0000` # 32 bit
+- `jbe <mem>` - `0b0000_0000_0000_0000_0000_0010_1010_0001` # 64 bit, constant is
+  threated as address
+
+### ja
+
+The ja instruction transfers control to the instruction at the address specified by its
+operand if the first operand is greater than the second operand. [unsigned]
+
+- `ja <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_1011_0000` # 32 bit
+- `ja <mem>` - `0b0000_0000_0000_0000_0000_0010_1011_0001` # 64 bit, constant is
+  threated as address
+
+### jae
+
+The jae instruction transfers control to the instruction at the address specified by its
+operand if the first operand is greater than or equal to the second operand. [unsigned]
+
+- `jae <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_1100_0000` # 32 bit
+- `jae <mem>` - `0b0000_0000_0000_0000_0000_0010_1100_0001` # 64 bit, constant is
+  threated as address
+
 ### jlt
 
 The jlt instruction transfers control to the instruction at the address specified by its
-operand if the first operand is less than the second operand.
+operand if the first operand is less than the second operand. [signed]
 
 - `jlt <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0011_0000` # 32 bit
 - `jlt <mem>` - `0b0000_0000_0000_0000_0000_0010_0011_0001` # 64 bit, constant is
@@ -334,7 +378,7 @@ operand if the first operand is less than the second operand.
 ### jle
 
 The jle instruction transfers control to the instruction at the address specified by its
-operand if the first operand is less than or equal to the second operand.
+operand if the first operand is less than or equal to the second operand. [signed]
 
 - `jle <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0100_0000` # 32 bit
 - `jle <mem>` - `0b0000_0000_0000_0000_0000_0010_0100_0001` # 64 bit, constant is
@@ -343,7 +387,7 @@ operand if the first operand is less than or equal to the second operand.
 ### jgt
 
 The jgt instruction transfers control to the instruction at the address specified by its
-operand if the first operand is greater than the second operand.
+operand if the first operand is greater than the second operand. [signed]
 
 - `jgt <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0101_0000` # 32 bit
 - `jgt <mem>` - `0b0000_0000_0000_0000_0000_0010_0101_0001` # 64 bit, constant is
@@ -352,7 +396,7 @@ operand if the first operand is greater than the second operand.
 ### jge
 
 The jge instruction transfers control to the instruction at the address specified by its
-operand if the first operand is greater than or equal to the second operand.
+operand if the first operand is greater than or equal to the second operand. [signed]
 
 - `jge <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0110_0000` # 32 bit
 - `jge <mem>` - `0b0000_0000_0000_0000_0000_0010_0110_0001` # 64 bit, constant is
@@ -415,7 +459,8 @@ Software interrupt. The int instruction generates a software interrupt by invoki
 interrupt handler specified by the interrupt code in the second operand.
 
 - `int <reg>` - `0b0000_xxxx_xx00_0000_1000_0000_0000_0000` # 32 bit
-- `int <con>` - `0b0000_0000_zzzz_zzzz_1000_0000_0000_0000` # 32 bit (zzzz_zzzz is 8 bit interrupt code)
+- `int <con>` - `0b0000_0000_zzzz_zzzz_1000_0000_0000_0000` # 32 bit (zzzz_zzzz is 8 bit
+  interrupt code)
 
 ### iret
 

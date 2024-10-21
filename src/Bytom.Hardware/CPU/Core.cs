@@ -24,6 +24,7 @@ namespace Bytom.Hardware.CPU
         RDD = 0b00_1110,
         RDE = 0b00_1111,
         RDF = 0b01_0000,
+        CCR = 0b01_1111,
         CR0 = 0b10_0000,
         STP = 0b10_0100,
         FBP = 0b10_0101,
@@ -66,6 +67,7 @@ namespace Bytom.Hardware.CPU
         public Register32 RDE;
         public Register32 RDF;
 
+        public Register32 CCR;
         public Register32 CR0;
         public Register32 STP;
         public Register32 FBP;
@@ -113,6 +115,7 @@ namespace Bytom.Hardware.CPU
             RDE = new Register32(0);
             RDF = new Register32(0);
 
+            CCR = new Register32(0);
             CR0 = new Register32(0b10000000_00000000_00000000_00000000);
             STP = new Register32(ram.getTotalMemoryBytes());
             FBP = new Register32(ram.getTotalMemoryBytes());
@@ -144,6 +147,7 @@ namespace Bytom.Hardware.CPU
                 { RegisterID.RDD, RDD },
                 { RegisterID.RDE, RDE },
                 { RegisterID.RDF, RDF },
+                { RegisterID.CCR, CCR },
                 { RegisterID.CR0, CR0 },
                 { RegisterID.STP, STP },
                 { RegisterID.FBP, FBP },
@@ -277,6 +281,40 @@ namespace Bytom.Hardware.CPU
                             memory
                         );
                         STP.writeUInt32(STP.readUInt32() + 4);
+                        break;
+                    }
+                case OpCode.Add:
+                    {
+                        uint left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        uint right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        uint result = left + right;
+
+                        CCR.writeBit(0, result == 0);
+                        CCR.writeBit(1, result < left || result < right);
+                        CCR.writeBit(2, (int)result < 0);
+                        CCR.writeBit(3,
+                            ((int)left > 0 && (int)right > 0 && (int)result < 0) ||
+                            ((int)left < 0 && (int)right < 0 && (int)result > 0)
+                        );
+
+                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
+                        break;
+                    }
+                case OpCode.Sub:
+                    {
+                        uint left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        uint right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        uint result = left - right;
+
+                        CCR.writeBit(0, result == 0);
+                        CCR.writeBit(1, left < right);
+                        CCR.writeBit(2, (int)result < 0);
+                        CCR.writeBit(3,
+                            ((int)left > 0 && (int)right < 0 && (int)result < 0) ||
+                            ((int)left < 0 && (int)right > 0 && (int)result > 0)
+                        );
+
+                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
                         break;
                     }
                 default:

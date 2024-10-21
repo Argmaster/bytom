@@ -226,5 +226,78 @@ namespace Bytom.Hardware.Tests
             Assert.That(Serialization.UInt32FromBytesBigEndian(memory), Is.EqualTo(expected_unsigned_value));
             Assert.That(Serialization.Int32FromBytesBigEndian(memory), Is.EqualTo(expected_signed_value));
         }
+
+        [TestCase("add", int.MaxValue, int.MaxValue, -2, false, true, true)]
+        [TestCase("add", 0, 0, 0, true, false, false)]
+        [TestCase("add", 534216, 34245, 568461, false, false, false)]
+        [TestCase("add", -1, 1, 0, true, false, false)]
+        [TestCase("add", -1, -1, -2, false, true, false)]
+        [TestCase("sub", int.MinValue, 1, int.MaxValue, false, false, true)]
+        [TestCase("sub", 1, 1, 0, true, false, false)]
+        [TestCase("sub", -10, 10, -20, false, true, false)]
+        [TestCase("sub", int.MaxValue, int.MinValue, -1, false, true, true)]
+        public void TestArithmeticSigned(
+            string instruction,
+            int left,
+            int right,
+            int expected,
+            bool zero,
+            bool negative,
+            bool overflow
+        )
+        {
+            var core = createBytomIncB1($@"
+                mov RD0, {left}
+                mov RD1, {right}
+                {instruction} RD0, RD1
+            ");
+
+            core.executeNext().Wait();
+            core.executeNext().Wait();
+            core.executeNext().Wait();
+
+            Assert.That(core.RD0.readInt32(), Is.EqualTo(expected));
+
+            core.executeNext().Wait();
+
+            Assert.That(core.CCR.readBit(0), Is.EqualTo(zero));
+            Assert.That(core.CCR.readBit(2), Is.EqualTo(negative));
+            Assert.That(core.CCR.readBit(3), Is.EqualTo(overflow));
+        }
+
+        [TestCase("add", uint.MaxValue, 1u, 0u, true, true)]
+        [TestCase("add", 1u, 1u, 2u, false, false)]
+        [TestCase("add", uint.MaxValue, 64324u, 64323u, false, true)]
+        [TestCase("add", 45u, 78u, 123u, false, false)]
+        [TestCase("add", 78u, 45u, 123u, false, false)]
+        [TestCase("sub", uint.MaxValue, 1u, uint.MaxValue - 1u, false, false)]
+        [TestCase("sub", 45u, 78u, 4294967263u, false, true)]
+        [TestCase("sub", 78u, 45u, 33u, false, false)]
+        public void TestArithmeticUnsigned(
+            string instruction,
+            uint left,
+            uint right,
+            uint expected,
+            bool zero,
+            bool carry
+        )
+        {
+            var core = createBytomIncB1($@"
+                mov RD0, {left}
+                mov RD1, {right}
+                {instruction} RD0, RD1
+            ");
+
+            core.executeNext().Wait();
+            core.executeNext().Wait();
+            core.executeNext().Wait();
+
+            Assert.That(core.RD0.readUInt32(), Is.EqualTo(expected));
+
+            core.executeNext().Wait();
+
+            Assert.That(core.CCR.readBit(0), Is.EqualTo(zero));
+            Assert.That(core.CCR.readBit(1), Is.EqualTo(carry));
+        }
     }
 }
