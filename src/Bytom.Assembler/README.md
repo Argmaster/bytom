@@ -69,10 +69,9 @@ writing 32-bit register to 16-bit register, always lower 16 bits are taken. When
 - `CR0` `0b10_0000` - Configuration Register 0 [kmd-only]
   - bit 0: enable virtual memory
   - bit 31: supervisor bit
-- `CSTP` `0b10_0100` - Call Stack Top Pointer containing virtual address of top of the
+- `STP` `0b10_0100` - Call Stack Top Pointer containing virtual address of top of the
   call stack. (direct write disallowed, use push and pop)
-- `CSBP` `0b10_0101` - Call Stack Base Pointer containing virtual address of the bottom
-  of the call stack. [kmd-only]
+- `FBP` `0b10_0101` - Frame Base Pointer containing address of the base of the stack frame. [kmd-only]
 - `VATTA` `0b10_0110` - Virtual Address Translation Table Physical Address [kmd-only]
 - `IDT` `0b10_0111` - Interrupt Descriptor Table containing virtual address of the
   Interrupt Handlers [kmd-only]
@@ -82,9 +81,9 @@ writing 32-bit register to 16-bit register, always lower 16 bits are taken. When
   (direct write disallowed, use jump instructions)
 - `TRA` `0b10_1010` - Task Descriptor Address (address of currently running task)
 - `TDTA` `0b10_1011` - Task Descriptor Table Address
-- `KERNEL_CSTP` `0b11_1010` - Kernel Call Stack Top Pointer containing virtual address
-  of top of the kernel call stack.
-- `KERNEL_CSBP` `0b11_1011` - Kernel Call Stack Base Pointer containing virtual address
+- `KERNEL_STP` `0b11_1010` - Kernel Call Stack Top Pointer containing virtual address of
+  top of the kernel call stack.
+- `KERNEL_FBP` `0b11_1011` - Kernel Call Stack Base Pointer containing virtual address
   of the bottom of the kernel call stack.
 - `KERNEL_IP` `0b11_1100` - Kernel Instruction Pointer containing virtual address of
   next instruction to be executed in kernel mode.
@@ -125,10 +124,10 @@ stored to the destination memory address.
 ### push
 
 The push instruction places its operand onto the top of the hardware supported stack in
-memory. Specifically, push first decrements CSTP by 4, then places its operand into the
-contents of the 32-bit location at address [CSTP]. CSTP (the stack pointer) is
-decremented by push since the x86 stack grows down - i.e. the stack grows from high
-addresses to lower addresses.
+memory. Specifically, push first decrements STP by 4, then places its operand into the
+contents of the 32-bit location at address [STP]. STP (the stack pointer) is decremented
+by push since the x86 stack grows down - i.e. the stack grows from high addresses to
+lower addresses.
 
 - `push <reg>` - `0b0000_xxxx_xx00_0000_0000_0000_0011_0000` # 32 bit
 - `push <mem>` - `0b0000_xxxx_xx00_0000_0100_0000_0011_0000` # 32 bit
@@ -138,8 +137,8 @@ addresses to lower addresses.
 
 The pop instruction removes the 4-byte data element from the top of the
 hardware-supported stack into the specified operand (i.e. register or memory location).
-It first moves the 4 bytes located at memory location [CSTP] into the specified register
-or memory location, and then increments CSTP by 4.
+It first moves the 4 bytes located at memory location [STP] into the specified register
+or memory location, and then increments STP by 4.
 
 - `pop <reg>` - `0b0000_xxxx_xx00_0000_0000_0000_0100_0000` # 32 bit
 - `pop <mem>` - `0b0000_xxxx_xx00_0000_0000_0000_0100_0100` # 32 bit

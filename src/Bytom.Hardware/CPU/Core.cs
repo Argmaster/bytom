@@ -25,16 +25,16 @@ namespace Bytom.Hardware.CPU
         RDE = 0b00_1111,
         RDF = 0b01_0000,
         CR0 = 0b10_0000,
-        CSTP = 0b10_0100,
-        CSBP = 0b10_0101,
+        STP = 0b10_0100,
+        FBP = 0b10_0101,
         VATTA = 0b10_0110,
         IDT = 0b10_0111,
         IRA = 0b10_1000,
         IP = 0b10_1001,
         TRA = 0b10_1010, // Task Descriptor Address (address of currently running task)
         TDTA = 0b10_1011, // Task Descriptor Table Address
-        KERNEL_CSTP = 0b11_1010,
-        KERNEL_CSBP = 0b11_1011,
+        KERNEL_STP = 0b11_1010,
+        KERNEL_FBP = 0b11_1011,
         KERNEL_IP = 0b11_1100,
     }
 
@@ -67,16 +67,16 @@ namespace Bytom.Hardware.CPU
         public Register32 RDF;
 
         public Register32 CR0;
-        public Register32 CSTP;
-        public Register32 CSBP;
+        public Register32 STP;
+        public Register32 FBP;
         public Register32 VATTA;
         public Register32 IDT;
         public Register32 IRA;
         public Register32 IP;
         public Register32 TRA;
         public Register32 TDTA;
-        public Register32 KERNEL_CSTP;
-        public Register32 KERNEL_CSBP;
+        public Register32 KERNEL_STP;
+        public Register32 KERNEL_FBP;
         public Register32 KERNEL_IP;
 
         public Dictionary<RegisterID, Register32> registers;
@@ -114,16 +114,16 @@ namespace Bytom.Hardware.CPU
             RDF = new Register32(0);
 
             CR0 = new Register32(0b10000000_00000000_00000000_00000000);
-            CSTP = new Register32(0);
-            CSBP = new Register32(0);
+            STP = new Register32(ram.getTotalMemoryBytes());
+            FBP = new Register32(ram.getTotalMemoryBytes());
             VATTA = new Register32(0);
             IDT = new Register32(0);
             IRA = new Register32(0);
             IP = new Register32(0);
             TRA = new Register32(0);
             TDTA = new Register32(0);
-            KERNEL_CSTP = new Register32(0);
-            KERNEL_CSBP = new Register32(0);
+            KERNEL_STP = new Register32(0);
+            KERNEL_FBP = new Register32(0);
             KERNEL_IP = new Register32(0);
 
 
@@ -145,16 +145,16 @@ namespace Bytom.Hardware.CPU
                 { RegisterID.RDE, RDE },
                 { RegisterID.RDF, RDF },
                 { RegisterID.CR0, CR0 },
-                { RegisterID.CSTP, CSTP },
-                { RegisterID.CSBP, CSBP },
+                { RegisterID.STP, STP },
+                { RegisterID.FBP, FBP },
                 { RegisterID.VATTA, VATTA },
                 { RegisterID.IDT, IDT },
                 { RegisterID.IRA, IRA },
                 { RegisterID.IP, IP },
                 { RegisterID.TRA, TRA },
                 { RegisterID.TDTA, TDTA },
-                { RegisterID.KERNEL_CSTP, KERNEL_CSTP },
-                { RegisterID.KERNEL_CSBP, KERNEL_CSBP },
+                { RegisterID.KERNEL_STP, KERNEL_STP },
+                { RegisterID.KERNEL_FBP, KERNEL_FBP },
                 { RegisterID.KERNEL_IP, KERNEL_IP },
             };
         }
@@ -231,6 +231,16 @@ namespace Bytom.Hardware.CPU
                         );
                         break;
                     }
+                case OpCode.PushReg:
+                    {
+                        uint newAddress = STP.readUInt32() - 4;
+                        await writeBytesToMemory(
+                            newAddress,
+                            await readBytesFromRegister(decoder.GetFirstRegisterID())
+                        );
+                        STP.writeUInt32(newAddress);
+                        break;
+                    }
                 default:
                     throw new System.Exception($"Opcode {decoder.GetOpCode()} not implemented.");
             }
@@ -240,12 +250,26 @@ namespace Bytom.Hardware.CPU
 
         public async Task<byte[]> readBytesFromMemory(uint instruction_pointer, uint length)
         {
-            return await ram.readAll(instruction_pointer, length);
+            if (isVirtualMemoryEnabled())
+            {
+                throw new System.Exception("Virtual memory not implemented.");
+            }
+            else
+            {
+                return await ram.readAll(instruction_pointer, length);
+            }
         }
 
         public async Task writeBytesToMemory(uint address, byte[] value)
         {
-            await ram.writeAll(address, value);
+            if (isVirtualMemoryEnabled())
+            {
+                throw new System.Exception("Virtual memory not implemented.");
+            }
+            else
+            {
+                await ram.writeAll(address, value);
+            }
         }
 
         public async Task writeBytesToRegister(RegisterID register_name, byte[] value)
@@ -372,6 +396,16 @@ namespace Bytom.Hardware.CPU
         public void setKernelModeBit(bool value)
         {
             CR0.writeBit(31, value);
+        }
+
+        public bool isVirtualMemoryEnabled()
+        {
+            return CR0.readBit(0);
+        }
+
+        public void setVirtualMemoryEnabledBit(bool value)
+        {
+            CR0.writeBit(0, value);
         }
 
         public async Task powerOn()
