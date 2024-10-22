@@ -72,6 +72,7 @@ writing 32-bit register to 16-bit register, always lower 16 bits are taken. When
   - bit 1: carry flag
   - bit 2: sign flag
   - bit 3: overflow flag
+  - bit 4: zero division flag
 
 - `CR0` `0b10_0000` - Configuration Register 0 [kmd-only]
   - bit 0: enable virtual memory
@@ -300,8 +301,7 @@ machine status word appropriately. This instruction is equivalent to the sub
 
 ## Control Flow Instructions
 
-In all jumps can have form `j* <label>`, then it is translated to dynamic address
-calculation.
+In all jumps can have form `j* <label>`, then it is translated to address by assembler.
 
 ### jmp
 

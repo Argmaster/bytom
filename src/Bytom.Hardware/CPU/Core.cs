@@ -285,38 +285,286 @@ namespace Bytom.Hardware.CPU
                     }
                 case OpCode.Add:
                     {
-                        uint left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        uint right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
-                        uint result = left + right;
+                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = await readInt32FromRegister(decoder.GetSecondRegisterID());
+                        CCR.writeUInt32(0u);
+                        long result = left + right;
 
                         CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, result < left || result < right);
+                        CCR.writeBit(1, (ulong)(uint)left + (ulong)(uint)right > uint.MaxValue);
                         CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3,
-                            ((int)left > 0 && (int)right > 0 && (int)result < 0) ||
-                            ((int)left < 0 && (int)right < 0 && (int)result > 0)
-                        );
+                        CCR.writeBit(3, (int)left + (int)right != result);
 
-                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
+                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
                     }
                 case OpCode.Sub:
                     {
-                        uint left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        uint right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
-                        uint result = left - right;
+                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = await readInt32FromRegister(decoder.GetSecondRegisterID());
+                        CCR.writeUInt32(0u);
+                        long result = left - right;
 
                         CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, left < right);
+                        CCR.writeBit(1, (ulong)(uint)left - (ulong)(uint)right > uint.MaxValue);
                         CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3,
-                            ((int)left > 0 && (int)right < 0 && (int)result < 0) ||
-                            ((int)left < 0 && (int)right > 0 && (int)result > 0)
-                        );
+                        CCR.writeBit(3, (int)left - (int)right != result);
+
+                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        break;
+                    }
+                case OpCode.Inc:
+                    {
+                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = 1;
+                        CCR.writeUInt32(0u);
+                        long result = left - right;
+
+                        CCR.writeBit(0, result == 0);
+                        CCR.writeBit(1, (ulong)(uint)left + (ulong)(uint)right > uint.MaxValue);
+                        CCR.writeBit(2, (int)result < 0);
+                        CCR.writeBit(3, (int)left + (int)right != result);
+
+                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        break;
+                    }
+                case OpCode.Dec:
+                    {
+                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = 1;
+                        CCR.writeUInt32(0u);
+                        long result = left - right;
+
+                        CCR.writeBit(0, result == 0);
+                        CCR.writeBit(1, (ulong)(uint)left - (ulong)(uint)right > uint.MaxValue);
+                        CCR.writeBit(2, (int)result < 0);
+                        CCR.writeBit(3, (int)left - (int)right != result);
+
+                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        break;
+                    }
+                case OpCode.Mul:
+                    {
+                        long left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        CCR.writeUInt32(0u);
+                        long result = left * right;
+
+                        CCR.writeBit(0, result == 0);
+                        CCR.writeBit(1, (ulong)(uint)left * (ulong)(uint)right > uint.MaxValue);
+                        CCR.writeBit(2, (int)result < 0);
+                        CCR.writeBit(3, (int)left * (int)right != result);
+
+                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        break;
+                    }
+                case OpCode.IMul:
+                    {
+                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = await readInt32FromRegister(decoder.GetSecondRegisterID());
+                        CCR.writeUInt32(0u);
+                        long result = left * right;
+
+                        CCR.writeBit(0, result == 0);
+                        CCR.writeBit(1, (ulong)(uint)left * (ulong)(uint)right > uint.MaxValue);
+                        CCR.writeBit(2, (int)result < 0);
+                        CCR.writeBit(3, (int)left * (int)right != result);
+
+                        await writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
+                        break;
+                    }
+                case OpCode.Div:
+                    {
+                        long left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        CCR.writeUInt32(0u);
+
+                        if (right != 0)
+                        {
+                            long result = left / right;
+                            long mod = left % right;
+
+                            CCR.writeBit(0, result == 0);
+                            CCR.writeBit(1, false);
+                            CCR.writeBit(2, (int)result < 0);
+                            CCR.writeBit(3, false);
+                            await writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
+                            await writeInt32ToRegister(decoder.GetSecondRegisterID(), (int)mod);
+                        }
+                        else
+                        {
+                            CCR.writeBit(4, true);
+                            await writeUInt32ToRegister(decoder.GetFirstRegisterID(), 0);
+                            await writeUInt32ToRegister(decoder.GetSecondRegisterID(), 0);
+                        }
+                        break;
+                    }
+                case OpCode.IDiv:
+                    {
+                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = await readInt32FromRegister(decoder.GetSecondRegisterID());
+                        CCR.writeUInt32(0u);
+
+                        if (right != 0)
+                        {
+                            long result = left / right;
+                            long mod = left % right;
+
+                            CCR.writeBit(0, result == 0);
+                            CCR.writeBit(1, false);
+                            CCR.writeBit(2, (int)result < 0);
+                            CCR.writeBit(3, false);
+                            CCR.writeBit(4, false);
+                            await writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
+                            await writeInt32ToRegister(decoder.GetSecondRegisterID(), (int)mod);
+                        }
+                        else
+                        {
+                            CCR.writeBit(4, true);
+                            await writeUInt32ToRegister(decoder.GetFirstRegisterID(), 0);
+                            await writeUInt32ToRegister(decoder.GetSecondRegisterID(), 0);
+                        }
+                        break;
+                    }
+                case OpCode.And:
+                    {
+                        uint left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        uint right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        CCR.writeUInt32(0u);
+                        uint result = left & right;
+
+                        CCR.writeBit(0, result == 0);
+                        CCR.writeBit(1, false);
+                        CCR.writeBit(2, (int)result < 0);
+                        CCR.writeBit(3, false);
 
                         await writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
                         break;
                     }
+                case OpCode.Or:
+                    {
+                        uint left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        uint right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        CCR.writeUInt32(0u);
+                        uint result = left | right;
+
+                        CCR.writeBit(0, result == 0);
+                        CCR.writeBit(1, false);
+                        CCR.writeBit(2, (int)result < 0);
+                        CCR.writeBit(3, false);
+
+                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
+                        break;
+                    }
+                case OpCode.Xor:
+                    {
+                        uint left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        uint right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        CCR.writeUInt32(0u);
+                        uint result = left ^ right;
+
+                        CCR.writeBit(0, result == 0);
+                        CCR.writeBit(1, false);
+                        CCR.writeBit(2, (int)result < 0);
+                        CCR.writeBit(3, false);
+
+                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
+                        break;
+                    }
+                case OpCode.Shl:
+                    {
+                        long left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        CCR.writeUInt32(0u);
+                        long result;
+
+                        if (right > 31)
+                        {
+                            result = 0;
+                        }
+                        else
+                        {
+                            result = (left << (int)right) & 0xFF_FF_FF_FF;
+                        }
+
+                        CCR.writeBit(0, result == 0);
+                        CCR.writeBit(1, false);
+                        CCR.writeBit(2, (int)result < 0);
+                        CCR.writeBit(3, right > 31);
+
+                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        break;
+                    }
+                case OpCode.Shr:
+                    {
+                        long left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        CCR.writeUInt32(0u);
+                        long result;
+
+                        if (right > 31)
+                        {
+                            result = 0;
+                        }
+                        else
+                        {
+                            result = (left >> (int)right) & 0xFF_FF_FF_FF;
+                        }
+
+                        CCR.writeBit(0, result == 0);
+                        CCR.writeBit(1, false);
+                        CCR.writeBit(2, (int)result < 0);
+                        CCR.writeBit(3, right > 31);
+
+                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        break;
+                    }
+                case OpCode.JmpMem:
+                    {
+                        instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        break;
+                    }
+                case OpCode.JmpCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
+                        break;
+                    }
+                case OpCode.JeqMem:
+                    {
+                        if (CCR.readBit(0))
+                        {
+                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        }
+                        break;
+                    }
+                case OpCode.JeqCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        if (CCR.readBit(0))
+                        {
+                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
+                        }
+                        else
+                        {
+                            instruction_pointer += 4;
+                        }
+                        break;
+                    }
+                case OpCode.Cmp:
+                    {
+                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = await readInt32FromRegister(decoder.GetSecondRegisterID());
+                        CCR.writeUInt32(0u);
+                        long result = left - right;
+
+                        CCR.writeBit(0, result == 0);
+                        CCR.writeBit(1, (ulong)(uint)left - (ulong)(uint)right > uint.MaxValue);
+                        CCR.writeBit(2, (int)result < 0);
+                        CCR.writeBit(3, (int)left - (int)right != result);
+                        break;
+                    }
+
                 default:
                     throw new System.Exception($"Opcode {decoder.GetOpCode()} not implemented.");
             }

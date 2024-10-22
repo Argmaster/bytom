@@ -236,6 +236,27 @@ namespace Bytom.Hardware.Tests
         [TestCase("sub", 1, 1, 0, true, false, false)]
         [TestCase("sub", -10, 10, -20, false, true, false)]
         [TestCase("sub", int.MaxValue, int.MinValue, -1, false, true, true)]
+        [TestCase("mul", 1, 0, 0, true, false, false)]
+        [TestCase("mul", int.MaxValue, int.MaxValue, 1, false, false, true)]
+        [TestCase("mul", int.MinValue, int.MaxValue, -2147483648, false, true, true)]
+        [TestCase("mul", 56, -33, -1848, false, true, true)]
+        [TestCase("div", 1, 0, 0, false, false, false)]
+        [TestCase("div", 10, 2, 5, false, false, false)]
+        [TestCase("div", -10, 2, 2147483643, false, false, false)]
+        [TestCase("div", -10, -2, 0, true, false, false)]
+        [TestCase("idiv", 1, 0, 0, false, false, false)]
+        [TestCase("idiv", 10, 2, 5, false, false, false)]
+        [TestCase("idiv", -10, 2, -5, false, true, false)]
+        [TestCase("idiv", 10, -2, -5, false, true, false)]
+        [TestCase("and", 0b0110_0110, 0b0000_1111, 0b0000_0110, false, false, false)]
+        [TestCase("or", 0b0110_0110, 0b0000_1111, 0b0110_1111, false, false, false)]
+        [TestCase("xor", 0b0110_0110, 0b0000_1111, 0b0110_1001, false, false, false)]
+        [TestCase("shl", 1, 64, 0, true, false, true)]
+        [TestCase("shl", 1, 32, 0, true, false, true)]
+        [TestCase("shl", 1, 31, -2147483648, false, true, false)]
+        [TestCase("shr", 1, 64, 0, true, false, true)]
+        [TestCase("shr", 1, 32, 0, true, false, true)]
+        [TestCase("shr", -2147483648, 31, 1, false, false, false)]
         public void TestArithmeticSigned(
             string instruction,
             int left,
@@ -265,7 +286,7 @@ namespace Bytom.Hardware.Tests
             Assert.That(core.CCR.readBit(3), Is.EqualTo(overflow));
         }
 
-        [TestCase("add", uint.MaxValue, 1u, 0u, true, true)]
+        [TestCase("add", uint.MaxValue, 1u, uint.MinValue, true, true)]
         [TestCase("add", 1u, 1u, 2u, false, false)]
         [TestCase("add", uint.MaxValue, 64324u, 64323u, false, true)]
         [TestCase("add", 45u, 78u, 123u, false, false)]
@@ -273,6 +294,20 @@ namespace Bytom.Hardware.Tests
         [TestCase("sub", uint.MaxValue, 1u, uint.MaxValue - 1u, false, false)]
         [TestCase("sub", 45u, 78u, 4294967263u, false, true)]
         [TestCase("sub", 78u, 45u, 33u, false, false)]
+        [TestCase("mul", 1u, 0u, 0u, true, false)]
+        [TestCase("mul", uint.MaxValue, uint.MaxValue, 1u, false, true)]
+        [TestCase("mul", uint.MinValue, uint.MaxValue, 0u, true, false)]
+        [TestCase("mul", 56u, 33u, 1848u, false, false)]
+        [TestCase("imul", 1u, 0u, 0u, true, false)]
+        [TestCase("imul", uint.MaxValue, uint.MaxValue, 1u, false, true)]
+        [TestCase("imul", uint.MinValue, uint.MaxValue, 0u, true, false)]
+        [TestCase("imul", 56u, 33u, 1848u, false, false)]
+        [TestCase("div", 1u, 0u, 0u, false, false)]
+        [TestCase("div", 10u, 2u, 5u, false, false)]
+        [TestCase("div", 2u, 10u, 0u, true, false)]
+        [TestCase("and", 0b0110_0110u, 0b0000_1111u, 0b0000_0110u, false, false)]
+        [TestCase("or", 0b0110_0110u, 0b0000_1111u, 0b0110_1111u, false, false)]
+        [TestCase("xor", 0b0110_0110u, 0b0000_1111u, 0b0110_1001u, false, false)]
         public void TestArithmeticUnsigned(
             string instruction,
             uint left,
@@ -298,6 +333,103 @@ namespace Bytom.Hardware.Tests
 
             Assert.That(core.CCR.readBit(0), Is.EqualTo(zero));
             Assert.That(core.CCR.readBit(1), Is.EqualTo(carry));
+        }
+
+        [Test]
+        public void TestJmpMem()
+        {
+            var address = 0x100;
+            var core = createBytomIncB1($@"
+                jmp [RD0]
+            ");
+            core.RD0.writeInt32(address);
+
+            core.executeNext().Wait();
+
+            Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+        }
+
+        [Test]
+        public void TestJmpCon()
+        {
+            var address = 0x100;
+            var core = createBytomIncB1($@"
+                jmp {address}
+            ");
+
+            core.executeNext().Wait();
+
+            Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+        }
+
+        [Test]
+        public void TestJeqMemTaken()
+        {
+            var address = 0x100;
+            var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                jeq [RD0]
+            ");
+            core.RD0.writeInt32(address);
+            core.RD1.writeInt32(1);
+            core.RD2.writeInt32(1);
+
+            core.executeNext().Wait();
+            core.executeNext().Wait();
+
+            Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+        }
+
+        [Test]
+        public void TestJeqMemNotTaken()
+        {
+            var address = 0x100;
+            var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                jeq [RD0]
+            ");
+            core.RD0.writeInt32(address);
+            core.RD1.writeInt32(1);
+            core.RD2.writeInt32(2);
+
+            core.executeNext().Wait();
+            core.executeNext().Wait();
+
+            Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+        }
+
+        [Test]
+        public void TestJeqConTaken()
+        {
+            var address = 0x100;
+            var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                jeq {address}
+            ");
+            core.RD1.writeInt32(1);
+            core.RD2.writeInt32(1);
+
+            core.executeNext().Wait();
+            core.executeNext().Wait();
+
+            Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+        }
+
+        [Test]
+        public void TestJeqConNotTaken()
+        {
+            var address = 0x100;
+            var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                jeq {address}
+            ");
+            core.RD1.writeInt32(1);
+            core.RD2.writeInt32(2);
+
+            core.executeNext().Wait();
+            core.executeNext().Wait();
+
+            Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
         }
     }
 }
