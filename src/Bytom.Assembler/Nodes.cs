@@ -1427,225 +1427,236 @@ namespace Bytom.Assembler.Nodes
         }
     }
 
-    public class JltMem : JumpMemoryAddressInstruction
+    namespace JLT
     {
-        public JltMem(MemoryAddress destination) : base(destination)
+        public class Mem : JumpMemoryAddressInstruction
         {
+            public Mem(MemoryAddress destination) : base(destination)
+            {
+            }
+
+            public override OpCode GetOpCode()
+            {
+                return OpCode.JltMem;
+            }
+
+            public override string ToAssembly()
+            {
+                return $"jlt {destination.ToAssembly()}";
+            }
         }
 
-        public override OpCode GetOpCode()
+        public class Con : JumpConstantIntInstruction
         {
-            return OpCode.JltMem;
+
+            public Con(ConstantInt destination) : base(destination)
+            {
+            }
+
+            public override OpCode GetOpCode()
+            {
+                return OpCode.JltCon;
+            }
+
+            public override string ToAssembly()
+            {
+                return $"jlt {destination.ToAssembly()}";
+            }
         }
 
-        public override string ToAssembly()
+        public class Label : JumpLabelInstruction
         {
-            return $"jlt {destination.ToAssembly()}";
+
+            public Label(Operands.Label label) : base(label)
+            {
+            }
+
+            public override JumpConstantIntInstruction GetJumpInstruction(
+                int offset
+            )
+            {
+                return new Con(new ConstantInt(offset));
+            }
+
+            public override string ToAssembly()
+            {
+                return $"jlt {label.ToAssembly()}";
+            }
         }
     }
 
-    public class JltCon : JumpConstantIntInstruction
+    namespace JLE
     {
-
-        public JltCon(ConstantInt destination) : base(destination)
+        public class Mem : JumpMemoryAddressInstruction
         {
+            public Mem(MemoryAddress destination) : base(destination)
+            {
+            }
+
+            public override OpCode GetOpCode()
+            {
+                return OpCode.JleMem;
+            }
+
+            public override string ToAssembly()
+            {
+                return $"jle {destination.ToAssembly()}";
+            }
         }
 
-        public override OpCode GetOpCode()
+        public class Con : JumpConstantIntInstruction
         {
-            return OpCode.JltCon;
+
+            public Con(ConstantInt destination) : base(destination)
+            {
+            }
+
+            public override OpCode GetOpCode()
+            {
+                return OpCode.JleCon;
+            }
+
+            public override string ToAssembly()
+            {
+                return $"jle {destination.ToAssembly()}";
+            }
         }
 
-        public override string ToAssembly()
+        public class Label : JumpLabelInstruction
         {
-            return $"jlt {destination.ToAssembly()}";
+
+            public Label(Operands.Label label) : base(label)
+            {
+            }
+
+
+            public override JumpConstantIntInstruction GetJumpInstruction(
+                int offset
+            )
+            {
+                return new Con(new ConstantInt(offset));
+            }
+
+            public override string ToAssembly()
+            {
+                return $"jle {label.ToAssembly()}";
+            }
         }
     }
 
-    public class JltLabel : JumpLabelInstruction
+    namespace JGT
     {
 
-        public JltLabel(Label label) : base(label)
+        public class Mem : JumpMemoryAddressInstruction
         {
+            public Mem(MemoryAddress destination) : base(destination)
+            {
+            }
+
+            public override OpCode GetOpCode()
+            {
+                return OpCode.JgtMem;
+            }
+
+            public override string ToAssembly()
+            {
+                return $"jgt {destination.ToAssembly()}";
+            }
         }
 
-        public override JumpConstantIntInstruction GetJumpInstruction(
-            int offset
-        )
+        public class Con : JumpConstantIntInstruction
         {
-            return new JltCon(new ConstantInt(offset));
+            public Con(ConstantInt destination) : base(destination)
+            {
+            }
+
+            public override OpCode GetOpCode()
+            {
+                return OpCode.JgtCon;
+            }
+
+            public override string ToAssembly()
+            {
+                return $"jgt {destination.ToAssembly()}";
+            }
         }
 
-        public override string ToAssembly()
+        public class Label : JumpLabelInstruction
         {
-            return $"jlt {label.ToAssembly()}";
+
+            public Label(Operands.Label label) : base(label)
+            {
+            }
+
+            public override JumpConstantIntInstruction GetJumpInstruction(
+                int offset
+            )
+            {
+                return new Con(new ConstantInt(offset));
+            }
+
+            public override string ToAssembly()
+            {
+                return $"jgt {label.ToAssembly()}";
+            }
         }
     }
 
-    public class JleMem : JumpMemoryAddressInstruction
+    namespace JGE
     {
-        public JleMem(MemoryAddress destination) : base(destination)
+        public class Mem : JumpMemoryAddressInstruction
         {
+            public Mem(MemoryAddress destination) : base(destination)
+            {
+            }
+
+            public override OpCode GetOpCode()
+            {
+                return OpCode.JgeMem;
+            }
+
+            public override string ToAssembly()
+            {
+                return $"jge {destination.ToAssembly()}";
+            }
         }
 
-        public override OpCode GetOpCode()
+        public class Con : JumpConstantIntInstruction
         {
-            return OpCode.JleMem;
+
+            public Con(ConstantInt destination) : base(destination)
+            {
+            }
+
+            public override OpCode GetOpCode()
+            {
+                return OpCode.JgeCon;
+            }
+
+            public override string ToAssembly()
+            {
+                return $"jge {destination.ToAssembly()}";
+            }
         }
 
-        public override string ToAssembly()
+        public class Label : JumpLabelInstruction
         {
-            return $"jle {destination.ToAssembly()}";
-        }
-    }
 
-    public class JleCon : JumpConstantIntInstruction
-    {
+            public Label(Operands.Label label) : base(label)
+            {
+            }
 
-        public JleCon(ConstantInt destination) : base(destination)
-        {
-        }
+            public override JumpConstantIntInstruction GetJumpInstruction(
+                int offset
+            )
+            {
+                return new Con(new ConstantInt(offset));
+            }
 
-        public override OpCode GetOpCode()
-        {
-            return OpCode.JleCon;
-        }
-
-        public override string ToAssembly()
-        {
-            return $"jle {destination.ToAssembly()}";
-        }
-    }
-
-    public class JleLabel : JumpLabelInstruction
-    {
-
-        public JleLabel(Label label) : base(label)
-        {
-        }
-
-
-        public override JumpConstantIntInstruction GetJumpInstruction(
-            int offset
-        )
-        {
-            return new JleCon(new ConstantInt(offset));
-        }
-
-        public override string ToAssembly()
-        {
-            return $"jle {label.ToAssembly()}";
-        }
-    }
-
-    public class JgtMem : JumpMemoryAddressInstruction
-    {
-        public JgtMem(MemoryAddress destination) : base(destination)
-        {
-        }
-
-        public override OpCode GetOpCode()
-        {
-            return OpCode.JgtMem;
-        }
-
-        public override string ToAssembly()
-        {
-            return $"jgt {destination.ToAssembly()}";
-        }
-    }
-
-    public class JgtCon : JumpConstantIntInstruction
-    {
-
-        public JgtCon(ConstantInt destination) : base(destination)
-        {
-        }
-
-        public override OpCode GetOpCode()
-        {
-            return OpCode.JgtCon;
-        }
-
-        public override string ToAssembly()
-        {
-            return $"jgt {destination.ToAssembly()}";
-        }
-    }
-
-    public class JgtLabel : JumpLabelInstruction
-    {
-
-        public JgtLabel(Label label) : base(label)
-        {
-        }
-
-        public override JumpConstantIntInstruction GetJumpInstruction(
-            int offset
-        )
-        {
-            return new JgtCon(new ConstantInt(offset));
-        }
-
-        public override string ToAssembly()
-        {
-            return $"jgt {label.ToAssembly()}";
-        }
-    }
-
-    public class JgeMem : JumpMemoryAddressInstruction
-    {
-        public JgeMem(MemoryAddress destination) : base(destination)
-        {
-        }
-
-        public override OpCode GetOpCode()
-        {
-            return OpCode.JgeMem;
-        }
-
-        public override string ToAssembly()
-        {
-            return $"jge {destination.ToAssembly()}";
-        }
-    }
-
-    public class JgeCon : JumpConstantIntInstruction
-    {
-
-        public JgeCon(ConstantInt destination) : base(destination)
-        {
-        }
-
-        public override OpCode GetOpCode()
-        {
-            return OpCode.JgeCon;
-        }
-
-        public override string ToAssembly()
-        {
-            return $"jge {destination.ToAssembly()}";
-        }
-    }
-
-    public class JgeLabel : JumpLabelInstruction
-    {
-
-        public JgeLabel(Label label) : base(label)
-        {
-        }
-
-
-        public override JumpConstantIntInstruction GetJumpInstruction(
-            int offset
-        )
-        {
-            return new JgeCon(new ConstantInt(offset));
-        }
-
-        public override string ToAssembly()
-        {
-            return $"jge {label.ToAssembly()}";
+            public override string ToAssembly()
+            {
+                return $"jge {label.ToAssembly()}";
+            }
         }
     }
 

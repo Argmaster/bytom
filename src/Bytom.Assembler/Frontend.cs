@@ -244,16 +244,16 @@ namespace Bytom.Assembler
                     return new ParseJumpInstruction<Nodes.JAE.Mem, Nodes.JAE.Con, Nodes.JAE.Label>(this).make(parameters);
 
                 case "jlt":
-                    return new ParseJumpInstruction<JltMem, JltCon, JltLabel>(this).make(parameters);
+                    return new ParseJumpInstruction<Nodes.JLT.Mem, Nodes.JLT.Con, Nodes.JLT.Label>(this).make(parameters);
 
                 case "jle":
-                    return new ParseJumpInstruction<JleMem, JleCon, JleLabel>(this).make(parameters);
+                    return new ParseJumpInstruction<Nodes.JLE.Mem, Nodes.JLE.Con, Nodes.JLE.Label>(this).make(parameters);
 
                 case "jgt":
-                    return new ParseJumpInstruction<JgtMem, JgtCon, JgtLabel>(this).make(parameters);
+                    return new ParseJumpInstruction<Nodes.JGT.Mem, Nodes.JGT.Con, Nodes.JGT.Label>(this).make(parameters);
 
                 case "jge":
-                    return new ParseJumpInstruction<JgeMem, JgeCon, JgeLabel>(this).make(parameters);
+                    return new ParseJumpInstruction<Nodes.JGE.Mem, Nodes.JGE.Con, Nodes.JGE.Label>(this).make(parameters);
 
                 case "call":
                     return new ParseJumpInstruction<CallMem, CallCon, CallLabel>(this).make(parameters);

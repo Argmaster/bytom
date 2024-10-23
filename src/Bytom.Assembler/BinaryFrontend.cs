@@ -237,46 +237,46 @@ namespace Bytom.Assembler
                         ));
                         break;
                     case OpCode.JltMem:
-                        nodes.Add(new JltMem(
+                        nodes.Add(new Nodes.JLT.Mem(
                             new MemoryAddress(decoder.GetFirstRegisterID())
                         ));
                         break;
                     case OpCode.JltCon:
                         nextInt = decodeNextInt(machineCode, ref currentOffset, ref currentEndOffset);
-                        nodes.Add(new JltCon(
+                        nodes.Add(new Nodes.JLT.Con(
                             new ConstantInt(nextInt)
                         ));
                         break;
                     case OpCode.JleMem:
-                        nodes.Add(new JleMem(
+                        nodes.Add(new Nodes.JLE.Mem(
                             new MemoryAddress(decoder.GetFirstRegisterID())
                         ));
                         break;
                     case OpCode.JleCon:
                         nextInt = decodeNextInt(machineCode, ref currentOffset, ref currentEndOffset);
-                        nodes.Add(new JleCon(
+                        nodes.Add(new Nodes.JLE.Con(
                             new ConstantInt(nextInt)
                         ));
                         break;
                     case OpCode.JgtMem:
-                        nodes.Add(new JgtMem(
+                        nodes.Add(new Nodes.JGT.Mem(
                             new MemoryAddress(decoder.GetFirstRegisterID())
                         ));
                         break;
                     case OpCode.JgtCon:
                         nextInt = decodeNextInt(machineCode, ref currentOffset, ref currentEndOffset);
-                        nodes.Add(new JgtCon(
+                        nodes.Add(new Nodes.JGT.Con(
                             new ConstantInt(nextInt)
                         ));
                         break;
                     case OpCode.JgeMem:
-                        nodes.Add(new JgeMem(
+                        nodes.Add(new Nodes.JGE.Mem(
                             new MemoryAddress(decoder.GetFirstRegisterID())
                         ));
                         break;
                     case OpCode.JgeCon:
                         nextInt = decodeNextInt(machineCode, ref currentOffset, ref currentEndOffset);
-                        nodes.Add(new JgeCon(
+                        nodes.Add(new Nodes.JGE.Con(
                             new ConstantInt(nextInt)
                         ));
                         break;

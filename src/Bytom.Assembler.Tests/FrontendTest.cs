@@ -417,58 +417,126 @@ namespace Bytom.Assembler.Tests
             }
         }
 
-        [Test]
-        public void TestJltMem()
+        public class TestJLT
         {
-            Frontend frontend = new Frontend();
-            var instructions = frontend.parse("JLT [RD0]").nodes;
-            Assert.That(instructions.Count, Is.EqualTo(1));
-            Assert.IsInstanceOf<JltMem>(instructions[0]);
+            [Test]
+            public void TestMem()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JLT [RD0]").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JLT.Mem>(instructions[0]);
+            }
+
+            [Test]
+            public void TestCon()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JLT 0x100").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JLT.Con>(instructions[0]);
+            }
+
+            [Test]
+            public void TestLabel()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JLT foo").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JLT.Label>(instructions[0]);
+            }
         }
 
-        [Test]
-        public void TestJltLabel()
+        public class TestJLE
         {
-            Frontend frontend = new Frontend();
-            var instructions = frontend.parse("JLT foo").nodes;
-            Assert.That(instructions.Count, Is.EqualTo(1));
-            Assert.IsInstanceOf<JltLabel>(instructions[0]);
+            [Test]
+            public void TestMem()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JLE [RD0]").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JLE.Mem>(instructions[0]);
+            }
+
+            [Test]
+            public void TestCon()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JLE 0x100").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JLE.Con>(instructions[0]);
+            }
+
+            [Test]
+            public void TestLabel()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JLE foo").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JLE.Label>(instructions[0]);
+            }
+
         }
 
-        [Test]
-        public void TestJleMem()
+        public class TestJGT
         {
-            Frontend frontend = new Frontend();
-            var instructions = frontend.parse("JLE [RD0]").nodes;
-            Assert.That(instructions.Count, Is.EqualTo(1));
-            Assert.IsInstanceOf<JleMem>(instructions[0]);
+            [Test]
+            public void TestMem()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JGT [RD0]").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JGT.Mem>(instructions[0]);
+            }
+
+            [Test]
+            public void TestCon()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JGT 0x100").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JGT.Con>(instructions[0]);
+            }
+
+            [Test]
+            public void TestLabel()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JGT foo").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JGT.Label>(instructions[0]);
+            }
         }
 
-        [Test]
-        public void TestJleLabel()
-        {
-            Frontend frontend = new Frontend();
-            var instructions = frontend.parse("JLE foo").nodes;
-            Assert.That(instructions.Count, Is.EqualTo(1));
-            Assert.IsInstanceOf<JleLabel>(instructions[0]);
-        }
 
-        [Test]
-        public void TestJgtMem()
+        public class TestJGE
         {
-            Frontend frontend = new Frontend();
-            var instructions = frontend.parse("JGT [RD0]").nodes;
-            Assert.That(instructions.Count, Is.EqualTo(1));
-            Assert.IsInstanceOf<JgtMem>(instructions[0]);
-        }
+            [Test]
+            public void TestMem()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JGE [RD0]").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JGE.Mem>(instructions[0]);
+            }
 
-        [Test]
-        public void TestJgtLabel()
-        {
-            Frontend frontend = new Frontend();
-            var instructions = frontend.parse("JGT foo").nodes;
-            Assert.That(instructions.Count, Is.EqualTo(1));
-            Assert.IsInstanceOf<JgtLabel>(instructions[0]);
+            [Test]
+            public void TestCon()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JGE 0x100").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JGE.Con>(instructions[0]);
+            }
+
+            [Test]
+            public void TestLabel()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JGE foo").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JGE.Label>(instructions[0]);
+            }
         }
 
         [Test]
