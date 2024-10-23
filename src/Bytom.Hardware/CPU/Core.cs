@@ -237,12 +237,7 @@ namespace Bytom.Hardware.CPU
                     }
                 case OpCode.PushReg:
                     {
-                        uint newAddress = STP.readUInt32() - 4;
-                        await writeBytesToMemory(
-                            newAddress,
-                            await readBytesFromRegister(decoder.GetFirstRegisterID())
-                        );
-                        STP.writeUInt32(newAddress);
+                        await pushStack(await readBytesFromRegister(decoder.GetFirstRegisterID()));
                         break;
                     }
                 case OpCode.PushCon:
@@ -250,37 +245,30 @@ namespace Bytom.Hardware.CPU
                         byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
                         instruction_pointer += 4;
 
-                        uint newAddress = STP.readUInt32() - 4;
-                        await writeBytesToMemory(newAddress, constant_bytes);
-                        STP.writeUInt32(newAddress);
+                        await pushStack(constant_bytes);
                         break;
                     }
                 case OpCode.PushMem:
                     {
-                        byte[] memory = await readBytesFromMemory(
-                            await readUInt32FromRegister(decoder.GetFirstRegisterID()),
-                            4
+                        await pushStack(
+                            await readBytesFromMemory(
+                                await readUInt32FromRegister(decoder.GetFirstRegisterID()),
+                                4
+                            )
                         );
-                        uint newAddress = STP.readUInt32() - 4;
-                        await writeBytesToMemory(newAddress, memory);
-                        STP.writeUInt32(newAddress);
                         break;
                     }
                 case OpCode.PopReg:
                     {
-                        byte[] memory = await readBytesFromMemory(STP.readUInt32(), 4);
-                        await writeBytesToRegister(decoder.GetFirstRegisterID(), memory);
-                        STP.writeUInt32(STP.readUInt32() + 4);
+                        await writeBytesToRegister(decoder.GetFirstRegisterID(), await popStack(4));
                         break;
                     }
                 case OpCode.PopMem:
                     {
-                        byte[] memory = await readBytesFromMemory(STP.readUInt32(), 4);
                         await writeBytesToMemory(
                             await readUInt32FromRegister(decoder.GetFirstRegisterID()),
-                            memory
+                            await popStack(4)
                         );
-                        STP.writeUInt32(STP.readUInt32() + 4);
                         break;
                     }
                 case OpCode.Add:
@@ -739,6 +727,24 @@ namespace Bytom.Hardware.CPU
                         }
                         break;
                     }
+                case OpCode.CallMem:
+                    {
+                        await pushUInt32Stack(instruction_pointer);
+                        instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        break;
+                    }
+                case OpCode.CallCon:
+                    {
+                        await pushUInt32Stack(instruction_pointer);
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
+                        break;
+                    }
+                case OpCode.Ret:
+                    {
+                        instruction_pointer = await popUInt32Stack();
+                        break;
+                    }
                 case OpCode.Cmp:
                     {
                         long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
@@ -758,6 +764,31 @@ namespace Bytom.Hardware.CPU
             }
 
             IP.writeUInt32(instruction_pointer);
+        }
+
+
+        public async Task pushUInt32Stack(uint data)
+        {
+            await pushStack(Serialization.UInt32ToBytesBigEndian(data));
+        }
+
+        public async Task pushStack(byte[] data)
+        {
+            uint newAddress = STP.readUInt32() - (uint)data.Length;
+            await writeBytesToMemory(newAddress, data);
+            STP.writeUInt32(newAddress);
+        }
+
+        public async Task<uint> popUInt32Stack()
+        {
+            return Serialization.UInt32FromBytesBigEndian(await popStack(4));
+        }
+
+        public async Task<byte[]> popStack(uint length)
+        {
+            byte[] data = await readBytesFromMemory(STP.readUInt32(), length);
+            STP.writeUInt32(STP.readUInt32() + length);
+            return data;
         }
 
         public async Task<byte[]> readBytesFromMemory(uint instruction_pointer, uint length)

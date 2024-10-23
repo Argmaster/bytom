@@ -1002,5 +1002,52 @@ namespace Bytom.Hardware.Tests
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
         }
+
+        [Test]
+        public async Task TestCallMem()
+        {
+            var address = 0x100;
+            var core = createBytomIncB1($@"
+                call [RD0]
+            ");
+            core.RD0.writeInt32(address);
+
+            core.executeNext().Wait();
+
+            Assert.That(await core.popUInt32Stack(), Is.EqualTo(4u));
+            Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+        }
+
+        [Test]
+        public async Task TestCallCon()
+        {
+            var address = 0x100;
+            var core = createBytomIncB1($@"
+                call {address}
+            ");
+
+            core.executeNext().Wait();
+
+            Assert.That(await core.popUInt32Stack(), Is.EqualTo(4u));
+            Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+        }
+        [Test]
+
+        public void TestRet()
+        {
+            var address = 8 + 4 + 4 + 4;
+            var core = createBytomIncB1($@"
+                call {address}
+                halt
+                halt
+                halt
+                ret
+            ");
+
+            core.executeNext().Wait();
+            core.executeNext().Wait();
+
+            Assert.That(core.IP.readUInt32(), Is.EqualTo(4u));
+        }
     }
 }
