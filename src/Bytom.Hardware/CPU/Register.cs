@@ -147,7 +147,7 @@ namespace Bytom.Hardware.CPU
         }
         public bool isNotEqual()
         {
-            return !getZeroFlag();
+            return !isEqual();
         }
         public bool isBelow()
         {

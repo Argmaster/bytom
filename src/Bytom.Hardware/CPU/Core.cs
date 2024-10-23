@@ -552,7 +552,7 @@ namespace Bytom.Hardware.CPU
                     }
                 case OpCode.JneMem:
                     {
-                        if (!CCR.isNotEqual())
+                        if (CCR.isNotEqual())
                         {
                             instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
                         }
@@ -561,7 +561,7 @@ namespace Bytom.Hardware.CPU
                 case OpCode.JneCon:
                     {
                         byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
-                        if (!CCR.isNotEqual())
+                        if (CCR.isNotEqual())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
                         }
@@ -604,6 +604,48 @@ namespace Bytom.Hardware.CPU
                     {
                         byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
                         if (CCR.isAboveOrEqual())
+                        {
+                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
+                        }
+                        else
+                        {
+                            instruction_pointer += 4;
+                        }
+                        break;
+                    }
+                case OpCode.JbMem:
+                    {
+                        if (CCR.isBelow())
+                        {
+                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        }
+                        break;
+                    }
+                case OpCode.JbCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        if (CCR.isBelow())
+                        {
+                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
+                        }
+                        else
+                        {
+                            instruction_pointer += 4;
+                        }
+                        break;
+                    }
+                case OpCode.JbeMem:
+                    {
+                        if (CCR.isBelowOrEqual())
+                        {
+                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        }
+                        break;
+                    }
+                case OpCode.JbeCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        if (CCR.isBelowOrEqual())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
                         }
