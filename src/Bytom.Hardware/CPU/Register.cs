@@ -179,7 +179,7 @@ namespace Bytom.Hardware.CPU
         }
         public bool isGreaterThanOrEqual()
         {
-            return isGreaterThan() || isEqual();
+            return getSignFlag() == getOverflowFlag();
         }
     }
 }

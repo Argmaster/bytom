@@ -655,6 +655,90 @@ namespace Bytom.Hardware.CPU
                         }
                         break;
                     }
+                case OpCode.JltMem:
+                    {
+                        if (CCR.isLessThan())
+                        {
+                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        }
+                        break;
+                    }
+                case OpCode.JltCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        if (CCR.isLessThan())
+                        {
+                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
+                        }
+                        else
+                        {
+                            instruction_pointer += 4;
+                        }
+                        break;
+                    }
+                case OpCode.JleMem:
+                    {
+                        if (CCR.isLessThanOrEqual())
+                        {
+                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        }
+                        break;
+                    }
+                case OpCode.JleCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        if (CCR.isLessThanOrEqual())
+                        {
+                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
+                        }
+                        else
+                        {
+                            instruction_pointer += 4;
+                        }
+                        break;
+                    }
+                case OpCode.JgtMem:
+                    {
+                        if (CCR.isGreaterThan())
+                        {
+                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        }
+                        break;
+                    }
+                case OpCode.JgtCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        if (CCR.isGreaterThan())
+                        {
+                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
+                        }
+                        else
+                        {
+                            instruction_pointer += 4;
+                        }
+                        break;
+                    }
+                case OpCode.JgeMem:
+                    {
+                        if (CCR.isGreaterThanOrEqual())
+                        {
+                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        }
+                        break;
+                    }
+                case OpCode.JgeCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        if (CCR.isGreaterThanOrEqual())
+                        {
+                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
+                        }
+                        else
+                        {
+                            instruction_pointer += 4;
+                        }
+                        break;
+                    }
                 case OpCode.Cmp:
                     {
                         long left = await readInt32FromRegister(decoder.GetFirstRegisterID());

@@ -515,7 +515,7 @@ namespace Bytom.Hardware.Tests
 
         public class TestJA
         {
-            public static string instruction = "ja";
+            public virtual string getInstruction() => "ja";
 
             [Test]
             public void TestMemTaken()
@@ -523,7 +523,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} [RD0]
+                {getInstruction()} [RD0]
             ");
                 core.RD0.writeInt32(address);
                 core.RD1.writeInt32(2);
@@ -541,7 +541,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} [RD0]
+                {getInstruction()} [RD0]
             ");
                 core.RD0.writeInt32(address);
                 core.RD1.writeInt32(1);
@@ -559,7 +559,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(2);
                 core.RD2.writeInt32(1);
@@ -571,12 +571,12 @@ namespace Bytom.Hardware.Tests
             }
 
             [Test]
-            public void TestConTakenNeg()
+            public virtual void TestConNeg()
             {
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(-1);
                 core.RD2.writeInt32(2);
@@ -593,7 +593,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
@@ -607,7 +607,7 @@ namespace Bytom.Hardware.Tests
 
         public class TestJAE
         {
-            public static string instruction = "jae";
+            public virtual string getInstruction() => "jae";
 
             [Test]
             public void TestMemTaken()
@@ -615,7 +615,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} [RD0]
+                {getInstruction()} [RD0]
             ");
                 core.RD0.writeInt32(address);
                 core.RD1.writeInt32(2);
@@ -633,7 +633,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} [RD0]
+                {getInstruction()} [RD0]
             ");
                 core.RD0.writeInt32(address);
                 core.RD1.writeInt32(1);
@@ -651,7 +651,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(2);
                 core.RD2.writeInt32(1);
@@ -663,12 +663,12 @@ namespace Bytom.Hardware.Tests
             }
 
             [Test]
-            public void TestConTakenNeg()
+            public virtual void TestConNeg()
             {
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(-1);
                 core.RD2.writeInt32(2);
@@ -685,7 +685,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
@@ -702,7 +702,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(2);
@@ -716,7 +716,7 @@ namespace Bytom.Hardware.Tests
 
         public class TestJB
         {
-            public static string instruction = "jb";
+            public virtual string getInstruction() => "jb";
 
             [Test]
             public void TestMemTaken()
@@ -724,7 +724,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} [RD0]
+                {getInstruction()} [RD0]
             ");
                 core.RD0.writeInt32(address);
                 core.RD1.writeInt32(1);
@@ -742,7 +742,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} [RD0]
+                {getInstruction()} [RD0]
             ");
                 core.RD0.writeInt32(address);
                 core.RD1.writeInt32(1);
@@ -760,7 +760,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(2);
@@ -772,12 +772,12 @@ namespace Bytom.Hardware.Tests
             }
 
             [Test]
-            public void TestConTakenNeg()
+            public virtual void TestConNeg()
             {
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(-1);
@@ -794,7 +794,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
@@ -808,7 +808,7 @@ namespace Bytom.Hardware.Tests
 
         public class TestJBE
         {
-            public static string instruction = "jbe";
+            public virtual string getInstruction() => "jbe";
 
             [Test]
             public void TestMemTaken()
@@ -816,7 +816,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} [RD0]
+                {getInstruction()} [RD0]
             ");
                 core.RD0.writeInt32(address);
                 core.RD1.writeInt32(1);
@@ -834,7 +834,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} [RD0]
+                {getInstruction()} [RD0]
             ");
                 core.RD0.writeInt32(address);
                 core.RD1.writeInt32(2);
@@ -852,7 +852,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(2);
@@ -864,12 +864,12 @@ namespace Bytom.Hardware.Tests
             }
 
             [Test]
-            public void TestConTakenNeg()
+            public virtual void TestConNeg()
             {
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(2);
                 core.RD2.writeInt32(-1);
@@ -886,7 +886,7 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
@@ -903,10 +903,98 @@ namespace Bytom.Hardware.Tests
                 var address = 0x100;
                 var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                {instruction} {address}
+                {getInstruction()} {address}
             ");
                 core.RD1.writeInt32(2);
                 core.RD2.writeInt32(1);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+            }
+        }
+
+        public class TestJGT : TestJA
+        {
+            public override string getInstruction() => "jgt";
+
+            [Test]
+            public override void TestConNeg()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {getInstruction()} {address}
+            ");
+                core.RD1.writeInt32(-1);
+                core.RD2.writeInt32(2);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+            }
+        }
+
+        public class TestJGE : TestJAE
+        {
+            public override string getInstruction() => "jge";
+
+            [Test]
+            public override void TestConNeg()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {getInstruction()} {address}
+            ");
+                core.RD1.writeInt32(-1);
+                core.RD2.writeInt32(2);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+            }
+        }
+
+        public class TestJLT : TestJB
+        {
+            public override string getInstruction() => "jlt";
+
+            [Test]
+            public override void TestConNeg()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {getInstruction()} {address}
+            ");
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(-1);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+            }
+        }
+
+        public class TestJLE : TestJBE
+        {
+            public override string getInstruction() => "jle";
+
+            [Test]
+            public override void TestConNeg()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {getInstruction()} {address}
+            ");
+                core.RD1.writeInt32(2);
+                core.RD2.writeInt32(-1);
 
                 core.executeNext().Wait();
                 core.executeNext().Wait();
