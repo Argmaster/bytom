@@ -43,6 +43,14 @@ namespace Bytom.Hardware.CPU
         JeqCon = 0b0000_0010_0001_0001,
         JneMem = 0b0000_0010_0010_0000,
         JneCon = 0b0000_0010_0010_0001,
+        JbMem = 0b0000_0010_1001_00000,
+        JbCon = 0b0000_0010_1001_00001,
+        JbeMem = 0b0000_0010_1010_0000,
+        JbeCon = 0b0000_0010_1010_0001,
+        JaMem = 0b0000_0010_1011_0000,
+        JaCon = 0b0000_0010_1011_0001,
+        JaeMem = 0b0000_0010_1100_0000,
+        JaeCon = 0b0000_0010_1100_0001,
         JltMem = 0b0000_0010_0011_0000,
         JltCon = 0b0000_0010_0011_0001,
         JleMem = 0b0000_0010_0100_0000,
@@ -68,15 +76,6 @@ namespace Bytom.Hardware.CPU
         IRet = 0b1000_0000_0000_0001,
     }
 
-    internal class Util
-    {
-        public static uint Mask(int bits)
-        {
-            return (uint)((1 << bits) - 1);
-        }
-
-    }
-
     public class InstructionDecoder
     {
         private uint instruction;
@@ -95,11 +94,11 @@ namespace Bytom.Hardware.CPU
         }
         public RegisterID GetFirstRegisterID()
         {
-            return (RegisterID)((instruction >> (16 + 6)) & Util.Mask(6));
+            return (RegisterID)((instruction >> (16 + 6)) & Serialization.Mask(6));
         }
         public RegisterID GetSecondRegisterID()
         {
-            return (RegisterID)((instruction >> 16) & Util.Mask(6));
+            return (RegisterID)((instruction >> 16) & Serialization.Mask(6));
         }
     }
 }

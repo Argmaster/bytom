@@ -1,5 +1,4 @@
 using Bytom.Assembler.Nodes;
-using Bytom.Assembler.Operands;
 
 namespace Bytom.Assembler.Tests
 {
@@ -296,6 +295,126 @@ namespace Bytom.Assembler.Tests
             var instructions = frontend.parse("JNE foo").nodes;
             Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<JneLabel>(instructions[0]);
+        }
+
+        public class TestJB
+        {
+            [Test]
+            public void TestMem()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JB [RD0]").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JB.Mem>(instructions[0]);
+            }
+
+            [Test]
+            public void TestCon()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JB 0x100").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JB.Con>(instructions[0]);
+            }
+
+            [Test]
+            public void TestLabel()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JB foo").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JB.Label>(instructions[0]);
+            }
+        }
+
+        public class TestJBE
+        {
+            [Test]
+            public void TestMem()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JBE [RD0]").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JBE.Mem>(instructions[0]);
+            }
+
+            [Test]
+            public void TestCon()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JBE 0x100").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JBE.Con>(instructions[0]);
+            }
+
+            [Test]
+            public void TestLabel()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JBE foo").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JBE.Label>(instructions[0]);
+            }
+        }
+
+        public class TestJA
+        {
+            [Test]
+            public void TestMem()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JA [RD0]").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JA.Mem>(instructions[0]);
+            }
+
+            [Test]
+            public void TestCon()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JA 0x100").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JA.Con>(instructions[0]);
+            }
+
+            [Test]
+            public void TestLabel()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JA foo").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JA.Label>(instructions[0]);
+            }
+        }
+
+        public class TestJAE
+        {
+            [Test]
+            public void TestMem()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JAE [RD0]").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JAE.Mem>(instructions[0]);
+            }
+
+            [Test]
+            public void TestCon()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JAE 0x100").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JAE.Con>(instructions[0]);
+            }
+
+            [Test]
+            public void TestLabel()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("JAE foo").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.JAE.Label>(instructions[0]);
+            }
         }
 
         [Test]

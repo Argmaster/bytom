@@ -318,7 +318,7 @@ The jeq instruction transfers control to the instruction at the address specifie
 operand if the two operands are equal.
 
 - `jeq <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0001_0000` # 32 bit
-- `jeq <mem>` - `0b0000_0000_0000_0000_0000_0010_0001_0001` # 64 bit, constant is
+- `jeq <con>` - `0b0000_0000_0000_0000_0000_0010_0001_0001` # 64 bit, constant is
   threated as address
 
 ### jne
@@ -327,7 +327,7 @@ The jne instruction transfers control to the instruction at the address specifie
 operand if the two operands are not equal.
 
 - `jne <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0010_0000` # 32 bit
-- `jne <mem>` - `0b0000_0000_0000_0000_0000_0010_0010_0001` # 64 bit, constant is
+- `jne <con>` - `0b0000_0000_0000_0000_0000_0010_0010_0001` # 64 bit, constant is
   threated as address
 
 ### jb
@@ -336,7 +336,7 @@ The jb instruction transfers control to the instruction at the address specified
 operand if the first operand is less than the second operand. [unsigned]
 
 - `jb <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_1001_0000` # 32 bit
-- `jb <mem>` - `0b0000_0000_0000_0000_0000_0010_1001_0001` # 64 bit, constant is
+- `jb <con>` - `0b0000_0000_0000_0000_0000_0010_1001_0001` # 64 bit, constant is
   threated as address
 
 ### jbe
@@ -345,7 +345,7 @@ The jbe instruction transfers control to the instruction at the address specifie
 operand if the first operand is less than or equal to the second operand. [unsigned]
 
 - `jbe <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_1010_0000` # 32 bit
-- `jbe <mem>` - `0b0000_0000_0000_0000_0000_0010_1010_0001` # 64 bit, constant is
+- `jbe <con>` - `0b0000_0000_0000_0000_0000_0010_1010_0001` # 64 bit, constant is
   threated as address
 
 ### ja
@@ -354,7 +354,7 @@ The ja instruction transfers control to the instruction at the address specified
 operand if the first operand is greater than the second operand. [unsigned]
 
 - `ja <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_1011_0000` # 32 bit
-- `ja <mem>` - `0b0000_0000_0000_0000_0000_0010_1011_0001` # 64 bit, constant is
+- `ja <con>` - `0b0000_0000_0000_0000_0000_0010_1011_0001` # 64 bit, constant is
   threated as address
 
 ### jae
@@ -363,7 +363,7 @@ The jae instruction transfers control to the instruction at the address specifie
 operand if the first operand is greater than or equal to the second operand. [unsigned]
 
 - `jae <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_1100_0000` # 32 bit
-- `jae <mem>` - `0b0000_0000_0000_0000_0000_0010_1100_0001` # 64 bit, constant is
+- `jae <con>` - `0b0000_0000_0000_0000_0000_0010_1100_0001` # 64 bit, constant is
   threated as address
 
 ### jlt
@@ -372,7 +372,7 @@ The jlt instruction transfers control to the instruction at the address specifie
 operand if the first operand is less than the second operand. [signed]
 
 - `jlt <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0011_0000` # 32 bit
-- `jlt <mem>` - `0b0000_0000_0000_0000_0000_0010_0011_0001` # 64 bit, constant is
+- `jlt <con>` - `0b0000_0000_0000_0000_0000_0010_0011_0001` # 64 bit, constant is
   threated as address
 
 ### jle
@@ -381,7 +381,7 @@ The jle instruction transfers control to the instruction at the address specifie
 operand if the first operand is less than or equal to the second operand. [signed]
 
 - `jle <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0100_0000` # 32 bit
-- `jle <mem>` - `0b0000_0000_0000_0000_0000_0010_0100_0001` # 64 bit, constant is
+- `jle <con>` - `0b0000_0000_0000_0000_0000_0010_0100_0001` # 64 bit, constant is
   threated as address
 
 ### jgt
@@ -390,7 +390,7 @@ The jgt instruction transfers control to the instruction at the address specifie
 operand if the first operand is greater than the second operand. [signed]
 
 - `jgt <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0101_0000` # 32 bit
-- `jgt <mem>` - `0b0000_0000_0000_0000_0000_0010_0101_0001` # 64 bit, constant is
+- `jgt <con>` - `0b0000_0000_0000_0000_0000_0010_0101_0001` # 64 bit, constant is
   threated as address
 
 ### jge
@@ -399,7 +399,7 @@ The jge instruction transfers control to the instruction at the address specifie
 operand if the first operand is greater than or equal to the second operand. [signed]
 
 - `jge <mem>` - `0b0000_xxxx_xx00_0000_0000_0010_0110_0000` # 32 bit
-- `jge <mem>` - `0b0000_0000_0000_0000_0000_0010_0110_0001` # 64 bit, constant is
+- `jge <con>` - `0b0000_0000_0000_0000_0000_0010_0110_0001` # 64 bit, constant is
   threated as address
 
 ### call
