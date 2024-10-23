@@ -5,9 +5,9 @@ name: .NET Build & Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build-and-test:
@@ -22,26 +22,28 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
 
-    - name: Restore dependencies
-      run:
-        dotnet restore ./src/Bytom.sln
+      - name: Restore dependencies
+        run: dotnet restore ./src/Bytom.sln
 
-    - name: Build
-      run:
-        dotnet build --no-restore ./src/Bytom.sln
+      - name: Build
+        run: dotnet build --no-restore ./src/Bytom.sln
 
-    - name: Test with coverage
-      run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" ./src/Bytom.sln
+      - name: Test with coverage
+        run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" ./src/Bytom.sln --results-directory=coverage
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        files: ./src/**/coverage.cobertura.xml
-        fail_ci_if_error: false
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4.6.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          env_vars: OS
+          directory: ./coverage/
+          fail_ci_if_error: false
+          flags: jest
+          verbose: true
