@@ -281,13 +281,13 @@ namespace Bytom.Assembler
                         ));
                         break;
                     case OpCode.CallMem:
-                        nodes.Add(new CallMem(
+                        nodes.Add(new Nodes.CALL.Mem(
                             new MemoryAddress(decoder.GetFirstRegisterID())
                         ));
                         break;
                     case OpCode.CallCon:
                         nextInt = decodeNextInt(machineCode, ref currentOffset, ref currentEndOffset);
-                        nodes.Add(new CallCon(
+                        nodes.Add(new Nodes.CALL.Con(
                             new ConstantInt(nextInt)
                         ));
                         break;

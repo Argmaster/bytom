@@ -1294,8 +1294,8 @@ namespace Bytom.Assembler.Tests
                     new AbstractSyntaxTree(
                         [
                             new Nodes.JGE.Con(
-                            new ConstantInt(0xFF)
-                        )
+                                new ConstantInt(0xFF)
+                            )
                         ]
                     )
                 );
@@ -1324,9 +1324,9 @@ namespace Bytom.Assembler.Tests
                     new AbstractSyntaxTree(
                         [
                             new LabelNode("end"),
-                        new Nodes.JGE.Label(
-                            new Label("end")
-                        )
+                            new Nodes.JGE.Label(
+                                new Label("end")
+                            )
                         ]
                     )
                 );
@@ -1348,89 +1348,94 @@ namespace Bytom.Assembler.Tests
             }
         }
 
-        [Test]
-        public void TestCallMem()
+
+        public class TestCALL
         {
-            Backend backend = new Backend();
-            var code = backend.compile(
-                new AbstractSyntaxTree(
-                    [
-                        new CallMem(
-                            new MemoryAddress(RegisterID.RD0)
-                        )
-                    ]
-                )
-            );
-            var machine_code = code.ToMachineCode();
-            Assert.That(machine_code.Count, Is.EqualTo(4));
+            [Test]
+            public void TestMem()
+            {
+                Backend backend = new Backend();
+                var code = backend.compile(
+                    new AbstractSyntaxTree(
+                        [
+                            new Nodes.CALL.Mem(
+                                new MemoryAddress(RegisterID.RD0)
+                            )
+                        ]
+                    )
+                );
+                var machine_code = code.ToMachineCode();
+                Assert.That(machine_code.Count, Is.EqualTo(4));
 
-            var decoder = new InstructionDecoder(machine_code.ToArray());
+                var decoder = new InstructionDecoder(machine_code.ToArray());
 
-            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.CallMem));
-            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.RD0));
-            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+                Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.CallMem));
+                Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.RD0));
+                Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+            }
+
+            [Test]
+            public void TestCon()
+            {
+                Backend backend = new Backend();
+                var code = backend.compile(
+                    new AbstractSyntaxTree(
+                        [
+                            new Nodes.CALL.Con(
+                                new ConstantInt(0xFF)
+                            )
+                        ]
+                    )
+                );
+                var machine_code = code.ToMachineCode();
+                Assert.That(machine_code.Count, Is.EqualTo(8));
+
+                var decoder = new InstructionDecoder(
+                machine_code.GetRange(0, 4).ToArray()
+                );
+
+                Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.CallCon));
+                Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+                Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+                var constant = Serialization.Int32FromBytesBigEndian(
+                machine_code.GetRange(4, 4).ToArray()
+                );
+                Assert.That(constant, Is.EqualTo(0xFF));
+            }
+
+            [Test]
+            public void TestLabel()
+            {
+                Backend backend = new Backend();
+                var code = backend.compile(
+                    new AbstractSyntaxTree(
+                        [
+                            new LabelNode("start"),
+                            new Nodes.CALL.Label(
+                                new Label("start")
+                            )
+                        ]
+                    )
+                );
+                var machine_code = code.ToMachineCode();
+                Assert.That(machine_code.Count, Is.EqualTo(8));
+
+                var decoder = new InstructionDecoder(
+                machine_code.GetRange(0, 4).ToArray()
+                );
+
+                Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.CallCon));
+                Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+                Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
+
+                var constant = Serialization.Int32FromBytesBigEndian(
+                machine_code.GetRange(4, 4).ToArray()
+                );
+                Assert.That(constant, Is.EqualTo(0));
+            }
         }
 
-        [Test]
-        public void TestCallCon()
-        {
-            Backend backend = new Backend();
-            var code = backend.compile(
-                new AbstractSyntaxTree(
-                    [
-                        new CallCon(
-                            new ConstantInt(0xFF)
-                        )
-                    ]
-                )
-            );
-            var machine_code = code.ToMachineCode();
-            Assert.That(machine_code.Count, Is.EqualTo(8));
-
-            var decoder = new InstructionDecoder(
-            machine_code.GetRange(0, 4).ToArray()
-            );
-
-            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.CallCon));
-            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
-            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
-
-            var constant = Serialization.Int32FromBytesBigEndian(
-            machine_code.GetRange(4, 4).ToArray()
-            );
-            Assert.That(constant, Is.EqualTo(0xFF));
-        }
-
-        [Test]
-        public void TestCallLabel()
-        {
-            Backend backend = new Backend();
-            var code = backend.compile(
-                new AbstractSyntaxTree(
-                    [
-                        new LabelNode("start"),
-                        new CallLabel(
-                            new Label("start")
-                        )
-                    ]
-                )
-            );
-            var machine_code = code.ToMachineCode();
-            Assert.That(machine_code.Count, Is.EqualTo(8));
-
-            var decoder = new InstructionDecoder(
-            machine_code.GetRange(0, 4).ToArray()
-            );
-
-            Assert.That(decoder.GetOpCode(), Is.EqualTo(OpCode.CallCon));
-            Assert.That(decoder.GetFirstRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
-            Assert.That(decoder.GetSecondRegisterID(), Is.EqualTo(RegisterID.NO_REGISTER));
-
-            var constant = Serialization.Int32FromBytesBigEndian(
-            machine_code.GetRange(4, 4).ToArray()
-            );
-            Assert.That(constant, Is.EqualTo(0));
-        }
 
         [Test]
         public void TestRet()

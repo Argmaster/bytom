@@ -539,22 +539,34 @@ namespace Bytom.Assembler.Tests
             }
         }
 
-        [Test]
-        public void TestCallMem()
+        public class TestCALL
         {
-            Frontend frontend = new Frontend();
-            var instructions = frontend.parse("CALL [RD0]").nodes;
-            Assert.That(instructions.Count, Is.EqualTo(1));
-            Assert.IsInstanceOf<CallMem>(instructions[0]);
-        }
+            [Test]
+            public void TestMem()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("CALL [RD0]").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.CALL.Mem>(instructions[0]);
+            }
 
-        [Test]
-        public void TestCallLabel()
-        {
-            Frontend frontend = new Frontend();
-            var instructions = frontend.parse("CALL foo").nodes;
-            Assert.That(instructions.Count, Is.EqualTo(1));
-            Assert.IsInstanceOf<CallLabel>(instructions[0]);
+            [Test]
+            public void TestCon()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("CALL 0x100").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.CALL.Con>(instructions[0]);
+            }
+
+            [Test]
+            public void TestLabel()
+            {
+                Frontend frontend = new Frontend();
+                var instructions = frontend.parse("CALL foo").nodes;
+                Assert.That(instructions.Count, Is.EqualTo(1));
+                Assert.IsInstanceOf<Nodes.CALL.Label>(instructions[0]);
+            }
         }
 
         [Test]

@@ -1216,7 +1216,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-
             public Con(ConstantInt destination) : base(destination)
             {
             }
@@ -1234,7 +1233,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-
             public Label(Operands.Label label) : base(label)
             {
             }
@@ -1274,7 +1272,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-
             public Con(ConstantInt destination) : base(destination)
             {
             }
@@ -1292,7 +1289,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-
             public Label(Operands.Label label) : base(label)
             {
             }
@@ -1332,7 +1328,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-
             public Con(ConstantInt destination) : base(destination)
             {
             }
@@ -1350,7 +1345,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-
             public Label(Operands.Label label) : base(label)
             {
             }
@@ -1390,7 +1384,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-
             public Con(ConstantInt destination) : base(destination)
             {
             }
@@ -1408,7 +1401,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-
             public Label(Operands.Label label) : base(label)
             {
             }
@@ -1448,7 +1440,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-
             public Con(ConstantInt destination) : base(destination)
             {
             }
@@ -1466,7 +1457,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-
             public Label(Operands.Label label) : base(label)
             {
             }
@@ -1506,7 +1496,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-
             public Con(ConstantInt destination) : base(destination)
             {
             }
@@ -1524,7 +1513,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-
             public Label(Operands.Label label) : base(label)
             {
             }
@@ -1546,7 +1534,6 @@ namespace Bytom.Assembler.Nodes
 
     namespace JGT
     {
-
         public class Mem : JumpMemoryAddressInstruction
         {
             public Mem(MemoryAddress destination) : base(destination)
@@ -1583,7 +1570,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-
             public Label(Operands.Label label) : base(label)
             {
             }
@@ -1623,7 +1609,6 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-
             public Con(ConstantInt destination) : base(destination)
             {
             }
@@ -1660,59 +1645,62 @@ namespace Bytom.Assembler.Nodes
         }
     }
 
-    public class CallMem : JumpMemoryAddressInstruction
+    namespace CALL
     {
-        public CallMem(MemoryAddress destination) : base(destination)
+        public class Mem : JumpMemoryAddressInstruction
         {
+            public Mem(MemoryAddress destination) : base(destination)
+            {
+            }
+
+            public override OpCode GetOpCode()
+            {
+                return OpCode.CallMem;
+            }
+
+            public override string ToAssembly()
+            {
+                return $"call {destination.ToAssembly()}";
+            }
         }
 
-        public override OpCode GetOpCode()
+        public class Con : JumpConstantIntInstruction
         {
-            return OpCode.CallMem;
+
+            public Con(ConstantInt destination) : base(destination)
+            {
+            }
+
+            public override OpCode GetOpCode()
+            {
+                return OpCode.CallCon;
+            }
+
+            public override string ToAssembly()
+            {
+                return $"call {destination.ToAssembly()}";
+            }
         }
 
-        public override string ToAssembly()
+        public class Label : JumpLabelInstruction
         {
-            return $"call {destination.ToAssembly()}";
-        }
-    }
 
-    public class CallCon : JumpConstantIntInstruction
-    {
-
-        public CallCon(ConstantInt destination) : base(destination)
-        {
-        }
-
-        public override OpCode GetOpCode()
-        {
-            return OpCode.CallCon;
-        }
-
-        public override string ToAssembly()
-        {
-            return $"call {destination.ToAssembly()}";
-        }
-    }
-
-    public class CallLabel : JumpLabelInstruction
-    {
-
-        public CallLabel(Label label) : base(label)
-        {
-        }
+            public Label(Operands.Label label) : base(label)
+            {
+            }
 
 
-        public override JumpConstantIntInstruction GetJumpInstruction(
-            int offset
-        )
-        {
-            return new CallCon(new ConstantInt(offset));
-        }
+            public override JumpConstantIntInstruction GetJumpInstruction(
+                int offset
+            )
+            {
+                return new Con(new ConstantInt(offset));
+            }
 
-        public override string ToAssembly()
-        {
-            return $"call {label.ToAssembly()}";
+            public override string ToAssembly()
+            {
+                return $"call {label.ToAssembly()}";
+            }
         }
     }
 

@@ -256,7 +256,7 @@ namespace Bytom.Assembler
                     return new ParseJumpInstruction<Nodes.JGE.Mem, Nodes.JGE.Con, Nodes.JGE.Label>(this).make(parameters);
 
                 case "call":
-                    return new ParseJumpInstruction<CallMem, CallCon, CallLabel>(this).make(parameters);
+                    return new ParseJumpInstruction<Nodes.CALL.Mem, Nodes.CALL.Con, Nodes.CALL.Label>(this).make(parameters);
 
                 case "ret":
                     expectOperandsCount(parameters, 0);
