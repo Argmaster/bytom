@@ -93,4 +93,93 @@ namespace Bytom.Hardware.CPU
             }
         }
     }
+
+    public class ConditionCodeRegister : Register32
+    {
+        public ConditionCodeRegister() : base(0)
+        {
+        }
+
+        public bool getZeroFlag()
+        {
+            return readBit(0);
+        }
+        public void setZeroFlag(bool value)
+        {
+            writeBit(0, value);
+        }
+        public bool getCarryFlag()
+        {
+            return readBit(1);
+        }
+        public void setCarryFlag(bool value)
+        {
+            writeBit(1, value);
+        }
+        public bool getSignFlag()
+        {
+            return readBit(2);
+        }
+        public void setSignFlag(bool value)
+        {
+            writeBit(2, value);
+        }
+        public bool getOverflowFlag()
+        {
+            return readBit(3);
+        }
+        public void setOverflowFlag(bool value)
+        {
+            writeBit(3, value);
+        }
+        public bool getZeroDivisionFlag()
+        {
+            return readBit(4);
+        }
+        public void setZeroDivisionFlag(bool value)
+        {
+            writeBit(4, value);
+        }
+
+        public bool isEqual()
+        {
+            return getZeroFlag();
+        }
+        public bool isNotEqual()
+        {
+            return !getZeroFlag();
+        }
+        public bool isBelow()
+        {
+            return getCarryFlag();
+        }
+        public bool isBelowOrEqual()
+        {
+            return isBelow() || isEqual();
+        }
+        public bool isAbove()
+        {
+            return !getCarryFlag() && !getZeroFlag();
+        }
+        public bool isAboveOrEqual()
+        {
+            return isEqual() || isAbove();
+        }
+        public bool isLessThan()
+        {
+            return getSignFlag() != getOverflowFlag();
+        }
+        public bool isLessThanOrEqual()
+        {
+            return isEqual() || isLessThan();
+        }
+        public bool isGreaterThan()
+        {
+            return !getZeroFlag() && getSignFlag() == getOverflowFlag();
+        }
+        public bool isGreaterThanOrEqual()
+        {
+            return isGreaterThan() || isEqual();
+        }
+    }
 }

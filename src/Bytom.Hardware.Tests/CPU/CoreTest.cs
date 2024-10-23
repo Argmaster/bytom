@@ -1,3 +1,4 @@
+using Bytom.Assembler.Nodes;
 using Bytom.Hardware.CPU;
 using Bytom.Hardware.RAM;
 using Bytom.Tools;
@@ -362,74 +363,355 @@ namespace Bytom.Hardware.Tests
             Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
         }
 
-        [Test]
-        public void TestJeqMemTaken()
+        public class TestJEQ
         {
-            var address = 0x100;
-            var core = createBytomIncB1($@"
+            public static string instruction = "jeq";
+
+            [Test]
+            public void TestMemTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                jeq [RD0]
+                {instruction} [RD0]
             ");
-            core.RD0.writeInt32(address);
-            core.RD1.writeInt32(1);
-            core.RD2.writeInt32(1);
+                core.RD0.writeInt32(address);
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(1);
 
-            core.executeNext().Wait();
-            core.executeNext().Wait();
+                core.executeNext().Wait();
+                core.executeNext().Wait();
 
-            Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+                Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+            }
+
+            [Test]
+            public void TestMemNotTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} [RD0]
+            ");
+                core.RD0.writeInt32(address);
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(2);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+            }
+
+            [Test]
+            public void TestConTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} {address}
+            ");
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(1);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+            }
+
+            [Test]
+            public void TestConNotTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} {address}
+            ");
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(2);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+            }
         }
 
-        [Test]
-        public void TestJeqMemNotTaken()
+        public class TestJNE
         {
-            var address = 0x100;
-            var core = createBytomIncB1($@"
+            public static string instruction = "jne";
+
+            [Test]
+            public void TestMemTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                jeq [RD0]
+                {instruction} [RD0]
             ");
-            core.RD0.writeInt32(address);
-            core.RD1.writeInt32(1);
-            core.RD2.writeInt32(2);
+                core.RD0.writeInt32(address);
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(2);
 
-            core.executeNext().Wait();
-            core.executeNext().Wait();
+                core.executeNext().Wait();
+                core.executeNext().Wait();
 
-            Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+                Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+            }
+
+            [Test]
+            public void TestMemNotTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} [RD0]
+            ");
+                core.RD0.writeInt32(address);
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(1);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+            }
+
+            [Test]
+            public void TestConTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} {address}
+            ");
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(2);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+            }
+
+            [Test]
+            public void TestConNotTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} {address}
+            ");
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(1);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+            }
         }
 
-        [Test]
-        public void TestJeqConTaken()
+        public class TestJA
         {
-            var address = 0x100;
-            var core = createBytomIncB1($@"
+            public static string instruction = "ja";
+
+            [Test]
+            public void TestMemTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                jeq {address}
+                {instruction} [RD0]
             ");
-            core.RD1.writeInt32(1);
-            core.RD2.writeInt32(1);
+                core.RD0.writeInt32(address);
+                core.RD1.writeInt32(2);
+                core.RD2.writeInt32(1);
 
-            core.executeNext().Wait();
-            core.executeNext().Wait();
+                core.executeNext().Wait();
+                core.executeNext().Wait();
 
-            Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+                Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+            }
+
+            [Test]
+            public void TestMemNotTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} [RD0]
+            ");
+                core.RD0.writeInt32(address);
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(1);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+            }
+
+            [Test]
+            public void TestConTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} {address}
+            ");
+                core.RD1.writeInt32(2);
+                core.RD2.writeInt32(1);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+            }
+
+            [Test]
+            public void TestConTakenNeg()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} {address}
+            ");
+                core.RD1.writeInt32(-1);
+                core.RD2.writeInt32(2);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+            }
+
+            [Test]
+            public void TestConNotTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} {address}
+            ");
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(1);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+            }
         }
 
-        [Test]
-        public void TestJeqConNotTaken()
+        public class TestJAE
         {
-            var address = 0x100;
-            var core = createBytomIncB1($@"
+            public static string instruction = "jae";
+
+            [Test]
+            public void TestMemTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
                 cmp RD1, RD2
-                jeq {address}
+                {instruction} [RD0]
             ");
-            core.RD1.writeInt32(1);
-            core.RD2.writeInt32(2);
+                core.RD0.writeInt32(address);
+                core.RD1.writeInt32(2);
+                core.RD2.writeInt32(1);
 
-            core.executeNext().Wait();
-            core.executeNext().Wait();
+                core.executeNext().Wait();
+                core.executeNext().Wait();
 
-            Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+                Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+            }
+
+            [Test]
+            public void TestMemNotTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} [RD0]
+            ");
+                core.RD0.writeInt32(address);
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(2);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+            }
+
+            [Test]
+            public void TestConTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} {address}
+            ");
+                core.RD1.writeInt32(2);
+                core.RD2.writeInt32(1);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+            }
+
+            [Test]
+            public void TestConTakenNeg()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} {address}
+            ");
+                core.RD1.writeInt32(-1);
+                core.RD2.writeInt32(2);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+            }
+
+            [Test]
+            public void TestConTakenEq()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} {address}
+            ");
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(1);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
+            }
+
+            [Test]
+            public void TestConNotTaken()
+            {
+                var address = 0x100;
+                var core = createBytomIncB1($@"
+                cmp RD1, RD2
+                {instruction} {address}
+            ");
+                core.RD1.writeInt32(1);
+                core.RD2.writeInt32(2);
+
+                core.executeNext().Wait();
+                core.executeNext().Wait();
+
+                Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
+            }
         }
     }
 }

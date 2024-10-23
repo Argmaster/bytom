@@ -67,7 +67,7 @@ namespace Bytom.Hardware.CPU
         public Register32 RDE;
         public Register32 RDF;
 
-        public Register32 CCR;
+        public ConditionCodeRegister CCR;
         public Register32 CR0;
         public Register32 STP;
         public Register32 FBP;
@@ -115,7 +115,7 @@ namespace Bytom.Hardware.CPU
             RDE = new Register32(0);
             RDF = new Register32(0);
 
-            CCR = new Register32(0);
+            CCR = new ConditionCodeRegister();
             CR0 = new Register32(0b10000000_00000000_00000000_00000000);
             STP = new Register32(ram.getTotalMemoryBytes());
             FBP = new Register32(ram.getTotalMemoryBytes());
@@ -290,10 +290,10 @@ namespace Bytom.Hardware.CPU
                         CCR.writeUInt32(0u);
                         long result = left + right;
 
-                        CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, (ulong)(uint)left + (ulong)(uint)right > uint.MaxValue);
-                        CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3, (int)left + (int)right != result);
+                        CCR.setZeroFlag(result == 0);
+                        CCR.setCarryFlag((ulong)(uint)left + (ulong)(uint)right > uint.MaxValue);
+                        CCR.setSignFlag((int)result < 0);
+                        CCR.setOverflowFlag((int)left + (int)right != result);
 
                         await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
@@ -305,10 +305,10 @@ namespace Bytom.Hardware.CPU
                         CCR.writeUInt32(0u);
                         long result = left - right;
 
-                        CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, (ulong)(uint)left - (ulong)(uint)right > uint.MaxValue);
-                        CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3, (int)left - (int)right != result);
+                        CCR.setZeroFlag(result == 0);
+                        CCR.setCarryFlag((ulong)(uint)left - (ulong)(uint)right > uint.MaxValue);
+                        CCR.setSignFlag((int)result < 0);
+                        CCR.setOverflowFlag((int)left - (int)right != result);
 
                         await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
@@ -320,10 +320,10 @@ namespace Bytom.Hardware.CPU
                         CCR.writeUInt32(0u);
                         long result = left - right;
 
-                        CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, (ulong)(uint)left + (ulong)(uint)right > uint.MaxValue);
-                        CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3, (int)left + (int)right != result);
+                        CCR.setZeroFlag(result == 0);
+                        CCR.setCarryFlag((ulong)(uint)left + (ulong)(uint)right > uint.MaxValue);
+                        CCR.setSignFlag((int)result < 0);
+                        CCR.setOverflowFlag((int)left + (int)right != result);
 
                         await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
@@ -335,10 +335,10 @@ namespace Bytom.Hardware.CPU
                         CCR.writeUInt32(0u);
                         long result = left - right;
 
-                        CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, (ulong)(uint)left - (ulong)(uint)right > uint.MaxValue);
-                        CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3, (int)left - (int)right != result);
+                        CCR.setZeroFlag(result == 0);
+                        CCR.setCarryFlag((ulong)(uint)left - (ulong)(uint)right > uint.MaxValue);
+                        CCR.setSignFlag((int)result < 0);
+                        CCR.setOverflowFlag((int)left - (int)right != result);
 
                         await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
@@ -350,10 +350,10 @@ namespace Bytom.Hardware.CPU
                         CCR.writeUInt32(0u);
                         long result = left * right;
 
-                        CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, (ulong)(uint)left * (ulong)(uint)right > uint.MaxValue);
-                        CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3, (int)left * (int)right != result);
+                        CCR.setZeroFlag(result == 0);
+                        CCR.setCarryFlag((ulong)(uint)left * (ulong)(uint)right > uint.MaxValue);
+                        CCR.setSignFlag((int)result < 0);
+                        CCR.setOverflowFlag((int)left * (int)right != result);
 
                         await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
@@ -365,10 +365,10 @@ namespace Bytom.Hardware.CPU
                         CCR.writeUInt32(0u);
                         long result = left * right;
 
-                        CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, (ulong)(uint)left * (ulong)(uint)right > uint.MaxValue);
-                        CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3, (int)left * (int)right != result);
+                        CCR.setZeroFlag(result == 0);
+                        CCR.setCarryFlag((ulong)(uint)left * (ulong)(uint)right > uint.MaxValue);
+                        CCR.setSignFlag((int)result < 0);
+                        CCR.setOverflowFlag((int)left * (int)right != result);
 
                         await writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
                         break;
@@ -384,16 +384,16 @@ namespace Bytom.Hardware.CPU
                             long result = left / right;
                             long mod = left % right;
 
-                            CCR.writeBit(0, result == 0);
-                            CCR.writeBit(1, false);
-                            CCR.writeBit(2, (int)result < 0);
-                            CCR.writeBit(3, false);
+                            CCR.setZeroFlag(result == 0);
+                            CCR.setCarryFlag(false);
+                            CCR.setSignFlag((int)result < 0);
+                            CCR.setOverflowFlag(false);
                             await writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
                             await writeInt32ToRegister(decoder.GetSecondRegisterID(), (int)mod);
                         }
                         else
                         {
-                            CCR.writeBit(4, true);
+                            CCR.setZeroDivisionFlag(true);
                             await writeUInt32ToRegister(decoder.GetFirstRegisterID(), 0);
                             await writeUInt32ToRegister(decoder.GetSecondRegisterID(), 0);
                         }
@@ -410,17 +410,16 @@ namespace Bytom.Hardware.CPU
                             long result = left / right;
                             long mod = left % right;
 
-                            CCR.writeBit(0, result == 0);
-                            CCR.writeBit(1, false);
-                            CCR.writeBit(2, (int)result < 0);
-                            CCR.writeBit(3, false);
-                            CCR.writeBit(4, false);
+                            CCR.setZeroFlag(result == 0);
+                            CCR.setCarryFlag(false);
+                            CCR.setSignFlag((int)result < 0);
+                            CCR.setOverflowFlag(false);
                             await writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
                             await writeInt32ToRegister(decoder.GetSecondRegisterID(), (int)mod);
                         }
                         else
                         {
-                            CCR.writeBit(4, true);
+                            CCR.setZeroDivisionFlag(true);
                             await writeUInt32ToRegister(decoder.GetFirstRegisterID(), 0);
                             await writeUInt32ToRegister(decoder.GetSecondRegisterID(), 0);
                         }
@@ -433,10 +432,10 @@ namespace Bytom.Hardware.CPU
                         CCR.writeUInt32(0u);
                         uint result = left & right;
 
-                        CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, false);
-                        CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3, false);
+                        CCR.setZeroFlag(result == 0);
+                        CCR.setCarryFlag(false);
+                        CCR.setSignFlag((int)result < 0);
+                        CCR.setOverflowFlag(false);
 
                         await writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
                         break;
@@ -448,10 +447,10 @@ namespace Bytom.Hardware.CPU
                         CCR.writeUInt32(0u);
                         uint result = left | right;
 
-                        CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, false);
-                        CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3, false);
+                        CCR.setZeroFlag(result == 0);
+                        CCR.setCarryFlag(false);
+                        CCR.setSignFlag((int)result < 0);
+                        CCR.setOverflowFlag(false);
 
                         await writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
                         break;
@@ -463,10 +462,10 @@ namespace Bytom.Hardware.CPU
                         CCR.writeUInt32(0u);
                         uint result = left ^ right;
 
-                        CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, false);
-                        CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3, false);
+                        CCR.setZeroFlag(result == 0);
+                        CCR.setCarryFlag(false);
+                        CCR.setSignFlag((int)result < 0);
+                        CCR.setOverflowFlag(false);
 
                         await writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
                         break;
@@ -487,10 +486,10 @@ namespace Bytom.Hardware.CPU
                             result = (left << (int)right) & 0xFF_FF_FF_FF;
                         }
 
-                        CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, false);
-                        CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3, right > 31);
+                        CCR.setZeroFlag(result == 0);
+                        CCR.setCarryFlag(false);
+                        CCR.setSignFlag((int)result < 0);
+                        CCR.setOverflowFlag(right > 31);
 
                         await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
@@ -511,10 +510,10 @@ namespace Bytom.Hardware.CPU
                             result = (left >> (int)right) & 0xFF_FF_FF_FF;
                         }
 
-                        CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, false);
-                        CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3, right > 31);
+                        CCR.setZeroFlag(result == 0);
+                        CCR.setCarryFlag(false);
+                        CCR.setSignFlag((int)result < 0);
+                        CCR.setOverflowFlag(right > 31);
 
                         await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
@@ -532,7 +531,7 @@ namespace Bytom.Hardware.CPU
                     }
                 case OpCode.JeqMem:
                     {
-                        if (CCR.readBit(0))
+                        if (CCR.isEqual())
                         {
                             instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
                         }
@@ -541,7 +540,70 @@ namespace Bytom.Hardware.CPU
                 case OpCode.JeqCon:
                     {
                         byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
-                        if (CCR.readBit(0))
+                        if (CCR.isEqual())
+                        {
+                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
+                        }
+                        else
+                        {
+                            instruction_pointer += 4;
+                        }
+                        break;
+                    }
+                case OpCode.JneMem:
+                    {
+                        if (!CCR.isNotEqual())
+                        {
+                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        }
+                        break;
+                    }
+                case OpCode.JneCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        if (!CCR.isNotEqual())
+                        {
+                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
+                        }
+                        else
+                        {
+                            instruction_pointer += 4;
+                        }
+                        break;
+                    }
+                case OpCode.JaMem:
+                    {
+                        if (CCR.isAbove())
+                        {
+                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        }
+                        break;
+                    }
+                case OpCode.JaCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        if (CCR.isAbove())
+                        {
+                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
+                        }
+                        else
+                        {
+                            instruction_pointer += 4;
+                        }
+                        break;
+                    }
+                case OpCode.JaeMem:
+                    {
+                        if (CCR.isAboveOrEqual())
+                        {
+                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        }
+                        break;
+                    }
+                case OpCode.JaeCon:
+                    {
+                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        if (CCR.isAboveOrEqual())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
                         }
@@ -558,10 +620,10 @@ namespace Bytom.Hardware.CPU
                         CCR.writeUInt32(0u);
                         long result = left - right;
 
-                        CCR.writeBit(0, result == 0);
-                        CCR.writeBit(1, (ulong)(uint)left - (ulong)(uint)right > uint.MaxValue);
-                        CCR.writeBit(2, (int)result < 0);
-                        CCR.writeBit(3, (int)left - (int)right != result);
+                        CCR.setZeroFlag(result == 0);
+                        CCR.setCarryFlag((ulong)(uint)left - (ulong)(uint)right > uint.MaxValue);
+                        CCR.setSignFlag((int)result < 0);
+                        CCR.setOverflowFlag((int)left - (int)right != result);
                         break;
                     }
 
