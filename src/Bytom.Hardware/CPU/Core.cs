@@ -766,7 +766,6 @@ namespace Bytom.Hardware.CPU
             IP.writeUInt32(instruction_pointer);
         }
 
-
         public async Task pushUInt32Stack(uint data)
         {
             await pushStack(Serialization.UInt32ToBytesBigEndian(data));

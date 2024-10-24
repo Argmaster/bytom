@@ -1031,8 +1031,8 @@ namespace Bytom.Hardware.Tests
             Assert.That(await core.popUInt32Stack(), Is.EqualTo(4u));
             Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
         }
-        [Test]
 
+        [Test]
         public void TestRet()
         {
             var address = 8 + 4 + 4 + 4;
