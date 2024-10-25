@@ -61,6 +61,69 @@ public class ParserTests
         Assert.That(argument2!.name, Is.EqualTo("x"));
     }
 
+    public class SideEffectTests
+    {
+        [Test]
+        public void TestFunctionCallIntInt()
+        {
+            bool result = Parser.TryParse(@"
+            mul(1, 1);
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+        }
+
+        [Test]
+        public void TestFunctionCallIntVar()
+        {
+            bool result = Parser.TryParse(@"
+            mul(1, x);
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+        }
+
+        [Test]
+        public void TestFunctionCallVarInt()
+        {
+            bool result = Parser.TryParse(@"
+            mul(x, 1);
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+        }
+
+        [Test]
+        public void TestFunctionCallVarVar()
+        {
+            bool result = Parser.TryParse(@"
+            mul(x, 1);
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+        }
+    }
+
     [Test]
     public void TestVariableDeclaration()
     {
@@ -180,5 +243,219 @@ public class ParserTests
         Assert.That(valueAssignment!.value, Is.InstanceOf<AST.Expressions.IntegerLiteral>());
         var val = (AST.Expressions.IntegerLiteral)valueAssignment!.value;
         Assert.That(val!.value, Is.EqualTo(1));
+    }
+
+    public class IfElifElseTests
+    {
+        [Test]
+        public void TestIfElifElse()
+        {
+            bool result = Parser.TryParse(@"
+            function main(): void
+            {
+                var x: i32 = 1;
+                if (eq(x, 1))
+                {
+                    x = 2;
+                }
+                elif (eq(x, 2))
+                {
+                    x = 3;
+                }
+                else
+                {
+                    x = 4;
+                }
+            }
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
+
+            var function = (AST.Statements.FunctionDefinition)statement;
+            Assert.That(function!.name.name, Is.EqualTo("main"));
+            Assert.That(function!.arguments, Has.Length.EqualTo(0));
+            Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+            Assert.That(function!.body, Has.Length.EqualTo(2));
+
+            var conditionalStatement = (AST.Statements.Conditional)function!.body[1];
+            Assert.That(conditionalStatement!.if_, Is.InstanceOf<AST.Statements.If>());
+            Assert.That(conditionalStatement!.elif_, Has.Length.EqualTo(1));
+            Assert.That(conditionalStatement!.else_, Is.InstanceOf<AST.Statements.Else>());
+
+            var ifStatement = conditionalStatement!.if_;
+            Assert.That(ifStatement!.condition, Is.InstanceOf<AST.Expressions.FunctionCall>());
+            Assert.That(ifStatement!.body, Has.Length.EqualTo(1));
+
+            var elifStatement = conditionalStatement!.elif_[0];
+            Assert.That(elifStatement!.condition, Is.InstanceOf<AST.Expressions.FunctionCall>());
+            Assert.That(elifStatement!.body, Has.Length.EqualTo(1));
+
+            var elseStatement = conditionalStatement!.else_;
+            Assert.That(elseStatement!.body, Has.Length.EqualTo(1));
+        }
+
+        [Test]
+        public void TestIfElif()
+        {
+            bool result = Parser.TryParse(@"
+            function main(): void
+            {
+                var x: i32 = 1;
+                if (eq(x, 1))
+                {
+                    x = 2;
+                }
+                elif (eq(x, 2))
+                {
+                    x = 3;
+                }
+            }
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
+
+            var function = (AST.Statements.FunctionDefinition)statement;
+            Assert.That(function!.name.name, Is.EqualTo("main"));
+            Assert.That(function!.arguments, Has.Length.EqualTo(0));
+            Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+            Assert.That(function!.body, Has.Length.EqualTo(2));
+
+            var conditionalStatement = (AST.Statements.Conditional)function!.body[1];
+            Assert.That(conditionalStatement!.if_, Is.InstanceOf<AST.Statements.If>());
+            Assert.That(conditionalStatement!.elif_, Has.Length.EqualTo(1));
+            Assert.That(conditionalStatement!.else_, Is.Null);
+
+            var ifStatement = conditionalStatement!.if_;
+            Assert.That(ifStatement!.condition, Is.InstanceOf<AST.Expressions.FunctionCall>());
+            Assert.That(ifStatement!.body, Has.Length.EqualTo(1));
+
+            var elifStatement = conditionalStatement!.elif_[0];
+            Assert.That(elifStatement!.condition, Is.InstanceOf<AST.Expressions.FunctionCall>());
+            Assert.That(elifStatement!.body, Has.Length.EqualTo(1));
+        }
+
+        [Test]
+        public void TestIf()
+        {
+            bool result = Parser.TryParse(@"
+            function main(): void
+            {
+                var x: i32 = 1;
+                if (eq(x, 1))
+                {
+                    x = 2;
+                }
+            }
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
+
+            var function = (AST.Statements.FunctionDefinition)statement;
+            Assert.That(function!.name.name, Is.EqualTo("main"));
+            Assert.That(function!.arguments, Has.Length.EqualTo(0));
+            Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+            Assert.That(function!.body, Has.Length.EqualTo(2));
+
+            var conditionalStatement = (AST.Statements.Conditional)function!.body[1];
+            Assert.That(conditionalStatement!.if_, Is.InstanceOf<AST.Statements.If>());
+            Assert.That(conditionalStatement!.elif_, Has.Length.EqualTo(0));
+            Assert.That(conditionalStatement!.else_, Is.Null);
+
+            var ifStatement = conditionalStatement!.if_;
+            Assert.That(ifStatement!.condition, Is.InstanceOf<AST.Expressions.FunctionCall>());
+            Assert.That(ifStatement!.body, Has.Length.EqualTo(1));
+        }
+
+        [Test]
+        public void TestIfElifElif()
+        {
+            bool result = Parser.TryParse(@"
+            function main(): void
+            {
+                var x: i32 = 1;
+                if (eq(x, 1))
+                {
+                    x = 2;
+                }
+                elif (eq(x, 2))
+                {
+                    x = 3;
+                }
+                elif (eq(x, 3))
+                {
+                    x = 4;
+                }
+            }
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
+
+            var function = (AST.Statements.FunctionDefinition)statement;
+            Assert.That(function!.name.name, Is.EqualTo("main"));
+            Assert.That(function!.arguments, Has.Length.EqualTo(0));
+            Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+            Assert.That(function!.body, Has.Length.EqualTo(2));
+
+            var conditionalStatement = (AST.Statements.Conditional)function!.body[1];
+            Assert.That(conditionalStatement!.if_, Is.InstanceOf<AST.Statements.If>());
+            Assert.That(conditionalStatement!.elif_, Has.Length.EqualTo(2));
+            Assert.That(conditionalStatement!.else_, Is.Null);
+
+            var ifStatement = conditionalStatement!.if_;
+            Assert.That(ifStatement!.condition, Is.InstanceOf<AST.Expressions.FunctionCall>());
+            Assert.That(ifStatement!.body, Has.Length.EqualTo(1));
+
+            var elifStatement = conditionalStatement!.elif_[0];
+            Assert.That(elifStatement!.condition, Is.InstanceOf<AST.Expressions.FunctionCall>());
+            Assert.That(elifStatement!.body, Has.Length.EqualTo(1));
+
+            var elifStatement2 = conditionalStatement!.elif_[1];
+            Assert.That(elifStatement2!.condition, Is.InstanceOf<AST.Expressions.FunctionCall>());
+            Assert.That(elifStatement2!.body, Has.Length.EqualTo(1));
+        }
     }
 }

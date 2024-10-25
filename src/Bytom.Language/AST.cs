@@ -134,7 +134,7 @@ namespace Bytom.Language.AST
             }
         }
 
-        public class If : Statement
+        public class If
         {
             public Expressions.Expression condition;
             public Statement[] body;
@@ -148,26 +148,29 @@ namespace Bytom.Language.AST
             }
         }
 
-        public class Elif : Statement
-        {
-            public Expressions.Expression condition;
-            public Statement[] body;
-            public Elif(
-                Expressions.Expression condition,
-                Statement[] body
-            )
-            {
-                this.condition = condition;
-                this.body = body;
-            }
-        }
-
-        public class Else : Statement
+        public class Else
         {
             public Statement[] body;
             public Else(Statement[] body)
             {
                 this.body = body;
+            }
+        }
+
+        public class Conditional : Statement
+        {
+            public If if_;
+            public If[] elif_;
+            public Else? else_;
+            public Conditional(
+                If if_,
+                If[] elif_,
+                Else? else_
+            )
+            {
+                this.if_ = if_;
+                this.elif_ = elif_;
+                this.else_ = else_;
             }
         }
 

@@ -28,7 +28,7 @@ namespace Bytom.Language
                 from value in Parse.Ref(
                     () => Token.EqualTo(Tokens.Assignment)
                             .Then(_ => Expressions.Expression!)
-                ).AsNullable().OptionalOrDefault()
+                    ).AsNullable().OptionalOrDefault()
                 from semicolon in Token.EqualTo(Tokens.Semicolon)
                 select (object)new AST.Statements.VariableDeclaration(
                     (AST.Expressions.Name)name,
@@ -52,7 +52,7 @@ namespace Bytom.Language
 
             public static TokenListParser<Tokens, object> AliasDeclaration { get; } =
                 Parse.OneOf(
-                    VariableDeclaration,
+                    VariableDeclaration.Try(),
                     ConstantDeclaration
                 );
 
@@ -84,14 +84,14 @@ namespace Bytom.Language
             public static TokenListParser<Tokens, object> FunctionDefinition { get; } =
                 from function in Token.EqualTo(Tokens.Function)
                 from name in Parse.Ref(() => Expressions.Name!)
-                from openParen in Token.EqualTo(Tokens.LParen)
-                from parameters in Parse.Ref(() => AliasDeclaration!).ManyDelimitedBy(Token.EqualTo(Tokens.Comma))
-                from closeParen in Token.EqualTo(Tokens.RParen)
+                from parameters in Parse.Ref(() => AliasDeclaration!)
+                    .ManyDelimitedBy(Token.EqualTo(Tokens.Comma))
+                    .Between(Token.EqualTo(Tokens.LParen), Token.EqualTo(Tokens.RParen))
                 from colon in Token.EqualTo(Tokens.Colon)
                 from return_type in Parse.Ref(() => Expressions.TypeName!)
-                from openBrace in Token.EqualTo(Tokens.LCurlyBracket)
-                from body in Parse.Ref(() => Statement!).Many()
-                from closeBrace in Token.EqualTo(Tokens.RCurlyBracket)
+                from body in Parse.Ref(() => Statement!)
+                    .Many()
+                    .Between(Token.EqualTo(Tokens.LCurlyBracket), Token.EqualTo(Tokens.RCurlyBracket))
                 select (object)new AST.Statements.FunctionDefinition(
                     (AST.Expressions.Name)name,
                     parameters.Cast<AST.Statements.AliasDeclaration>().ToArray(),
@@ -99,26 +99,68 @@ namespace Bytom.Language
                     body.Cast<AST.Statements.Statement>().ToArray()
                 );
 
+            public static TokenListParser<Tokens, object> If { get; } =
+                from if_keyword in Token.EqualTo(Tokens.If)
+                from openParen in Token.EqualTo(Tokens.LParen)
+                from condition in Parse.Ref(() => Expressions.Expression!)
+                from closeParen in Token.EqualTo(Tokens.RParen)
+                from body in Parse.Ref(() => Statement!)
+                    .Many()
+                    .Between(Token.EqualTo(Tokens.LCurlyBracket), Token.EqualTo(Tokens.RCurlyBracket))
+                select (object)new AST.Statements.If(
+                    (AST.Expressions.Expression)condition,
+                    body.Cast<AST.Statements.Statement>().ToArray()
+                );
+
+            public static TokenListParser<Tokens, object> Elif { get; } =
+                from if_keyword in Token.EqualTo(Tokens.Elif)
+                from condition in Parse.Ref(() => Expressions.Expression!)
+                    .Between(Token.EqualTo(Tokens.LParen), Token.EqualTo(Tokens.RParen))
+                from body in Parse.Ref(() => Statement!)
+                    .Many()
+                    .Between(Token.EqualTo(Tokens.LCurlyBracket), Token.EqualTo(Tokens.RCurlyBracket))
+                select (object)new AST.Statements.If(
+                    (AST.Expressions.Expression)condition,
+                    body.Cast<AST.Statements.Statement>().ToArray()
+                );
+
+            public static TokenListParser<Tokens, object> Else { get; } =
+                from else_keyword in Token.EqualTo(Tokens.Else)
+                from body in Parse.Ref(() => Statement!)
+                    .Many()
+                    .Between(Token.EqualTo(Tokens.LCurlyBracket), Token.EqualTo(Tokens.RCurlyBracket))
+                select (object)new AST.Statements.Else(
+                    body.Cast<AST.Statements.Statement>().ToArray()
+                );
+
+            public static TokenListParser<Tokens, object> Conditional { get; } =
+                from if_ in If
+                from elif_ in Elif.Many()
+                from else_ in Else.AsNullable().OptionalOrDefault()
+                select (object)new AST.Statements.Conditional(
+                    (AST.Statements.If)if_,
+                    elif_.Cast<AST.Statements.If>().ToArray(),
+                    (AST.Statements.Else?)else_
+                );
+
             public static TokenListParser<Tokens, object> Statement { get; } =
                 Parse.OneOf(
-                    FunctionDefinition,
-                    AliasDeclaration,
-                    ReturnStatement,
-                    ValueAssignment,
+                    FunctionDefinition.Try(),
+                    AliasDeclaration.Try(),
+                    ReturnStatement.Try(),
+                    Conditional.Try(),
+                    ValueAssignment.Try(),
                     SideEffectStatement
                 );
         }
 
         public static class Expressions
         {
-            public static TokenListParser<Tokens, object> FunctionCallExpression { get; } =
+            public static TokenListParser<Tokens, object> FunctionCall { get; } =
                 from name in Parse.Ref(() => Name!)
-                from openParen in Token.EqualTo(Tokens.LParen)
-                from arguments in Parse.Ref(() => Name!)
-                    .ManyDelimitedBy(
-                        delimiter: Token.EqualTo(Tokens.Comma),
-                        end: Token.EqualTo(Tokens.RParen)
-                    )
+                from arguments in Parse.Ref(() => Expression!)
+                    .ManyDelimitedBy(Token.EqualTo(Tokens.Comma))
+                    .Between(Token.EqualTo(Tokens.LParen), Token.EqualTo(Tokens.RParen))
                 select (object)new AST.Expressions.FunctionCall(
                     (AST.Expressions.Name)name,
                     arguments.Cast<AST.Expressions.Expression>().ToArray()
@@ -172,19 +214,13 @@ namespace Bytom.Language
                 select (object)new AST.Expressions.TypeName(name.ToStringValue(), pointer.Length);
 
             public static TokenListParser<Tokens, object> Expression { get; } =
-                Parse.OneOf(
-                    StringLiteral,
-                    IntegerLiteral,
-                    FunctionCallExpression,
-                    Name
-                );
+            Parse.OneOf(
+                StringLiteral.Try(),
+                IntegerLiteral.Try(),
+                FunctionCall.Try(),
+                LeftIdentifier
+            );
         }
-
-
-
-
-
-
 
         public static bool TryParse(
             string json,
