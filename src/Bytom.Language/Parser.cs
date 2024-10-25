@@ -25,8 +25,11 @@ namespace Bytom.Language
                 from name in Parse.Ref(() => Expressions.Name!)
                 from colon in Token.EqualTo(Tokens.Colon)
                 from type in Parse.Ref(() => Expressions.TypeName!)
+                from value in Parse.Ref(
+                    () => Token.EqualTo(Tokens.Assignment)
+                            .Then(_ => Expressions.Expression!)
+                ).AsNullable().OptionalOrDefault()
                 from semicolon in Token.EqualTo(Tokens.Semicolon)
-                from value in Parse.Ref(() => Expressions.Expression!).AsNullable()
                 select (object)new AST.Statements.VariableDeclaration(
                     (AST.Expressions.Name)name,
                     (AST.Expressions.TypeName)type,
@@ -34,12 +37,13 @@ namespace Bytom.Language
                 );
 
             public static TokenListParser<Tokens, object> ConstantDeclaration { get; } =
-                from const_keyword in Token.EqualTo(Tokens.Var)
+                from const_keyword in Token.EqualTo(Tokens.Const)
                 from name in Parse.Ref(() => Expressions.Name!)
                 from colon in Token.EqualTo(Tokens.Colon)
                 from type in Parse.Ref(() => Expressions.TypeName!)
-                from semicolon in Token.EqualTo(Tokens.Semicolon)
+                from assignment in Token.EqualTo(Tokens.Assignment)
                 from value in Parse.Ref(() => Expressions.Expression!)
+                from semicolon in Token.EqualTo(Tokens.Semicolon)
                 select (object)new AST.Statements.ConstantDeclaration(
                     (AST.Expressions.Name)name,
                     (AST.Expressions.TypeName)type,
@@ -96,13 +100,6 @@ namespace Bytom.Language
 
         public static class Expressions
         {
-            public static TokenListParser<Tokens, object> Expression { get; } =
-                Parse.OneOf(
-                    Parse.Ref(() => StringLiteral!),
-                    Parse.Ref(() => FunctionCallExpression!),
-                    Parse.Ref(() => Name!)
-                );
-
             public static TokenListParser<Tokens, object> FunctionCallExpression { get; } =
                 from name in Parse.Ref(() => Name!)
                 from openParen in Token.EqualTo(Tokens.LParen)
@@ -144,6 +141,11 @@ namespace Bytom.Language
                     .Apply(StringTextParser)
                     .Select(s => (object)new AST.Expressions.StringLiteral(s));
 
+            public static TokenListParser<Tokens, object> IntegerLiteral { get; } =
+                Token.EqualTo(Tokens.IntegerLiteral)
+                    .Apply(Numerics.IntegerInt64)
+                    .Select(s => (object)new AST.Expressions.IntegerLiteral(s));
+
             public static TokenListParser<Tokens, object> Name { get; } =
                 Token.EqualTo(Tokens.Name)
                     .Select(s => (object)new AST.Expressions.Name(s.ToStringValue()));
@@ -157,6 +159,14 @@ namespace Bytom.Language
                 from name in Token.EqualTo(Tokens.Name)
                 from pointer in Token.EqualTo(Tokens.Asterisk).Many()
                 select (object)new AST.Expressions.TypeName(name.ToStringValue(), pointer.Length);
+
+            public static TokenListParser<Tokens, object> Expression { get; } =
+                Parse.OneOf(
+                    StringLiteral,
+                    IntegerLiteral,
+                    FunctionCallExpression,
+                    Name
+                );
         }
 
 

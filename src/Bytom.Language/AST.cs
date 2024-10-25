@@ -223,6 +223,15 @@ namespace Bytom.Language.AST
             }
         }
 
+        public class IntegerLiteral : Literal
+        {
+            public long value;
+            public IntegerLiteral(long value)
+            {
+                this.value = value;
+            }
+        }
+
         public class InlineAssembly : Expression
         {
             public string assembly;
