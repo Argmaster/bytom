@@ -23,7 +23,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bytom.Assembler.Executable"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bytom.Tools", "Bytom.Tools\Bytom.Tools.csproj", "{89EA4286-9A0E-4CAD-908E-2B816286A2F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bytom.C", "Bytom.C\Bytom.C.csproj", "{BF7D6B78-CAA7-4376-8FC3-98E320926370}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bytom.Language", "Bytom.Language\Bytom.Language.csproj", "{886A918C-33CB-459A-B4C8-E9FD9E0BB53A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bytom.Language.Tests", "Bytom.Language.Tests\Bytom.Language.Tests.csproj", "{8B49181D-A0A9-4C11-8790-6634097F7FE1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -82,5 +84,9 @@ Global
 		{BF7D6B78-CAA7-4376-8FC3-98E320926370}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF7D6B78-CAA7-4376-8FC3-98E320926370}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF7D6B78-CAA7-4376-8FC3-98E320926370}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B49181D-A0A9-4C11-8790-6634097F7FE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B49181D-A0A9-4C11-8790-6634097F7FE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B49181D-A0A9-4C11-8790-6634097F7FE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B49181D-A0A9-4C11-8790-6634097F7FE1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
