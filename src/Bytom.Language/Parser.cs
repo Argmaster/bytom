@@ -56,6 +56,16 @@ namespace Bytom.Language
                     ConstantDeclaration
                 );
 
+            public static TokenListParser<Tokens, object> ValueAssignment { get; } =
+                from name in Parse.Ref(() => Expressions.Name!)
+                from assignment in Token.EqualTo(Tokens.Assignment)
+                from value in Parse.Ref(() => Expressions.Expression!)
+                from semicolon in Token.EqualTo(Tokens.Semicolon)
+                select (object)new AST.Statements.ValueAssignment(
+                    (AST.Expressions.Name)name,
+                    (AST.Expressions.Expression)value
+                );
+
             public static TokenListParser<Tokens, object> ReturnStatement { get; } =
                 from return_keyword in Token.EqualTo(Tokens.Return)
                 from value in Parse.Ref(() => Expressions.Expression!)
@@ -94,6 +104,7 @@ namespace Bytom.Language
                     FunctionDefinition,
                     AliasDeclaration,
                     ReturnStatement,
+                    ValueAssignment,
                     SideEffectStatement
                 );
         }

@@ -139,4 +139,46 @@ public class ParserTests
         Assert.That(variableDeclaration2!.type.type_name, Is.EqualTo("i32"));
         Assert.That(variableDeclaration2!.value, Is.InstanceOf<AST.Expressions.IntegerLiteral>());
     }
+
+    [Test]
+    public void TestValueAssignment()
+    {
+        bool result = Parser.TryParse(@"
+            function main(): void
+            {
+                var x: i32;
+                x = 1;
+            }
+            ",
+            out var value,
+            out var error,
+            out var errorPosition
+        );
+        Assert.That(error, Is.Null);
+        Assert.That(result, Is.True);
+        Assert.That(value, Is.InstanceOf<AST.Module>());
+
+        var module = (AST.Module)value;
+        Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+        var statement = module!.statements[0];
+        Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
+
+        var function = (AST.Statements.FunctionDefinition)statement;
+        Assert.That(function!.name.name, Is.EqualTo("main"));
+        Assert.That(function!.arguments, Has.Length.EqualTo(0));
+        Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+        Assert.That(function!.body, Has.Length.EqualTo(2));
+
+        Assert.That(function!.body[1], Is.InstanceOf<AST.Statements.ValueAssignment>());
+        var valueAssignment = (AST.Statements.ValueAssignment)function!.body[1];
+
+        Assert.That(valueAssignment!.name, Is.InstanceOf<AST.Expressions.Name>());
+        var name = (AST.Expressions.Name)valueAssignment!.name;
+        Assert.That(name!.name, Is.EqualTo("x"));
+
+        Assert.That(valueAssignment!.value, Is.InstanceOf<AST.Expressions.IntegerLiteral>());
+        var val = (AST.Expressions.IntegerLiteral)valueAssignment!.value;
+        Assert.That(val!.value, Is.EqualTo(1));
+    }
 }
