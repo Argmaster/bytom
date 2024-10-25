@@ -1,6 +1,6 @@
 
 
-function add(x: $T, y: $T): $T
+function add(var x: $T, var y: $T): $T
 {
     return asm {
         pop RD0
