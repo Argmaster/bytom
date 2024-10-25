@@ -593,4 +593,80 @@ public class ParserTests
             Assert.That(forStatement!.body, Has.Length.EqualTo(1));
         }
     }
+
+    public class InlineAssemblyTest
+    {
+        [Test]
+        public void TestGlobalAdd()
+        {
+            bool result = Parser.TryParse(@"
+            asm {
+                pop RD0
+                pop RD1
+                add RD0, RD1
+            };
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.SideEffect>());
+
+            var sideEffect = (AST.Statements.SideEffect)statement;
+            Assert.That(sideEffect!.expression, Is.InstanceOf<AST.Expressions.InlineAssembly>());
+
+            var asmStatement = (AST.Expressions.InlineAssembly)sideEffect!.expression;
+            Assert.That(asmStatement!.assembly, Has.Length.Not.EqualTo(0));
+        }
+
+        [Test]
+        public void TestAdd()
+        {
+            bool result = Parser.TryParse(@"
+            function add(var x: $T; var y: $T;): $T
+            {
+                return asm {
+                    pop RD0
+                    pop RD1
+                    add RD0, RD1
+                };
+            }
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
+
+            var function = (AST.Statements.FunctionDefinition)statement;
+            Assert.That(function!.name.name, Is.EqualTo("add"));
+            Assert.That(function!.arguments, Has.Length.EqualTo(2));
+            Assert.That(function!.return_type.type_name, Is.EqualTo("$T"));
+            Assert.That(function!.body, Has.Length.EqualTo(1));
+
+            var returnStatement = (AST.Statements.Return)function!.body[0];
+            Assert.That(returnStatement!.value, Is.InstanceOf<AST.Expressions.InlineAssembly>());
+
+            var asmStatement = (AST.Expressions.InlineAssembly)returnStatement!.value;
+            Assert.That(asmStatement!.assembly, Is.EqualTo("pop RD0\npop RD1\nadd RD0, RD1"));
+
+
+        }
+    }
 }

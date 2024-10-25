@@ -241,14 +241,34 @@ namespace Bytom.Language
                 );
 
             public static TokenListParser<Tokens, object> TypeName { get; } =
-                from name in Token.EqualTo(Tokens.Name)
+                from name in Token.EqualTo(Tokens.Name).Or(Token.EqualTo(Tokens.GenericName))
                 from pointer in Token.EqualTo(Tokens.Asterisk).Many()
                 select (object)new AST.Expressions.TypeName(name.ToStringValue(), pointer.Length);
 
+            private static TextParser<string> InlineAssemblyParser { get; } =
+                from asm in Span.EqualTo("asm")
+                from whitespace in Character.WhiteSpace.Many()
+                from openCurlyBrace in Character.EqualTo('{')
+                from content in Span.Except("}")
+                from closeCurlyBrace in Character.EqualTo('}')
+                select string.Join(
+                    "\n", content.ToStringValue()
+                        .Split("\n")
+                        .Select(s => s.Trim())
+                        .Where(s => s.Length != 0)
+                        .ToArray()
+                );
+
+            public static TokenListParser<Tokens, object> InlineAssembly { get; } =
+                Token.EqualTo(Tokens.Asm)
+                    .Apply(InlineAssemblyParser)
+                    .Select(s => (object)new AST.Expressions.InlineAssembly(s));
+
             public static TokenListParser<Tokens, object> Expression { get; } =
             Parse.OneOf(
-                StringLiteral.Try(),
-                IntegerLiteral.Try(),
+                StringLiteral,
+                IntegerLiteral,
+                InlineAssembly,
                 FunctionCall.Try(),
                 LeftIdentifier
             );

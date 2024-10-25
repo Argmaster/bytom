@@ -119,10 +119,19 @@ namespace Bytom.Language
     {
         static TextParser<Unit> StringToken { get; } =
             from open in Character.EqualTo('"')
-            from content in Character.EqualTo('\\').IgnoreThen(Character.AnyChar).Value(Unit.Value).Try()
+            from content in Character.EqualTo('\\')
+                .IgnoreThen(Character.AnyChar).Value(Unit.Value).Try()
                 .Or(Character.Except('"').Value(Unit.Value))
                 .IgnoreMany()
             from close in Character.EqualTo('"')
+            select Unit.Value;
+
+        static TextParser<Unit> InlineAssembly { get; } =
+            from open in Span.EqualTo("asm")
+            from whitespace in Character.WhiteSpace.IgnoreMany()
+            from openCurly in Character.EqualTo('{')
+            from content in Character.Except('}').Value(Unit.Value).IgnoreMany()
+            from closeCurly in Character.EqualTo('}')
             select Unit.Value;
 
         public static Tokenizer<Tokens> Instance { get; } =
@@ -143,7 +152,6 @@ namespace Bytom.Language
                 .Match(Character.EqualTo('.'), Tokens.Dot)
                 .Match(Span.EqualTo("=>"), Tokens.Arrow)
                 .Match(Character.EqualTo('='), Tokens.Assignment)
-                .Match(Span.EqualTo("asm"), Tokens.Asm)
                 .Match(Span.EqualTo("struct"), Tokens.Struct)
                 .Match(Span.EqualTo("bitfield"), Tokens.BitField)
                 .Match(Span.EqualTo("return"), Tokens.Return)
@@ -157,11 +165,12 @@ namespace Bytom.Language
                 .Match(Span.EqualTo("if"), Tokens.If)
                 .Match(Span.EqualTo("elif"), Tokens.Elif)
                 .Match(Span.EqualTo("else"), Tokens.Else)
+                .Match(InlineAssembly, Tokens.Asm)
                 .Match(StringToken, Tokens.StringLiteral)
                 .Match(Numerics.Integer, Tokens.IntegerLiteral, requireDelimiters: true)
                 .Match(Numerics.Integer, Tokens.IntegerLiteral, requireDelimiters: true)
-                .Match(Identifier.CStyle, Tokens.Name, requireDelimiters: true)
-                .Match(Span.Regex("[a-zA-Z_$]*"), Tokens.GenericName, requireDelimiters: true)
+                .Match(Span.Regex("[a-zA-Z_][a-z-A-Z_0-9]*"), Tokens.Name, requireDelimiters: true)
+                .Match(Span.Regex("\\$[a-zA-Z_][a-z-A-Z_0-9]*"), Tokens.GenericName, requireDelimiters: true)
                 .Build();
     }
 }
