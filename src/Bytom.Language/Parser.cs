@@ -85,7 +85,7 @@ namespace Bytom.Language
                 from function in Token.EqualTo(Tokens.Function)
                 from name in Parse.Ref(() => Expressions.Name!)
                 from parameters in Parse.Ref(() => AliasDeclaration!)
-                    .ManyDelimitedBy(Token.EqualTo(Tokens.Comma))
+                    .Many()
                     .Between(Token.EqualTo(Tokens.LParen), Token.EqualTo(Tokens.RParen))
                 from colon in Token.EqualTo(Tokens.Colon)
                 from return_type in Parse.Ref(() => Expressions.TypeName!)
@@ -175,12 +175,12 @@ namespace Bytom.Language
 
             public static TokenListParser<Tokens, object> Statement { get; } =
                 Parse.OneOf(
-                    FunctionDefinition.Try(),
-                    AliasDeclaration.Try(),
-                    ReturnStatement.Try(),
-                    Conditional.Try(),
-                    While.Try(),
-                    For.Try(),
+                    FunctionDefinition,
+                    AliasDeclaration,
+                    ReturnStatement,
+                    Conditional,
+                    While,
+                    For,
                     ValueAssignment.Try(),
                     SideEffectStatement
                 );

@@ -6,59 +6,114 @@ public class ParserTests
     public void Setup()
     {
     }
-
-    [Test]
-    public void TestFunctionSquare()
+    public class FunctionDefinitionTests
     {
-        bool result = Parser.TryParse(@"
+        [Test]
+        public void TestSquare()
+        {
+            bool result = Parser.TryParse(@"
             function square(var x: i32;): i32
             {
                 return mul(x, x);
             }
             ",
-            out var value,
-            out var error,
-            out var errorPosition
-        );
-        Assert.That(error, Is.Null);
-        Assert.That(result, Is.True);
-        Assert.That(value, Is.InstanceOf<AST.Module>());
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
 
-        var module = (AST.Module)value;
-        Assert.That(module!.statements, Has.Length.EqualTo(1));
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
 
-        var statement = module!.statements[0];
-        Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
 
-        var function = (AST.Statements.FunctionDefinition)statement;
-        Assert.That(function!.name.name, Is.EqualTo("square"));
-        Assert.That(function!.arguments, Has.Length.EqualTo(1));
+            var function = (AST.Statements.FunctionDefinition)statement;
+            Assert.That(function!.name.name, Is.EqualTo("square"));
+            Assert.That(function!.arguments, Has.Length.EqualTo(1));
 
-        var argument = (AST.Statements.VariableDeclaration)function!.arguments[0];
-        Assert.That(argument!.name.name, Is.EqualTo("x"));
-        Assert.That(argument!.type.type_name, Is.EqualTo("i32"));
-        Assert.That(argument!.type.pointer_level, Is.EqualTo(0));
+            var argument = (AST.Statements.VariableDeclaration)function!.arguments[0];
+            Assert.That(argument!.name.name, Is.EqualTo("x"));
+            Assert.That(argument!.type.type_name, Is.EqualTo("i32"));
+            Assert.That(argument!.type.pointer_level, Is.EqualTo(0));
 
-        Assert.That(function!.return_type.type_name, Is.EqualTo("i32"));
-        Assert.That(function!.return_type.pointer_level, Is.EqualTo(0));
+            Assert.That(function!.return_type.type_name, Is.EqualTo("i32"));
+            Assert.That(function!.return_type.pointer_level, Is.EqualTo(0));
 
-        Assert.That(function!.body, Has.Length.EqualTo(1));
-        Assert.That(function!.body[0], Is.InstanceOf<AST.Statements.Return>());
+            Assert.That(function!.body, Has.Length.EqualTo(1));
+            Assert.That(function!.body[0], Is.InstanceOf<AST.Statements.Return>());
 
-        var returnStatement = (AST.Statements.Return)function!.body[0];
-        Assert.That(returnStatement!.value, Is.InstanceOf<AST.Expressions.FunctionCall>());
+            var returnStatement = (AST.Statements.Return)function!.body[0];
+            Assert.That(returnStatement!.value, Is.InstanceOf<AST.Expressions.FunctionCall>());
 
-        var functionCall = (AST.Expressions.FunctionCall)returnStatement!.value;
-        Assert.That(functionCall!.name.name, Is.EqualTo("mul"));
-        Assert.That(functionCall!.arguments, Has.Length.EqualTo(2));
+            var functionCall = (AST.Expressions.FunctionCall)returnStatement!.value;
+            Assert.That(functionCall!.name.name, Is.EqualTo("mul"));
+            Assert.That(functionCall!.arguments, Has.Length.EqualTo(2));
 
-        Assert.That(functionCall!.arguments[0], Is.InstanceOf<AST.Expressions.Name>());
-        var argument1 = (AST.Expressions.Name)functionCall!.arguments[0];
-        Assert.That(argument1!.name, Is.EqualTo("x"));
+            Assert.That(functionCall!.arguments[0], Is.InstanceOf<AST.Expressions.Name>());
+            var argument1 = (AST.Expressions.Name)functionCall!.arguments[0];
+            Assert.That(argument1!.name, Is.EqualTo("x"));
 
-        Assert.That(functionCall!.arguments[1], Is.InstanceOf<AST.Expressions.Name>());
-        var argument2 = (AST.Expressions.Name)functionCall!.arguments[1];
-        Assert.That(argument2!.name, Is.EqualTo("x"));
+            Assert.That(functionCall!.arguments[1], Is.InstanceOf<AST.Expressions.Name>());
+            var argument2 = (AST.Expressions.Name)functionCall!.arguments[1];
+            Assert.That(argument2!.name, Is.EqualTo("x"));
+        }
+        [Test]
+        public void TestTwoParams()
+        {
+            bool result = Parser.TryParse(@"
+            function do_something(var x: i32; var y: i32;): i32
+            {
+                const j: i32 = add(x, y);
+                var result: i32 = 0;
+
+                for (var i: i32 = 0; lt(i, 10); i = inc(i);)
+                {
+                    result = add(j, 5);
+                }
+                return mul(result, result);
+            }
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
+
+            var function = (AST.Statements.FunctionDefinition)statement;
+            Assert.That(function!.name.name, Is.EqualTo("do_something"));
+            Assert.That(function!.arguments, Has.Length.EqualTo(2));
+
+            var argument = (AST.Statements.VariableDeclaration)function!.arguments[0];
+            Assert.That(argument!.name.name, Is.EqualTo("x"));
+            Assert.That(argument!.type.type_name, Is.EqualTo("i32"));
+            Assert.That(argument!.type.pointer_level, Is.EqualTo(0));
+
+            var argument2 = (AST.Statements.VariableDeclaration)function!.arguments[1];
+            Assert.That(argument2!.name.name, Is.EqualTo("y"));
+            Assert.That(argument2!.type.type_name, Is.EqualTo("i32"));
+            Assert.That(argument2!.type.pointer_level, Is.EqualTo(0));
+
+            Assert.That(function!.return_type.type_name, Is.EqualTo("i32"));
+            Assert.That(function!.return_type.pointer_level, Is.EqualTo(0));
+
+            Assert.That(function!.body, Has.Length.EqualTo(4));
+            Assert.That(function!.body[0], Is.InstanceOf<AST.Statements.ConstantDeclaration>());
+            Assert.That(function!.body[1], Is.InstanceOf<AST.Statements.VariableDeclaration>());
+            Assert.That(function!.body[2], Is.InstanceOf<AST.Statements.For>());
+            Assert.That(function!.body[3], Is.InstanceOf<AST.Statements.Return>());
+        }
     }
 
     public class SideEffectTests
