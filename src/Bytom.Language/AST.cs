@@ -134,6 +134,26 @@ namespace Bytom.Language.AST
             }
         }
 
+        public class For : Statement
+        {
+            public VariableDeclaration initialization;
+            public Expressions.Expression condition;
+            public ValueAssignment increment;
+            public Statement[] body;
+            public For(
+                VariableDeclaration initialization,
+                Expressions.Expression condition,
+                ValueAssignment increment,
+                Statement[] body
+            )
+            {
+                this.initialization = initialization;
+                this.condition = condition;
+                this.increment = increment;
+                this.body = body;
+            }
+        }
+
         public class If
         {
             public Expressions.Expression condition;

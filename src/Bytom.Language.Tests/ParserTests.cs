@@ -458,4 +458,84 @@ public class ParserTests
             Assert.That(elifStatement2!.body, Has.Length.EqualTo(1));
         }
     }
+
+    public class LoopTests
+    {
+        [Test]
+        public void TestWhile()
+        {
+            bool result = Parser.TryParse(@"
+            function main(): void
+            {
+                var x: i32 = 1;
+                while (eq(x, 1))
+                {
+                    x = 2;
+                }
+            }
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
+
+            var function = (AST.Statements.FunctionDefinition)statement;
+            Assert.That(function!.name.name, Is.EqualTo("main"));
+            Assert.That(function!.arguments, Has.Length.EqualTo(0));
+            Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+            Assert.That(function!.body, Has.Length.EqualTo(2));
+
+            var whileStatement = (AST.Statements.While)function!.body[1];
+            Assert.That(whileStatement!.condition, Is.InstanceOf<AST.Expressions.FunctionCall>());
+            Assert.That(whileStatement!.body, Has.Length.EqualTo(1));
+        }
+        [Test]
+        public void TestFor()
+        {
+            bool result = Parser.TryParse(@"
+            function main(): void
+            {
+                var x: i32 = 1;
+                for (var i: i32 = 0; lt(i, 10); i = inc(i);)
+                {
+                    x = add(x, 2);
+                }
+            }
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
+
+            var function = (AST.Statements.FunctionDefinition)statement;
+            Assert.That(function!.name.name, Is.EqualTo("main"));
+            Assert.That(function!.arguments, Has.Length.EqualTo(0));
+            Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+            Assert.That(function!.body, Has.Length.EqualTo(2));
+
+            var forStatement = (AST.Statements.For)function!.body[1];
+            Assert.That(forStatement!.initialization, Is.InstanceOf<AST.Statements.VariableDeclaration>());
+            Assert.That(forStatement!.condition, Is.InstanceOf<AST.Expressions.FunctionCall>());
+            Assert.That(forStatement!.increment, Is.InstanceOf<AST.Statements.ValueAssignment>());
+            Assert.That(forStatement!.body, Has.Length.EqualTo(1));
+        }
+    }
 }

@@ -50,6 +50,9 @@ namespace Bytom.Language
         [Token(Description = "while keyword")]
         While,
 
+        [Token(Description = "for keyword")]
+        For,
+
         [Token(Description = "arrow operator")]
         Arrow,
 
@@ -150,6 +153,7 @@ namespace Bytom.Language
                 .Match(Span.EqualTo("const"), Tokens.Const)
                 .Match(Span.EqualTo("var"), Tokens.Var)
                 .Match(Span.EqualTo("while"), Tokens.While)
+                .Match(Span.EqualTo("for"), Tokens.For)
                 .Match(Span.EqualTo("if"), Tokens.If)
                 .Match(Span.EqualTo("elif"), Tokens.Elif)
                 .Match(Span.EqualTo("else"), Tokens.Else)

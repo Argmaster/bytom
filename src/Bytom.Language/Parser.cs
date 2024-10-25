@@ -143,12 +143,44 @@ namespace Bytom.Language
                     (AST.Statements.Else?)else_
                 );
 
+            public static TokenListParser<Tokens, object> While { get; } =
+                from while_keyword in Token.EqualTo(Tokens.While)
+                from condition in Parse.Ref(() => Expressions.Expression!)
+                    .Between(Token.EqualTo(Tokens.LParen), Token.EqualTo(Tokens.RParen))
+                from body in Parse.Ref(() => Statement!)
+                    .Many()
+                    .Between(Token.EqualTo(Tokens.LCurlyBracket), Token.EqualTo(Tokens.RCurlyBracket))
+                select (object)new AST.Statements.While(
+                    (AST.Expressions.Expression)condition,
+                    body.Cast<AST.Statements.Statement>().ToArray()
+                );
+
+            public static TokenListParser<Tokens, object> For { get; } =
+                from for_keyword in Token.EqualTo(Tokens.For)
+                from openParen in Token.EqualTo(Tokens.LParen)
+                from initialization in Parse.Ref(() => VariableDeclaration!)
+                from condition in Parse.Ref(() => Expressions.Expression!)
+                from semicolon1 in Token.EqualTo(Tokens.Semicolon)
+                from increment in Parse.Ref(() => ValueAssignment!)
+                from closeParen in Token.EqualTo(Tokens.RParen)
+                from body in Parse.Ref(() => Statement!)
+                    .Many()
+                    .Between(Token.EqualTo(Tokens.LCurlyBracket), Token.EqualTo(Tokens.RCurlyBracket))
+                select (object)new AST.Statements.For(
+                    (AST.Statements.VariableDeclaration)initialization,
+                    (AST.Expressions.Expression)condition,
+                    (AST.Statements.ValueAssignment)increment,
+                    body.Cast<AST.Statements.Statement>().ToArray()
+                );
+
             public static TokenListParser<Tokens, object> Statement { get; } =
                 Parse.OneOf(
                     FunctionDefinition.Try(),
                     AliasDeclaration.Try(),
                     ReturnStatement.Try(),
                     Conditional.Try(),
+                    While.Try(),
+                    For.Try(),
                     ValueAssignment.Try(),
                     SideEffectStatement
                 );
