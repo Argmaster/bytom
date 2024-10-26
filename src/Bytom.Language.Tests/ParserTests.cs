@@ -37,11 +37,11 @@ public class ParserTests
 
             var argument = (AST.Statements.VariableDeclaration)function!.arguments[0];
             Assert.That(argument!.name.name, Is.EqualTo("x"));
-            Assert.That(argument!.type.type_name, Is.EqualTo("i32"));
-            Assert.That(argument!.type.pointer_level, Is.EqualTo(0));
+            Assert.That(argument!.type.ToString(), Is.EqualTo("i32"));
+            Assert.That(argument!.type.GetPointerLevel(), Is.EqualTo(0));
 
-            Assert.That(function!.return_type.type_name, Is.EqualTo("i32"));
-            Assert.That(function!.return_type.pointer_level, Is.EqualTo(0));
+            Assert.That(function!.return_type.ToString(), Is.EqualTo("i32"));
+            Assert.That(function!.return_type.GetPointerLevel(), Is.EqualTo(0));
 
             Assert.That(function!.body, Has.Length.EqualTo(1));
             Assert.That(function!.body[0], Is.InstanceOf<AST.Statements.Return>());
@@ -97,16 +97,16 @@ public class ParserTests
 
             var argument = (AST.Statements.VariableDeclaration)function!.arguments[0];
             Assert.That(argument!.name.name, Is.EqualTo("x"));
-            Assert.That(argument!.type.type_name, Is.EqualTo("i32"));
-            Assert.That(argument!.type.pointer_level, Is.EqualTo(0));
+            Assert.That(argument!.type.ToString(), Is.EqualTo("i32"));
+            Assert.That(argument!.type.GetPointerLevel(), Is.EqualTo(0));
 
             var argument2 = (AST.Statements.VariableDeclaration)function!.arguments[1];
             Assert.That(argument2!.name.name, Is.EqualTo("y"));
-            Assert.That(argument2!.type.type_name, Is.EqualTo("i32"));
-            Assert.That(argument2!.type.pointer_level, Is.EqualTo(0));
+            Assert.That(argument2!.type.ToString(), Is.EqualTo("i32"));
+            Assert.That(argument2!.type.GetPointerLevel(), Is.EqualTo(0));
 
-            Assert.That(function!.return_type.type_name, Is.EqualTo("i32"));
-            Assert.That(function!.return_type.pointer_level, Is.EqualTo(0));
+            Assert.That(function!.return_type.ToString(), Is.EqualTo("i32"));
+            Assert.That(function!.return_type.GetPointerLevel(), Is.EqualTo(0));
 
             Assert.That(function!.body, Has.Length.EqualTo(4));
             Assert.That(function!.body[0], Is.InstanceOf<AST.Statements.ConstantDeclaration>());
@@ -206,19 +206,19 @@ public class ParserTests
         var function = (AST.Statements.FunctionDefinition)statement;
         Assert.That(function!.name.name, Is.EqualTo("main"));
         Assert.That(function!.arguments, Has.Length.EqualTo(0));
-        Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+        Assert.That(function!.return_type.ToString(), Is.EqualTo("void"));
         Assert.That(function!.body, Has.Length.EqualTo(2));
 
         Assert.That(function!.body[0], Is.InstanceOf<AST.Statements.VariableDeclaration>());
         var variableDeclaration1 = (AST.Statements.VariableDeclaration)function!.body[0];
         Assert.That(variableDeclaration1!.name.name, Is.EqualTo("y"));
-        Assert.That(variableDeclaration1!.type.type_name, Is.EqualTo("i32"));
+        Assert.That(variableDeclaration1!.type.ToString(), Is.EqualTo("i32"));
         Assert.That(variableDeclaration1!.value, Is.Null);
 
         Assert.That(function!.body[1], Is.InstanceOf<AST.Statements.VariableDeclaration>());
         var variableDeclaration2 = (AST.Statements.VariableDeclaration)function!.body[1];
         Assert.That(variableDeclaration2!.name.name, Is.EqualTo("x"));
-        Assert.That(variableDeclaration2!.type.type_name, Is.EqualTo("i32"));
+        Assert.That(variableDeclaration2!.type.ToString(), Is.EqualTo("i32"));
         Assert.That(variableDeclaration2!.value, Is.InstanceOf<AST.Expressions.IntegerLiteral>());
     }
 
@@ -248,13 +248,13 @@ public class ParserTests
         var function = (AST.Statements.FunctionDefinition)statement;
         Assert.That(function!.name.name, Is.EqualTo("main"));
         Assert.That(function!.arguments, Has.Length.EqualTo(0));
-        Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+        Assert.That(function!.return_type.ToString(), Is.EqualTo("void"));
         Assert.That(function!.body, Has.Length.EqualTo(1));
 
         Assert.That(function!.body[0], Is.InstanceOf<AST.Statements.ConstantDeclaration>());
         var variableDeclaration2 = (AST.Statements.ConstantDeclaration)function!.body[0];
         Assert.That(variableDeclaration2!.name.name, Is.EqualTo("x"));
-        Assert.That(variableDeclaration2!.type.type_name, Is.EqualTo("i32"));
+        Assert.That(variableDeclaration2!.type.ToString(), Is.EqualTo("i32"));
         Assert.That(variableDeclaration2!.value, Is.InstanceOf<AST.Expressions.IntegerLiteral>());
     }
 
@@ -285,7 +285,7 @@ public class ParserTests
         var function = (AST.Statements.FunctionDefinition)statement;
         Assert.That(function!.name.name, Is.EqualTo("main"));
         Assert.That(function!.arguments, Has.Length.EqualTo(0));
-        Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+        Assert.That(function!.return_type.ToString(), Is.EqualTo("void"));
         Assert.That(function!.body, Has.Length.EqualTo(2));
 
         Assert.That(function!.body[1], Is.InstanceOf<AST.Statements.ValueAssignment>());
@@ -340,7 +340,7 @@ public class ParserTests
             var function = (AST.Statements.FunctionDefinition)statement;
             Assert.That(function!.name.name, Is.EqualTo("main"));
             Assert.That(function!.arguments, Has.Length.EqualTo(0));
-            Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+            Assert.That(function!.return_type.ToString(), Is.EqualTo("void"));
             Assert.That(function!.body, Has.Length.EqualTo(2));
 
             var conditionalStatement = (AST.Statements.Conditional)function!.body[1];
@@ -394,7 +394,7 @@ public class ParserTests
             var function = (AST.Statements.FunctionDefinition)statement;
             Assert.That(function!.name.name, Is.EqualTo("main"));
             Assert.That(function!.arguments, Has.Length.EqualTo(0));
-            Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+            Assert.That(function!.return_type.ToString(), Is.EqualTo("void"));
             Assert.That(function!.body, Has.Length.EqualTo(2));
 
             var conditionalStatement = (AST.Statements.Conditional)function!.body[1];
@@ -441,7 +441,7 @@ public class ParserTests
             var function = (AST.Statements.FunctionDefinition)statement;
             Assert.That(function!.name.name, Is.EqualTo("main"));
             Assert.That(function!.arguments, Has.Length.EqualTo(0));
-            Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+            Assert.That(function!.return_type.ToString(), Is.EqualTo("void"));
             Assert.That(function!.body, Has.Length.EqualTo(2));
 
             var conditionalStatement = (AST.Statements.Conditional)function!.body[1];
@@ -492,7 +492,7 @@ public class ParserTests
             var function = (AST.Statements.FunctionDefinition)statement;
             Assert.That(function!.name.name, Is.EqualTo("main"));
             Assert.That(function!.arguments, Has.Length.EqualTo(0));
-            Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+            Assert.That(function!.return_type.ToString(), Is.EqualTo("void"));
             Assert.That(function!.body, Has.Length.EqualTo(2));
 
             var conditionalStatement = (AST.Statements.Conditional)function!.body[1];
@@ -546,7 +546,7 @@ public class ParserTests
             var function = (AST.Statements.FunctionDefinition)statement;
             Assert.That(function!.name.name, Is.EqualTo("main"));
             Assert.That(function!.arguments, Has.Length.EqualTo(0));
-            Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+            Assert.That(function!.return_type.ToString(), Is.EqualTo("void"));
             Assert.That(function!.body, Has.Length.EqualTo(2));
 
             var whileStatement = (AST.Statements.While)function!.body[1];
@@ -583,7 +583,7 @@ public class ParserTests
             var function = (AST.Statements.FunctionDefinition)statement;
             Assert.That(function!.name.name, Is.EqualTo("main"));
             Assert.That(function!.arguments, Has.Length.EqualTo(0));
-            Assert.That(function!.return_type.type_name, Is.EqualTo("void"));
+            Assert.That(function!.return_type.ToString(), Is.EqualTo("void"));
             Assert.That(function!.body, Has.Length.EqualTo(2));
 
             var forStatement = (AST.Statements.For)function!.body[1];
@@ -631,7 +631,7 @@ public class ParserTests
         public void TestAdd()
         {
             bool result = Parser.TryParse(@"
-            function add(var x: $T; var y: $T;): $T
+            function add(var x: i32; var y: i32;): i32
             {
                 return asm {
                     pop RD0
@@ -657,7 +657,7 @@ public class ParserTests
             var function = (AST.Statements.FunctionDefinition)statement;
             Assert.That(function!.name.name, Is.EqualTo("add"));
             Assert.That(function!.arguments, Has.Length.EqualTo(2));
-            Assert.That(function!.return_type.type_name, Is.EqualTo("$T"));
+            Assert.That(function!.return_type.ToString(), Is.EqualTo("i32"));
             Assert.That(function!.body, Has.Length.EqualTo(1));
 
             var returnStatement = (AST.Statements.Return)function!.body[0];
@@ -665,8 +665,6 @@ public class ParserTests
 
             var asmStatement = (AST.Expressions.InlineAssembly)returnStatement!.value;
             Assert.That(asmStatement!.assembly, Is.EqualTo("pop RD0\npop RD1\nadd RD0, RD1"));
-
-
         }
     }
 }

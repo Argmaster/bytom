@@ -150,6 +150,7 @@ namespace Bytom.Language
                 .Match(Character.EqualTo('>'), Tokens.RAngleBracket)
                 .Match(Character.EqualTo('*'), Tokens.Asterisk)
                 .Match(Character.EqualTo('.'), Tokens.Dot)
+                .Match(Character.EqualTo('@'), Tokens.Dot)
                 .Match(Span.EqualTo("=>"), Tokens.Arrow)
                 .Match(Character.EqualTo('='), Tokens.Assignment)
                 .Match(Span.EqualTo("struct"), Tokens.Struct)
@@ -169,7 +170,7 @@ namespace Bytom.Language
                 .Match(StringToken, Tokens.StringLiteral)
                 .Match(Numerics.Integer, Tokens.IntegerLiteral, requireDelimiters: true)
                 .Match(Numerics.Integer, Tokens.IntegerLiteral, requireDelimiters: true)
-                .Match(Span.Regex("[a-zA-Z_][a-z-A-Z_0-9]*"), Tokens.Name, requireDelimiters: true)
+                .Match(Span.Regex("[a-zA-Z_][a-z-A-Z_0-9]*(@[a-zA-Z_][a-z-A-Z_0-9]*)*"), Tokens.Name, requireDelimiters: true)
                 .Match(Span.Regex("\\$[a-zA-Z_][a-z-A-Z_0-9]*"), Tokens.GenericName, requireDelimiters: true)
                 .Build();
     }

@@ -24,7 +24,7 @@ namespace Bytom.Language
                 from var_keyword in Token.EqualTo(Tokens.Var)
                 from name in Parse.Ref(() => Expressions.Name!)
                 from colon in Token.EqualTo(Tokens.Colon)
-                from type in Parse.Ref(() => Expressions.TypeName!)
+                from type in Parse.Ref(() => Expressions.TypeIdentifier!)
                 from value in Parse.Ref(
                     () => Token.EqualTo(Tokens.Assignment)
                             .Then(_ => Expressions.Expression!)
@@ -40,7 +40,7 @@ namespace Bytom.Language
                 from const_keyword in Token.EqualTo(Tokens.Const)
                 from name in Parse.Ref(() => Expressions.Name!)
                 from colon in Token.EqualTo(Tokens.Colon)
-                from type in Parse.Ref(() => Expressions.TypeName!)
+                from type in Parse.Ref(() => Expressions.TypeIdentifier!)
                 from assignment in Token.EqualTo(Tokens.Assignment)
                 from value in Parse.Ref(() => Expressions.Expression!)
                 from semicolon in Token.EqualTo(Tokens.Semicolon)
@@ -57,7 +57,7 @@ namespace Bytom.Language
                 );
 
             public static TokenListParser<Tokens, object> ValueAssignment { get; } =
-                from name in Parse.Ref(() => Expressions.Name!)
+                from name in Parse.Ref(() => Expressions.NameIdentifier!)
                 from assignment in Token.EqualTo(Tokens.Assignment)
                 from value in Parse.Ref(() => Expressions.Expression!)
                 from semicolon in Token.EqualTo(Tokens.Semicolon)
@@ -88,14 +88,14 @@ namespace Bytom.Language
                     .Many()
                     .Between(Token.EqualTo(Tokens.LParen), Token.EqualTo(Tokens.RParen))
                 from colon in Token.EqualTo(Tokens.Colon)
-                from return_type in Parse.Ref(() => Expressions.TypeName!)
+                from return_type in Parse.Ref(() => Expressions.TypeIdentifier!)
                 from body in Parse.Ref(() => Statement!)
                     .Many()
                     .Between(Token.EqualTo(Tokens.LCurlyBracket), Token.EqualTo(Tokens.RCurlyBracket))
                 select (object)new AST.Statements.FunctionDefinition(
                     (AST.Expressions.Name)name,
                     parameters.Cast<AST.Statements.AliasDeclaration>().ToArray(),
-                    (AST.Expressions.TypeName)return_type,
+                    (AST.Expressions.TypeIdentifier)return_type,
                     body.Cast<AST.Statements.Statement>().ToArray()
                 );
 
@@ -188,6 +188,10 @@ namespace Bytom.Language
 
         public static class Expressions
         {
+            public static TokenListParser<Tokens, object> Name { get; } =
+                from name in Token.EqualTo(Tokens.Name)
+                select (object)new AST.Expressions.Name(name.ToStringValue());
+
             public static TokenListParser<Tokens, object> FunctionCall { get; } =
                 from name in Parse.Ref(() => Name!)
                 from arguments in Parse.Ref(() => Expression!)
@@ -231,19 +235,20 @@ namespace Bytom.Language
                     .Apply(Numerics.IntegerInt64)
                     .Select(s => (object)new AST.Expressions.IntegerLiteral(s));
 
-            public static TokenListParser<Tokens, object> Name { get; } =
-                Token.EqualTo(Tokens.Name)
-                    .Select(s => (object)new AST.Expressions.Name(s.ToStringValue()));
-
-            public static TokenListParser<Tokens, object> LeftIdentifier { get; } =
-                Parse.OneOf(
-                    Parse.Ref(() => Name!)
+            public static TokenListParser<Tokens, object> DotAccess { get; } =
+                from first in Parse.Ref(() => Name!)
+                from dot in Token.EqualTo(Tokens.Dot)
+                from second in Parse.Ref(() => NameIdentifier!)
+                select (object)new AST.Expressions.DotAccess(
+                    (AST.Expressions.NameIdentifier)first,
+                    (AST.Expressions.NameIdentifier)second
                 );
 
-            public static TokenListParser<Tokens, object> TypeName { get; } =
-                from name in Token.EqualTo(Tokens.Name).Or(Token.EqualTo(Tokens.GenericName))
-                from pointer in Token.EqualTo(Tokens.Asterisk).Many()
-                select (object)new AST.Expressions.TypeName(name.ToStringValue(), pointer.Length);
+            public static TokenListParser<Tokens, object> NameIdentifier { get; } =
+                Parse.OneOf(
+                    Parse.Ref(() => Name!),
+                    Parse.Ref(() => DotAccess!)
+                );
 
             private static TextParser<string> InlineAssemblyParser { get; } =
                 from asm in Span.EqualTo("asm")
@@ -266,12 +271,61 @@ namespace Bytom.Language
 
             public static TokenListParser<Tokens, object> Expression { get; } =
             Parse.OneOf(
-                StringLiteral,
-                IntegerLiteral,
-                InlineAssembly,
-                FunctionCall.Try(),
-                LeftIdentifier
+                Parse.Ref(() => StringLiteral!),
+                Parse.Ref(() => IntegerLiteral!),
+                Parse.Ref(() => InlineAssembly!),
+                Parse.Ref(() => FunctionCall!.Try()),
+                Parse.Ref(() => NameIdentifier!)
             );
+
+            public static TokenListParser<Tokens, object> TypeName { get; } =
+                from type_name in Token.EqualTo(Tokens.Name)
+                select (object)new AST.Expressions.TypeName(type_name.ToStringValue());
+
+            public static TokenListParser<Tokens, object> GenericTypeName { get; } =
+                from type_name in Token.EqualTo(Tokens.GenericName)
+                select (object)new AST.Expressions.GenericTypeName(type_name.ToStringValue());
+
+            public static TokenListParser<Tokens, object> TypeNameLike { get; } =
+                Parse.OneOf(
+                    Parse.Ref(() => TypeName!),
+                    Parse.Ref(() => GenericTypeName!)
+                );
+
+            public static TokenListParser<Tokens, object> TypeDotAccess { get; } =
+                from first in Parse.Ref(() => TypeNameLike!)
+                from dot in Token.EqualTo(Tokens.Dot)
+                from second in Parse.Ref(() => TypeIdentifier!)
+                select (object)new AST.Expressions.TypeDotAccess(
+                    (AST.Expressions.TypeIdentifier)first,
+                    (AST.Expressions.TypeIdentifier)second
+                );
+
+            public static TokenListParser<Tokens, object> GenericTypeSpecialization { get; } =
+                from identifier in Parse.Ref(() => TypeNameLike!)
+                from specialization in Parse.Ref(() => TypeIdentifier!)
+                    .ManyDelimitedBy(Token.EqualTo(Tokens.Comma))
+                    .Between(Token.EqualTo(Tokens.LAngleBracket), Token.EqualTo(Tokens.RAngleBracket))
+                select (object)new AST.Expressions.GenericTypeSpecialization(
+                    (AST.Expressions.TypeIdentifier)identifier,
+                    specialization.Cast<AST.Expressions.TypeIdentifier>().ToArray()
+                );
+
+            public static TokenListParser<Tokens, object> PointerType { get; } =
+                from identifier in Parse.Ref(() => TypeNameLike!)
+                from pointer in Token.EqualTo(Tokens.Asterisk)
+                select (object)new AST.Expressions.PointerType(
+                    (AST.Expressions.TypeIdentifier)identifier
+                );
+
+            public static TokenListParser<Tokens, object> TypeIdentifier { get; } =
+                Parse.OneOf(
+                    Parse.Ref(() => GenericTypeSpecialization!).Try(),
+                    Parse.Ref(() => TypeDotAccess!).Try(),
+                    Parse.Ref(() => PointerType!).Try(),
+                    Parse.Ref(() => TypeNameLike!)
+                );
+
         }
 
         public static bool TryParse(

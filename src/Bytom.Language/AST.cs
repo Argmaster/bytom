@@ -2,6 +2,8 @@
 
 
 
+using System.Linq;
+
 namespace Bytom.Language.AST
 {
     public class Module
@@ -39,12 +41,12 @@ namespace Bytom.Language.AST
         {
             public Expressions.Name name;
             public AliasDeclaration[] arguments;
-            public Expressions.TypeName return_type;
+            public Expressions.TypeIdentifier return_type;
             public Statement[] body;
             public FunctionDefinition(
                 Expressions.Name name,
                 AliasDeclaration[] arguments,
-                Expressions.TypeName return_type,
+                Expressions.TypeIdentifier return_type,
                 Statement[] body
             )
             {
@@ -58,18 +60,18 @@ namespace Bytom.Language.AST
         public interface AliasDeclaration : Statement
         {
             public Expressions.Name name { get; }
-            public Expressions.TypeName type { get; }
+            public Expressions.TypeIdentifier type { get; }
         }
 
         public class VariableDeclaration : AliasDeclaration
         {
             public Expressions.Name name { get; }
-            public Expressions.TypeName type { get; }
+            public Expressions.TypeIdentifier type { get; }
             public Expressions.Expression? value { get; }
 
             public VariableDeclaration(
                 Expressions.Name name,
-                Expressions.TypeName type,
+                Expressions.TypeIdentifier type,
                 Expressions.Expression? value
             )
             {
@@ -82,12 +84,12 @@ namespace Bytom.Language.AST
         public class ConstantDeclaration : AliasDeclaration
         {
             public Expressions.Name name { get; }
-            public Expressions.TypeName type { get; }
+            public Expressions.TypeIdentifier type { get; }
             public Expressions.Expression value { get; }
 
             public ConstantDeclaration(
                 Expressions.Name name,
-                Expressions.TypeName type,
+                Expressions.TypeIdentifier type,
                 Expressions.Expression value
             )
             {
@@ -99,10 +101,10 @@ namespace Bytom.Language.AST
 
         public class ValueAssignment : Statement
         {
-            public Expressions.LeftIdentifier name;
+            public Expressions.NameIdentifier name;
             public Expressions.Expression value;
             public ValueAssignment(
-                Expressions.LeftIdentifier name,
+                Expressions.NameIdentifier name,
                 Expressions.Expression value
             )
             {
@@ -264,36 +266,106 @@ namespace Bytom.Language.AST
             }
         }
 
-        public interface LeftIdentifier
+        public interface NameIdentifier
         {
         }
 
-        public class Name : Expression, LeftIdentifier
+        public class Name : Expression, NameIdentifier
         {
-            public string name;
+            public string name { get; }
             public Name(string name)
             {
                 this.name = name;
             }
         }
 
-        public class DotAccess : Expression, LeftIdentifier
+        public class DotAccess : Expression, NameIdentifier
         {
-            public Name[] names;
-            public DotAccess(Name[] names)
+            public NameIdentifier first { get; }
+            public NameIdentifier rest { get; }
+            public DotAccess(NameIdentifier first, NameIdentifier rest)
             {
-                this.names = names;
+                this.first = first;
+                this.rest = rest;
             }
         }
 
-        public class TypeName : Expression
+        public interface TypeIdentifier
         {
-            public string type_name;
-            public int pointer_level;
-            public TypeName(string type_name, int pointer_level)
+            public long GetPointerLevel()
             {
-                this.type_name = type_name;
-                this.pointer_level = pointer_level;
+                return 0;
+            }
+        }
+
+        public class TypeName : TypeIdentifier
+        {
+            public string name { get; }
+            public TypeName(string name)
+            {
+                this.name = name;
+            }
+            public override string ToString()
+            {
+                return name;
+            }
+        }
+
+        public class TypeDotAccess : TypeIdentifier
+        {
+            public TypeIdentifier first { get; }
+            public TypeIdentifier second { get; }
+            public TypeDotAccess(TypeIdentifier first, TypeIdentifier second)
+            {
+                this.first = first;
+                this.second = second;
+            }
+            public override string ToString()
+            {
+                return first.ToString() + "." + second.ToString();
+            }
+        }
+
+        public class GenericTypeName : TypeIdentifier
+        {
+            public string name { get; }
+            public GenericTypeName(string name)
+            {
+                this.name = name;
+            }
+        }
+
+        public class GenericTypeSpecialization : TypeIdentifier
+        {
+            public TypeIdentifier generic { get; }
+            public TypeIdentifier[] specialization { get; }
+            public GenericTypeSpecialization(TypeIdentifier generic, TypeIdentifier[] specialization)
+            {
+                this.generic = generic;
+                this.specialization = specialization;
+            }
+            public override string ToString()
+            {
+                return generic + "<" + string.Join(
+                    ", ", specialization.Select(s => s.ToString())
+                ) + ">";
+            }
+        }
+
+        public class PointerType : TypeIdentifier
+        {
+            public TypeIdentifier identifier { get; }
+            public PointerType(TypeIdentifier identifier)
+            {
+                this.identifier = identifier;
+            }
+            public override string ToString()
+            {
+                return identifier.ToString() + "*";
+            }
+            public long GetPointerLevel()
+            {
+                return 1 + identifier.GetPointerLevel();
             }
         }
     }
