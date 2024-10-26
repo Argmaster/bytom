@@ -13,7 +13,7 @@ namespace Bytom.Language
     public static class Parser
     {
         public static TokenListParser<Tokens, object> Module { get; } =
-            from statements in Parse.Ref(() => Statements.Statement!).Many()
+            from statements in Parse.Ref(() => Statements.Statement!).Many().AtEnd()
             select (object)new AST.Module(
                 statements.Cast<AST.Statements.Statement>().ToArray()
             );
@@ -101,9 +101,8 @@ namespace Bytom.Language
 
             public static TokenListParser<Tokens, object> If { get; } =
                 from if_keyword in Token.EqualTo(Tokens.If)
-                from openParen in Token.EqualTo(Tokens.LParen)
                 from condition in Parse.Ref(() => Expressions.Expression!)
-                from closeParen in Token.EqualTo(Tokens.RParen)
+                    .Between(Token.EqualTo(Tokens.LParen), Token.EqualTo(Tokens.RParen))
                 from body in Parse.Ref(() => Statement!)
                     .Many()
                     .Between(Token.EqualTo(Tokens.LCurlyBracket), Token.EqualTo(Tokens.RCurlyBracket))
@@ -173,6 +172,24 @@ namespace Bytom.Language
                     body.Cast<AST.Statements.Statement>().ToArray()
                 );
 
+            public static TokenListParser<Tokens, object> Struct { get; } =
+                from struct_keyword in Token.EqualTo(Tokens.Struct)
+                from name in Parse.Ref(() => Expressions.Name!)
+                from openCurly in Token.EqualTo(Tokens.LCurlyBracket)
+                from constants in Parse.Ref(() => ConstantDeclaration!)
+                    .Many()
+                from variables in Parse.Ref(() => VariableDeclaration!)
+                    .Many()
+                from methods in Parse.Ref(() => FunctionDefinition!)
+                    .Many()
+                from closeCurly in Token.EqualTo(Tokens.RCurlyBracket)
+                select (object)new AST.Statements.StructDefinition(
+                    (AST.Expressions.Name)name,
+                    constants.Cast<AST.Statements.ConstantDeclaration>().ToArray(),
+                    variables.Cast<AST.Statements.VariableDeclaration>().ToArray(),
+                    methods.Cast<AST.Statements.FunctionDefinition>().ToArray()
+                );
+
             public static TokenListParser<Tokens, object> Statement { get; } =
                 Parse.OneOf(
                     FunctionDefinition,
@@ -181,6 +198,7 @@ namespace Bytom.Language
                     Conditional,
                     While,
                     For,
+                    Struct,
                     ValueAssignment.Try(),
                     SideEffectStatement
                 );
@@ -201,7 +219,6 @@ namespace Bytom.Language
                     (AST.Expressions.Name)name,
                     arguments.Cast<AST.Expressions.Expression>().ToArray()
                 );
-
 
             private static TextParser<string> StringTextParser { get; } =
                 from open in Character.EqualTo('"')
@@ -269,11 +286,21 @@ namespace Bytom.Language
                     .Apply(InlineAssemblyParser)
                     .Select(s => (object)new AST.Expressions.InlineAssembly(s));
 
+            public static TokenListParser<Tokens, object> Cast { get; } =
+                from type in Parse.Ref(() => TypeIdentifier!)
+                    .Between(Token.EqualTo(Tokens.LAngleBracket), Token.EqualTo(Tokens.RAngleBracket))
+                from expression in Parse.Ref(() => Expression!)
+                select (object)new AST.Expressions.Cast(
+                    (AST.Expressions.TypeIdentifier)type,
+                    (AST.Expressions.Expression)expression
+                );
+
             public static TokenListParser<Tokens, object> Expression { get; } =
             Parse.OneOf(
                 Parse.Ref(() => StringLiteral!),
                 Parse.Ref(() => IntegerLiteral!),
                 Parse.Ref(() => InlineAssembly!),
+                Parse.Ref(() => Cast!),
                 Parse.Ref(() => FunctionCall!.Try()),
                 Parse.Ref(() => NameIdentifier!)
             );
@@ -325,7 +352,6 @@ namespace Bytom.Language
                     Parse.Ref(() => PointerType!).Try(),
                     Parse.Ref(() => TypeNameLike!)
                 );
-
         }
 
         public static bool TryParse(

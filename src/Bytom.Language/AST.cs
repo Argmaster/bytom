@@ -18,26 +18,46 @@ namespace Bytom.Language.AST
     namespace Statements
     {
         public interface Statement
+        { }
+
+        public interface NamedDefinition : Statement
         {
+            public string GetName();
         }
 
-        public class StructDefinition : Statement
+        public class StructDefinition : NamedDefinition
         {
-            public string name;
-            public AliasDeclaration[] fields;
+            public Expressions.Name name;
+            public ConstantDeclaration[] constants;
+            public VariableDeclaration[] variables;
+            public FunctionDefinition[] methods;
 
-            public StructDefinition(string name, AliasDeclaration[] fields)
+            public StructDefinition(
+                Expressions.Name name,
+                ConstantDeclaration[] constants,
+                VariableDeclaration[] variables,
+                FunctionDefinition[] methods
+            )
             {
                 this.name = name;
-                this.fields = fields;
+                this.constants = constants;
+                this.variables = variables;
+                this.methods = methods;
+            }
+            public string GetName()
+            {
+                return name.name;
             }
         }
+
+        public interface StructMember : Statement
+        { }
 
         public class BitFieldDefinition : Statement
         {
         }
 
-        public class FunctionDefinition : Statement
+        public class FunctionDefinition : NamedDefinition
         {
             public Expressions.Name name;
             public AliasDeclaration[] arguments;
@@ -55,46 +75,63 @@ namespace Bytom.Language.AST
                 this.return_type = return_type;
                 this.body = body;
             }
+            public string GetName()
+            {
+                return name.name;
+            }
+            public string GetReturnTypeName()
+            {
+                return return_type.ToString();
+            }
         }
 
-        public interface AliasDeclaration : Statement
+        public class AliasDeclaration : NamedDefinition
         {
             public Expressions.Name name { get; }
             public Expressions.TypeIdentifier type { get; }
+
+            public AliasDeclaration(
+                Expressions.Name name,
+                Expressions.TypeIdentifier type
+            )
+            {
+                this.name = name;
+                this.type = type;
+            }
+            public string GetName()
+            {
+                return name.name;
+            }
+            public string GetTypeName()
+            {
+                return type.ToString();
+            }
         }
 
         public class VariableDeclaration : AliasDeclaration
         {
-            public Expressions.Name name { get; }
-            public Expressions.TypeIdentifier type { get; }
             public Expressions.Expression? value { get; }
 
             public VariableDeclaration(
                 Expressions.Name name,
                 Expressions.TypeIdentifier type,
                 Expressions.Expression? value
-            )
+            ) : base(name, type)
             {
-                this.name = name;
-                this.type = type;
                 this.value = value;
             }
         }
 
         public class ConstantDeclaration : AliasDeclaration
         {
-            public Expressions.Name name { get; }
-            public Expressions.TypeIdentifier type { get; }
             public Expressions.Expression value { get; }
 
             public ConstantDeclaration(
                 Expressions.Name name,
                 Expressions.TypeIdentifier type,
                 Expressions.Expression value
-            )
+            ) : base(name, type)
             {
-                this.name = name;
-                this.type = type;
                 this.value = value;
             }
         }
@@ -210,14 +247,13 @@ namespace Bytom.Language.AST
     {
 
         public interface Expression
-        {
-        }
+        { }
 
         public class Cast : Expression
         {
-            public TypeName type;
+            public TypeIdentifier type;
             public Expression value;
-            public Cast(TypeName type, Expression value)
+            public Cast(TypeIdentifier type, Expression value)
             {
                 this.type = type;
                 this.value = value;
@@ -369,5 +405,4 @@ namespace Bytom.Language.AST
             }
         }
     }
-
 }

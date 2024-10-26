@@ -72,22 +72,6 @@ const x: i32 = 5;
 
 Initial value **is** mandatory.
 
-## Functions
-
-To create a function, use the `functionn` keyword followed by the function name, list of
-arguments, return type, and the function body:
-
-```
-function foo(var a: i32; var b: i32;): i32 {
-    return add(mul(a, a), b);
-}
-```
-
-Please note that declaration of function parameters uses the same syntax as variable
-declaration, so you can also use `const` keyword to declare constant parameters. The
-difference is that `var` parameters are mutable references, while `const` are immutable
-references.
-
 ## Conditional statements
 
 To create a conditional statement, use the `if` keyword followed by the condition and
@@ -129,3 +113,46 @@ else
     return 0;
 }
 ```
+
+## While loop
+
+To create a while loop, use the `while` keyword followed by the condition and the body:
+
+```
+while (lt(x, 5))
+{
+    x = add(x, 1);
+}
+```
+
+## For loop
+
+To create a for loop, use the `for` keyword followed by the initialization, condition,
+increment and the body:
+
+```
+for (var i: i32 = 0; lt(i, 5); i = add(i, 1);)
+{
+    x = add(x, 1);
+}
+```
+
+Please note that all three parts of the for loop condition is mandatory and must end
+with semicolon.
+
+
+## Functions
+
+To create a function, use the `functionn` keyword followed by the function name, list of
+arguments, return type, and the function body:
+
+```
+function foo(var a: i32; var b: i32;): i32 {
+    return add(mul(a, a), b);
+}
+```
+
+Please note that declaration of function parameters uses the same syntax as variable
+declaration, so you can also use `const` keyword to declare constant parameters. The
+difference is that `var` parameters are mutable references, while `const` are immutable
+references.

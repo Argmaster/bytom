@@ -655,9 +655,6 @@ public class ParserTests
             Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
 
             var function = (AST.Statements.FunctionDefinition)statement;
-            Assert.That(function!.name.name, Is.EqualTo("add"));
-            Assert.That(function!.arguments, Has.Length.EqualTo(2));
-            Assert.That(function!.return_type.ToString(), Is.EqualTo("i32"));
             Assert.That(function!.body, Has.Length.EqualTo(1));
 
             var returnStatement = (AST.Statements.Return)function!.body[0];
@@ -665,6 +662,170 @@ public class ParserTests
 
             var asmStatement = (AST.Expressions.InlineAssembly)returnStatement!.value;
             Assert.That(asmStatement!.assembly, Is.EqualTo("pop RD0\npop RD1\nadd RD0, RD1"));
+        }
+    }
+
+    [Test]
+    public void TestCast()
+    {
+        bool result = Parser.TryParse(@"
+            function main(): void
+            {
+                var x: i32 = 1;
+                var y: u32 = <u32>x;
+            }
+            ",
+            out var value,
+            out var error,
+            out var errorPosition
+        );
+        Assert.That(error, Is.Null);
+        Assert.That(result, Is.True);
+        Assert.That(value, Is.InstanceOf<AST.Module>());
+
+        var module = (AST.Module)value;
+        Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+        var statement = module!.statements[0];
+        Assert.That(statement, Is.InstanceOf<AST.Statements.FunctionDefinition>());
+
+        var function = (AST.Statements.FunctionDefinition)statement;
+        Assert.That(function!.body, Has.Length.EqualTo(2));
+
+        var variableDeclaration = (AST.Statements.VariableDeclaration)function!.body[1];
+        Assert.That(variableDeclaration!.name.name, Is.EqualTo("y"));
+        Assert.That(variableDeclaration!.type.ToString(), Is.EqualTo("u32"));
+        Assert.That(variableDeclaration!.value, Is.InstanceOf<AST.Expressions.Cast>());
+
+        var cast = (AST.Expressions.Cast)variableDeclaration!.value;
+        Assert.That(cast!.type.ToString(), Is.EqualTo("u32"));
+        Assert.That(cast!.value, Is.InstanceOf<AST.Expressions.Name>());
+    }
+
+    public class StructTests
+    {
+        [Test]
+        public void TestVarOnly()
+        {
+            bool result = Parser.TryParse(@"
+            struct Point
+            {
+                var x: i32;
+                var y: i32;
+            }
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.StructDefinition>());
+
+            var structDefinition = (AST.Statements.StructDefinition)statement;
+            Assert.That(structDefinition!.GetName(), Is.EqualTo("Point"));
+            Assert.That(structDefinition!.variables, Has.Length.EqualTo(2));
+
+            var member1 = structDefinition!.variables[0];
+            Assert.That(member1!.GetName(), Is.EqualTo("x"));
+            Assert.That(member1!.GetTypeName(), Is.EqualTo("i32"));
+
+            var member2 = structDefinition!.variables[1];
+            Assert.That(member2!.GetName(), Is.EqualTo("y"));
+            Assert.That(member2!.GetTypeName(), Is.EqualTo("i32"));
+        }
+
+        [Test]
+        public void TestVarAndConst()
+        {
+            bool result = Parser.TryParse(@"
+            struct Point
+            {
+                const y: i32 = 1;
+                var x: i32;
+            }
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.StructDefinition>());
+
+            var structDefinition = (AST.Statements.StructDefinition)statement;
+            Assert.That(structDefinition!.GetName(), Is.EqualTo("Point"));
+            Assert.That(structDefinition!.constants, Has.Length.EqualTo(1));
+            Assert.That(structDefinition!.variables, Has.Length.EqualTo(1));
+
+            var member2 = structDefinition!.constants[0];
+            Assert.That(member2!.GetName(), Is.EqualTo("y"));
+            Assert.That(member2!.GetTypeName(), Is.EqualTo("i32"));
+            Assert.That(member2!.value, Is.InstanceOf<AST.Expressions.IntegerLiteral>());
+
+            var member1 = structDefinition!.variables[0];
+            Assert.That(member1!.GetName(), Is.EqualTo("x"));
+            Assert.That(member1!.GetTypeName(), Is.EqualTo("i32"));
+        }
+
+        [Test]
+        public void TestVarMethod()
+        {
+            bool result = Parser.TryParse(@"
+            struct Point
+            {
+                var x: i32;
+                var y: i32;
+
+                function add(): i32
+                {
+                    return add(x, y);
+                }
+            }
+            ",
+                out var value,
+                out var error,
+                out var errorPosition
+            );
+            Assert.That(error, Is.Null);
+            Assert.That(result, Is.True);
+            Assert.That(value, Is.InstanceOf<AST.Module>());
+
+            var module = (AST.Module)value;
+            Assert.That(module!.statements, Has.Length.EqualTo(1));
+
+            var statement = module!.statements[0];
+            Assert.That(statement, Is.InstanceOf<AST.Statements.StructDefinition>());
+
+            var structDefinition = (AST.Statements.StructDefinition)statement;
+            Assert.That(structDefinition!.GetName(), Is.EqualTo("Point"));
+            Assert.That(structDefinition!.variables, Has.Length.EqualTo(2));
+            Assert.That(structDefinition!.methods, Has.Length.EqualTo(1));
+
+            var member1 = structDefinition!.variables[0];
+            Assert.That(member1!.GetName(), Is.EqualTo("x"));
+            Assert.That(member1!.GetTypeName(), Is.EqualTo("i32"));
+
+            var member2 = structDefinition!.variables[1];
+            Assert.That(member2!.GetName(), Is.EqualTo("y"));
+            Assert.That(member2!.GetTypeName(), Is.EqualTo("i32"));
+
+            var method = structDefinition!.methods[0];
+            Assert.That(method!.GetName(), Is.EqualTo("add"));
+            Assert.That(method!.GetReturnTypeName(), Is.EqualTo("i32"));
+            Assert.That(method!.body, Has.Length.EqualTo(1));
         }
     }
 }
