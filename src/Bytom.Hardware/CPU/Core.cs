@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Bytom.Hardware.RAM;
 using Bytom.Tools;
@@ -41,14 +42,13 @@ namespace Bytom.Hardware.CPU
 
     public class Core
     {
-        public uint core_id;
-        public uint clock_speed_hz;
+        public uint core_id { get; }
+        public uint clock_speed_hz { get; }
         public PowerStatus power_status;
         public bool requested_power_off;
-        public List<Cache> caches;
-        public Controller ram;
-        public Clock clock;
+        public Clock clock { get; }
         public Package? package;
+        private Thread? thread;
 
         public Register32 RD0;
         public Register32 RD1;
@@ -85,15 +85,11 @@ namespace Bytom.Hardware.CPU
 
         public Core(
             uint core_id,
-            uint clock_speed_hz,
-            List<Cache> caches,
-            Controller ram
+            uint clock_speed_hz
         )
         {
             this.core_id = core_id;
             this.clock_speed_hz = clock_speed_hz;
-            this.caches = caches;
-            this.ram = ram;
 
             power_status = PowerStatus.OFF;
             clock = new Clock(clock_speed_hz);
@@ -117,8 +113,8 @@ namespace Bytom.Hardware.CPU
 
             CCR = new ConditionCodeRegister();
             CR0 = new Register32(0b10000000_00000000_00000000_00000000);
-            STP = new Register32(ram.getTotalMemoryBytes());
-            FBP = new Register32(ram.getTotalMemoryBytes());
+            STP = new Register32(0);
+            FBP = new Register32(0);
             VATTA = new Register32(0);
             IDT = new Register32(0);
             IRA = new Register32(0);
@@ -163,10 +159,10 @@ namespace Bytom.Hardware.CPU
             };
         }
 
-        public async Task executeNext()
+        public void executeNext()
         {
             uint instruction_pointer = IP.readUInt32();
-            byte[] instruction = await ram.readAll(instruction_pointer, 4);
+            byte[] instruction = readBytesFromMemory(instruction_pointer, 4);
             instruction_pointer += 4;
 
             InstructionDecoder decoder = new InstructionDecoder(instruction);
@@ -181,30 +177,26 @@ namespace Bytom.Hardware.CPU
                     {
                         requested_power_off = true;
                         power_status = PowerStatus.OFF;
-                        if (package != null)
-                        {
-                            await package.powerOff();
-                            if (package.motherboard != null)
-                            {
-                                await package.motherboard.softwarePowerOff();
-                            }
-                        }
+                        package?.powerOff();
+                        package?.motherboard?.softwarePowerOff();
+                        thread = null;
+                        package = null;
                         break;
                     }
                 case OpCode.MovRegReg:
                     {
-                        await writeBytesToRegister(
+                        writeBytesToRegister(
                             decoder.GetFirstRegisterID(),
-                            await readBytesFromRegister(decoder.GetSecondRegisterID())
+                            readBytesFromRegister(decoder.GetSecondRegisterID())
                         );
                         break;
                     }
                 case OpCode.MovRegMem:
                     {
-                        await writeBytesToRegister(
+                        writeBytesToRegister(
                             decoder.GetFirstRegisterID(),
-                            await readBytesFromMemory(
-                                await readUInt32FromRegister(decoder.GetSecondRegisterID()),
+                            readBytesFromMemory(
+                                readUInt32FromRegister(decoder.GetSecondRegisterID()),
                                 4
                             )
                         );
@@ -212,47 +204,47 @@ namespace Bytom.Hardware.CPU
                     }
                 case OpCode.MovMemReg:
                     {
-                        await writeBytesToMemory(
-                            await readUInt32FromRegister(decoder.GetFirstRegisterID()),
-                            await readBytesFromRegister(decoder.GetSecondRegisterID())
+                        writeBytesToMemory(
+                            readUInt32FromRegister(decoder.GetFirstRegisterID()),
+                            readBytesFromRegister(decoder.GetSecondRegisterID())
                         );
                         break;
                     }
                 case OpCode.MovRegCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         instruction_pointer += 4;
-                        await writeBytesToRegister(decoder.GetFirstRegisterID(), constant_bytes);
+                        writeBytesToRegister(decoder.GetFirstRegisterID(), constant_bytes);
                         break;
                     }
                 case OpCode.MovMemCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         instruction_pointer += 4;
-                        await writeBytesToMemory(
-                            await readUInt32FromRegister(decoder.GetFirstRegisterID()),
+                        writeBytesToMemory(
+                            readUInt32FromRegister(decoder.GetFirstRegisterID()),
                             constant_bytes
                         );
                         break;
                     }
                 case OpCode.PushReg:
                     {
-                        await pushStack(await readBytesFromRegister(decoder.GetFirstRegisterID()));
+                        pushStack(readBytesFromRegister(decoder.GetFirstRegisterID()));
                         break;
                     }
                 case OpCode.PushCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         instruction_pointer += 4;
 
-                        await pushStack(constant_bytes);
+                        pushStack(constant_bytes);
                         break;
                     }
                 case OpCode.PushMem:
                     {
-                        await pushStack(
-                            await readBytesFromMemory(
-                                await readUInt32FromRegister(decoder.GetFirstRegisterID()),
+                        pushStack(
+                            readBytesFromMemory(
+                                readUInt32FromRegister(decoder.GetFirstRegisterID()),
                                 4
                             )
                         );
@@ -260,21 +252,21 @@ namespace Bytom.Hardware.CPU
                     }
                 case OpCode.PopReg:
                     {
-                        await writeBytesToRegister(decoder.GetFirstRegisterID(), await popStack(4));
+                        writeBytesToRegister(decoder.GetFirstRegisterID(), popStack(4));
                         break;
                     }
                 case OpCode.PopMem:
                     {
-                        await writeBytesToMemory(
-                            await readUInt32FromRegister(decoder.GetFirstRegisterID()),
-                            await popStack(4)
+                        writeBytesToMemory(
+                            readUInt32FromRegister(decoder.GetFirstRegisterID()),
+                            popStack(4)
                         );
                         break;
                     }
                 case OpCode.Add:
                     {
-                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = await readInt32FromRegister(decoder.GetSecondRegisterID());
+                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = readInt32FromRegister(decoder.GetSecondRegisterID());
                         CCR.writeUInt32(0u);
                         long result = left + right;
 
@@ -283,13 +275,13 @@ namespace Bytom.Hardware.CPU
                         CCR.setSignFlag((int)result < 0);
                         CCR.setOverflowFlag((int)left + (int)right != result);
 
-                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
                     }
                 case OpCode.Sub:
                     {
-                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = await readInt32FromRegister(decoder.GetSecondRegisterID());
+                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = readInt32FromRegister(decoder.GetSecondRegisterID());
                         CCR.writeUInt32(0u);
                         long result = left - right;
 
@@ -298,12 +290,12 @@ namespace Bytom.Hardware.CPU
                         CCR.setSignFlag((int)result < 0);
                         CCR.setOverflowFlag((int)left - (int)right != result);
 
-                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
                     }
                 case OpCode.Inc:
                     {
-                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
                         long right = 1;
                         CCR.writeUInt32(0u);
                         long result = left - right;
@@ -313,12 +305,12 @@ namespace Bytom.Hardware.CPU
                         CCR.setSignFlag((int)result < 0);
                         CCR.setOverflowFlag((int)left + (int)right != result);
 
-                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
                     }
                 case OpCode.Dec:
                     {
-                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
                         long right = 1;
                         CCR.writeUInt32(0u);
                         long result = left - right;
@@ -328,13 +320,13 @@ namespace Bytom.Hardware.CPU
                         CCR.setSignFlag((int)result < 0);
                         CCR.setOverflowFlag((int)left - (int)right != result);
 
-                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
                     }
                 case OpCode.Mul:
                     {
-                        long left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        long left = readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = readUInt32FromRegister(decoder.GetSecondRegisterID());
                         CCR.writeUInt32(0u);
                         long result = left * right;
 
@@ -343,13 +335,13 @@ namespace Bytom.Hardware.CPU
                         CCR.setSignFlag((int)result < 0);
                         CCR.setOverflowFlag((int)left * (int)right != result);
 
-                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
                     }
                 case OpCode.IMul:
                     {
-                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = await readInt32FromRegister(decoder.GetSecondRegisterID());
+                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = readInt32FromRegister(decoder.GetSecondRegisterID());
                         CCR.writeUInt32(0u);
                         long result = left * right;
 
@@ -358,13 +350,13 @@ namespace Bytom.Hardware.CPU
                         CCR.setSignFlag((int)result < 0);
                         CCR.setOverflowFlag((int)left * (int)right != result);
 
-                        await writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
+                        writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
                         break;
                     }
                 case OpCode.Div:
                     {
-                        long left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        long left = readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = readUInt32FromRegister(decoder.GetSecondRegisterID());
                         CCR.writeUInt32(0u);
 
                         if (right != 0)
@@ -376,21 +368,21 @@ namespace Bytom.Hardware.CPU
                             CCR.setCarryFlag(false);
                             CCR.setSignFlag((int)result < 0);
                             CCR.setOverflowFlag(false);
-                            await writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
-                            await writeInt32ToRegister(decoder.GetSecondRegisterID(), (int)mod);
+                            writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
+                            writeInt32ToRegister(decoder.GetSecondRegisterID(), (int)mod);
                         }
                         else
                         {
                             CCR.setZeroDivisionFlag(true);
-                            await writeUInt32ToRegister(decoder.GetFirstRegisterID(), 0);
-                            await writeUInt32ToRegister(decoder.GetSecondRegisterID(), 0);
+                            writeUInt32ToRegister(decoder.GetFirstRegisterID(), 0);
+                            writeUInt32ToRegister(decoder.GetSecondRegisterID(), 0);
                         }
                         break;
                     }
                 case OpCode.IDiv:
                     {
-                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = await readInt32FromRegister(decoder.GetSecondRegisterID());
+                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = readInt32FromRegister(decoder.GetSecondRegisterID());
                         CCR.writeUInt32(0u);
 
                         if (right != 0)
@@ -402,21 +394,21 @@ namespace Bytom.Hardware.CPU
                             CCR.setCarryFlag(false);
                             CCR.setSignFlag((int)result < 0);
                             CCR.setOverflowFlag(false);
-                            await writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
-                            await writeInt32ToRegister(decoder.GetSecondRegisterID(), (int)mod);
+                            writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
+                            writeInt32ToRegister(decoder.GetSecondRegisterID(), (int)mod);
                         }
                         else
                         {
                             CCR.setZeroDivisionFlag(true);
-                            await writeUInt32ToRegister(decoder.GetFirstRegisterID(), 0);
-                            await writeUInt32ToRegister(decoder.GetSecondRegisterID(), 0);
+                            writeUInt32ToRegister(decoder.GetFirstRegisterID(), 0);
+                            writeUInt32ToRegister(decoder.GetSecondRegisterID(), 0);
                         }
                         break;
                     }
                 case OpCode.And:
                     {
-                        uint left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        uint right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        uint left = readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        uint right = readUInt32FromRegister(decoder.GetSecondRegisterID());
                         CCR.writeUInt32(0u);
                         uint result = left & right;
 
@@ -425,13 +417,13 @@ namespace Bytom.Hardware.CPU
                         CCR.setSignFlag((int)result < 0);
                         CCR.setOverflowFlag(false);
 
-                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
+                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
                         break;
                     }
                 case OpCode.Or:
                     {
-                        uint left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        uint right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        uint left = readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        uint right = readUInt32FromRegister(decoder.GetSecondRegisterID());
                         CCR.writeUInt32(0u);
                         uint result = left | right;
 
@@ -440,13 +432,13 @@ namespace Bytom.Hardware.CPU
                         CCR.setSignFlag((int)result < 0);
                         CCR.setOverflowFlag(false);
 
-                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
+                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
                         break;
                     }
                 case OpCode.Xor:
                     {
-                        uint left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        uint right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        uint left = readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        uint right = readUInt32FromRegister(decoder.GetSecondRegisterID());
                         CCR.writeUInt32(0u);
                         uint result = left ^ right;
 
@@ -455,13 +447,13 @@ namespace Bytom.Hardware.CPU
                         CCR.setSignFlag((int)result < 0);
                         CCR.setOverflowFlag(false);
 
-                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
+                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
                         break;
                     }
                 case OpCode.Shl:
                     {
-                        long left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        long left = readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = readUInt32FromRegister(decoder.GetSecondRegisterID());
                         CCR.writeUInt32(0u);
                         long result;
 
@@ -479,13 +471,13 @@ namespace Bytom.Hardware.CPU
                         CCR.setSignFlag((int)result < 0);
                         CCR.setOverflowFlag(right > 31);
 
-                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
                     }
                 case OpCode.Shr:
                     {
-                        long left = await readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = await readUInt32FromRegister(decoder.GetSecondRegisterID());
+                        long left = readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = readUInt32FromRegister(decoder.GetSecondRegisterID());
                         CCR.writeUInt32(0u);
                         long result;
 
@@ -503,17 +495,17 @@ namespace Bytom.Hardware.CPU
                         CCR.setSignFlag((int)result < 0);
                         CCR.setOverflowFlag(right > 31);
 
-                        await writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
+                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
                         break;
                     }
                 case OpCode.JmpMem:
                     {
-                        instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
                         break;
                     }
                 case OpCode.JmpCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
                         break;
                     }
@@ -521,13 +513,13 @@ namespace Bytom.Hardware.CPU
                     {
                         if (CCR.isEqual())
                         {
-                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
                         }
                         break;
                     }
                 case OpCode.JeqCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         if (CCR.isEqual())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
@@ -542,13 +534,13 @@ namespace Bytom.Hardware.CPU
                     {
                         if (CCR.isNotEqual())
                         {
-                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
                         }
                         break;
                     }
                 case OpCode.JneCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         if (CCR.isNotEqual())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
@@ -563,13 +555,13 @@ namespace Bytom.Hardware.CPU
                     {
                         if (CCR.isAbove())
                         {
-                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
                         }
                         break;
                     }
                 case OpCode.JaCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         if (CCR.isAbove())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
@@ -584,13 +576,13 @@ namespace Bytom.Hardware.CPU
                     {
                         if (CCR.isAboveOrEqual())
                         {
-                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
                         }
                         break;
                     }
                 case OpCode.JaeCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         if (CCR.isAboveOrEqual())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
@@ -605,13 +597,13 @@ namespace Bytom.Hardware.CPU
                     {
                         if (CCR.isBelow())
                         {
-                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
                         }
                         break;
                     }
                 case OpCode.JbCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         if (CCR.isBelow())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
@@ -626,13 +618,13 @@ namespace Bytom.Hardware.CPU
                     {
                         if (CCR.isBelowOrEqual())
                         {
-                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
                         }
                         break;
                     }
                 case OpCode.JbeCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         if (CCR.isBelowOrEqual())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
@@ -647,13 +639,13 @@ namespace Bytom.Hardware.CPU
                     {
                         if (CCR.isLessThan())
                         {
-                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
                         }
                         break;
                     }
                 case OpCode.JltCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         if (CCR.isLessThan())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
@@ -668,13 +660,13 @@ namespace Bytom.Hardware.CPU
                     {
                         if (CCR.isLessThanOrEqual())
                         {
-                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
                         }
                         break;
                     }
                 case OpCode.JleCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         if (CCR.isLessThanOrEqual())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
@@ -689,13 +681,13 @@ namespace Bytom.Hardware.CPU
                     {
                         if (CCR.isGreaterThan())
                         {
-                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
                         }
                         break;
                     }
                 case OpCode.JgtCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         if (CCR.isGreaterThan())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
@@ -710,13 +702,13 @@ namespace Bytom.Hardware.CPU
                     {
                         if (CCR.isGreaterThanOrEqual())
                         {
-                            instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
                         }
                         break;
                     }
                 case OpCode.JgeCon:
                     {
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         if (CCR.isGreaterThanOrEqual())
                         {
                             instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
@@ -729,26 +721,26 @@ namespace Bytom.Hardware.CPU
                     }
                 case OpCode.CallMem:
                     {
-                        await pushUInt32Stack(instruction_pointer);
-                        instruction_pointer = await readUInt32FromRegister(decoder.GetFirstRegisterID());
+                        pushUInt32Stack(instruction_pointer);
+                        instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
                         break;
                     }
                 case OpCode.CallCon:
                     {
-                        await pushUInt32Stack(instruction_pointer);
-                        byte[] constant_bytes = await readBytesFromMemory(instruction_pointer, 4);
+                        pushUInt32Stack(instruction_pointer);
+                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
                         instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
                         break;
                     }
                 case OpCode.Ret:
                     {
-                        instruction_pointer = await popUInt32Stack();
+                        instruction_pointer = popUInt32Stack();
                         break;
                     }
                 case OpCode.Cmp:
                     {
-                        long left = await readInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = await readInt32FromRegister(decoder.GetSecondRegisterID());
+                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
+                        long right = readInt32FromRegister(decoder.GetSecondRegisterID());
                         CCR.writeUInt32(0u);
                         long result = left - right;
 
@@ -766,31 +758,31 @@ namespace Bytom.Hardware.CPU
             IP.writeUInt32(instruction_pointer);
         }
 
-        public async Task pushUInt32Stack(uint data)
+        public void pushUInt32Stack(uint data)
         {
-            await pushStack(Serialization.UInt32ToBytesBigEndian(data));
+            pushStack(Serialization.UInt32ToBytesBigEndian(data));
         }
 
-        public async Task pushStack(byte[] data)
+        public void pushStack(byte[] data)
         {
             uint newAddress = STP.readUInt32() - (uint)data.Length;
-            await writeBytesToMemory(newAddress, data);
+            writeBytesToMemory(newAddress, data);
             STP.writeUInt32(newAddress);
         }
 
-        public async Task<uint> popUInt32Stack()
+        public uint popUInt32Stack()
         {
-            return Serialization.UInt32FromBytesBigEndian(await popStack(4));
+            return Serialization.UInt32FromBytesBigEndian(popStack(4));
         }
 
-        public async Task<byte[]> popStack(uint length)
+        public byte[] popStack(uint length)
         {
-            byte[] data = await readBytesFromMemory(STP.readUInt32(), length);
+            byte[] data = readBytesFromMemory(STP.readUInt32(), length);
             STP.writeUInt32(STP.readUInt32() + length);
             return data;
         }
 
-        public async Task<byte[]> readBytesFromMemory(uint instruction_pointer, uint length)
+        public byte[] readBytesFromMemory(uint instruction_pointer, uint length)
         {
             if (isVirtualMemoryEnabled())
             {
@@ -798,11 +790,11 @@ namespace Bytom.Hardware.CPU
             }
             else
             {
-                return await ram.readAll(instruction_pointer, length);
+                return GetMemoryController().readAll(instruction_pointer, length);
             }
         }
 
-        public async Task writeBytesToMemory(uint address, byte[] value)
+        public void writeBytesToMemory(uint address, byte[] value)
         {
             if (isVirtualMemoryEnabled())
             {
@@ -810,13 +802,12 @@ namespace Bytom.Hardware.CPU
             }
             else
             {
-                await ram.writeAll(address, value);
+                GetMemoryController().writeAll(address, value);
             }
         }
 
-        public async Task writeBytesToRegister(RegisterID register_name, byte[] value)
+        public void writeBytesToRegister(RegisterID register_name, byte[] value)
         {
-            await Task.Delay(0);
             var register = registers[register_name];
 
             if (register.no_move_write)
@@ -831,9 +822,8 @@ namespace Bytom.Hardware.CPU
             return;
         }
 
-        public async Task writeInt32ToRegister(RegisterID register_name, int value)
+        public void writeInt32ToRegister(RegisterID register_name, int value)
         {
-            await Task.Delay(0);
             var register = registers[register_name];
 
             if (register.no_move_write)
@@ -848,9 +838,8 @@ namespace Bytom.Hardware.CPU
             return;
         }
 
-        public async Task writeUInt32ToRegister(RegisterID register_name, uint value)
+        public void writeUInt32ToRegister(RegisterID register_name, uint value)
         {
-            await Task.Delay(0);
             var register = registers[register_name];
 
             if (register.no_move_write)
@@ -865,9 +854,8 @@ namespace Bytom.Hardware.CPU
             return;
         }
 
-        public async Task writeFloat32ToRegister(RegisterID register_name, float value)
+        public void writeFloat32ToRegister(RegisterID register_name, float value)
         {
-            await Task.Delay(0);
             var register = registers[register_name];
 
             if (register.no_move_write)
@@ -882,9 +870,8 @@ namespace Bytom.Hardware.CPU
             return;
         }
 
-        public async Task<byte[]> readBytesFromRegister(RegisterID register_name)
+        public byte[] readBytesFromRegister(RegisterID register_name)
         {
-            await Task.Delay(0);
             var register = registers[register_name];
 
             if (register.read_kernel_only && !isKernelMode())
@@ -894,9 +881,8 @@ namespace Bytom.Hardware.CPU
             return register.readBytes();
         }
 
-        public async Task<int> readInt32FromRegister(RegisterID register_name)
+        public int readInt32FromRegister(RegisterID register_name)
         {
-            await Task.Delay(0);
             var register = registers[register_name];
 
             if (register.read_kernel_only && !isKernelMode())
@@ -906,9 +892,8 @@ namespace Bytom.Hardware.CPU
             return register.readInt32();
         }
 
-        public async Task<uint> readUInt32FromRegister(RegisterID register_name)
+        public uint readUInt32FromRegister(RegisterID register_name)
         {
-            await Task.Delay(0);
             var register = registers[register_name];
 
             if (register.read_kernel_only && !isKernelMode())
@@ -918,9 +903,8 @@ namespace Bytom.Hardware.CPU
             return register.readUInt32();
         }
 
-        public async Task<float> readFloat32FromRegister(RegisterID register_name)
+        public float readFloat32FromRegister(RegisterID register_name)
         {
-            await Task.Delay(0);
             var register = registers[register_name];
 
             if (register.read_kernel_only && !isKernelMode())
@@ -950,32 +934,58 @@ namespace Bytom.Hardware.CPU
             CR0.writeBit(0, value);
         }
 
-        public async Task powerOn()
+        public void powerOn(Package package)
         {
+            if (power_status == PowerStatus.ON || thread != null)
+            {
+                throw new System.Exception("Core is already powered on");
+            }
+            this.package = package;
             power_status = PowerStatus.ON;
+            reset();
+            thread = new Thread(executionLoop);
+            thread.Start();
+        }
 
+        public void reset()
+        {
             foreach (var reg in registers.Values)
             {
                 reg.reset();
             }
-
-            while (!requested_power_off)
-            {
-                await Task.Delay(0);
-                await executeNext();
-            }
-
-            requested_power_off = false;
-            power_status = PowerStatus.OFF;
+            STP.writeUInt32(GetMemoryController().getTotalMemoryBytes());
+            FBP.writeUInt32(GetMemoryController().getTotalMemoryBytes());
         }
 
-        public async Task powerOff()
+        public Controller GetMemoryController()
+        {
+            return package!.motherboard!.ram;
+        }
+
+        private void executionLoop()
+        {
+            while (!requested_power_off)
+            {
+                executeNext();
+                clock.waitForCycles(1);
+            }
+            requested_power_off = false;
+            if (power_status == PowerStatus.ON)
+            {
+                throw new System.Exception("Incorrect core power state");
+            }
+        }
+
+        public void powerOff()
         {
             requested_power_off = true;
             while (power_status == PowerStatus.ON)
             {
-                await Task.Delay(10);
+                clock.waitForCycles(1);
             }
+            thread!.Join();
+            thread = null;
+            package = null;
         }
         public PowerStatus getPowerStatus()
         {

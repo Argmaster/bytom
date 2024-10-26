@@ -20,7 +20,8 @@ namespace Bytom.Hardware.Tests
             ).ToArray();
 
             Motherboard motherboard = createBytomIncB1(firmware);
-            motherboard.powerOn().Wait();
+            motherboard.powerOn();
+            motherboard.waitUntilRunning();
 
             Assert.That(motherboard.getPowerStatus(), Is.EqualTo(PowerStatus.OFF));
         }
@@ -31,12 +32,16 @@ namespace Bytom.Hardware.Tests
                 new BytomIncRam16KGen1(),
                 new BytomIncRam16KGen1(),
             });
-            Package cpu = new BytomIncGen1(ram);
+            Package cpu = new BytomIncGen1();
             FirmwareRom rom = new FirmwareRom(4096);
 
-            rom.writeAllNoDelay(0x0, firmware).Wait();
+            rom.writeAllNoDelay(0x0, firmware);
 
-            DeviceManager manager = new DeviceManager([new Disk(16384)]);
+            DeviceManager manager = new DeviceManager(
+                new Dictionary<uint, Device>{
+                    {0x0, new Disk(16 *1024)},
+                }
+            );
 
             Motherboard machine = new Motherboard(cpu, ram, rom, manager);
             return machine;

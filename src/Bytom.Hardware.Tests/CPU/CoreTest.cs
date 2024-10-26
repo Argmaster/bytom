@@ -7,15 +7,13 @@ namespace Bytom.Hardware.Tests
 {
     public class DebugCore : Core
     {
-        public DebugCore(Controller ram) : base(
-            0, 200, new List<Cache> { new Cache(256, 10) }, ram
-        )
+        public DebugCore() : base(0, 200)
         { }
     }
 
     public class DebugMemoryChip : MemoryChip
     {
-        public DebugMemoryChip() : base(16 * 1024, 100, 0) { }
+        public DebugMemoryChip() : base(4 * 1024, 100, 0) { }
     }
 
     public class CoreTest
@@ -28,10 +26,24 @@ namespace Bytom.Hardware.Tests
         private static Core createBytomIncB1(string firmware_source)
         {
             Controller ram = new Controller([new DebugMemoryChip()]);
-            var core = new DebugCore(ram);
+            var core = new DebugCore();
+
+            var cpu = new Package([core], 128);
 
             byte[] firmware = Assembler.Assembler.assemble(firmware_source).ToArray();
-            ram.writeAll(0x0, firmware).Wait();
+            ram.writeAll(0x0, firmware);
+
+            FirmwareRom rom = new FirmwareRom(128);
+
+            DeviceManager manager = new DeviceManager(
+                new Dictionary<uint, Device>()
+            );
+
+            Motherboard motherboard = new Motherboard(cpu, ram, rom, manager);
+
+            cpu.motherboard = motherboard;
+            core.package = cpu;
+            core.reset();
 
             return core;
         }
@@ -51,7 +63,7 @@ namespace Bytom.Hardware.Tests
             var core = createBytomIncB1($"mov RD1, RD0");
 
             core.RD0.writeInt32(value);
-            core.executeNext().Wait();
+            core.executeNext();
 
             Assert.That(core.RD1.readUInt32(), Is.EqualTo(expected_unsigned_value));
             Assert.That(core.RD1.readInt32(), Is.EqualTo(expected_signed_value));
@@ -65,10 +77,10 @@ namespace Bytom.Hardware.Tests
             var core = createBytomIncB1($"mov RD1, [RD0]");
             // Write some random memory address to RD0
             uint address = 0x100;
-            core.writeBytesToMemory(address, Serialization.Int32ToBytesBigEndian(value)).Wait();
+            core.writeBytesToMemory(address, Serialization.Int32ToBytesBigEndian(value));
             core.RD0.writeUInt32(address);
 
-            core.executeNext().Wait();
+            core.executeNext();
 
             Assert.That(core.RD1.readUInt32(), Is.EqualTo(expected_unsigned_value));
             Assert.That(core.RD1.readInt32(), Is.EqualTo(expected_signed_value));
@@ -77,7 +89,7 @@ namespace Bytom.Hardware.Tests
         [TestCase(1, 1u, 1)]
         [TestCase(int.MaxValue, uint.MaxValue / 2, int.MaxValue)]
         [TestCase(int.MinValue, uint.MaxValue / 2 + 1, int.MinValue)]
-        public async Task TestMovMemReg(int value, uint expected_unsigned_value, int expected_signed_value)
+        public void TestMovMemReg(int value, uint expected_unsigned_value, int expected_signed_value)
         {
             var core = createBytomIncB1($"mov [RD0], RD1");
             // Write some random memory address to RD0
@@ -85,9 +97,9 @@ namespace Bytom.Hardware.Tests
             core.RD0.writeUInt32(address);
             core.RD1.writeInt32(value);
 
-            await core.executeNext();
+            core.executeNext();
 
-            byte[] memory = await core.readBytesFromMemory(address, 4);
+            byte[] memory = core.readBytesFromMemory(address, 4);
 
             Assert.That(
                 Serialization.UInt32FromBytesBigEndian(memory),
@@ -110,7 +122,7 @@ namespace Bytom.Hardware.Tests
         {
             var core = createBytomIncB1($"mov RD0, {value}");
 
-            core.executeNext().Wait();
+            core.executeNext();
 
             Assert.That(core.RD0.readUInt32(), Is.EqualTo(expected_unsigned_value));
             Assert.That(core.RD0.readInt32(), Is.EqualTo(expected_signed_value));
@@ -119,16 +131,16 @@ namespace Bytom.Hardware.Tests
         [TestCase(1, 1u, 1)]
         [TestCase(int.MaxValue, uint.MaxValue / 2, int.MaxValue)]
         [TestCase(int.MinValue, uint.MaxValue / 2 + 1, int.MinValue)]
-        public async Task TestMovMemCon(int value, uint expected_unsigned_value, int expected_signed_value)
+        public void TestMovMemCon(int value, uint expected_unsigned_value, int expected_signed_value)
         {
             var core = createBytomIncB1($"mov [RD0], {value}");
             // Write some random memory address to RD0
             uint address = 0x100;
             core.RD0.writeUInt32(address);
 
-            await core.executeNext();
+            core.executeNext();
 
-            byte[] memory = await core.readBytesFromMemory(address, 4);
+            byte[] memory = core.readBytesFromMemory(address, 4);
 
             Assert.That(
                 Serialization.UInt32FromBytesBigEndian(memory),
@@ -143,14 +155,14 @@ namespace Bytom.Hardware.Tests
         [TestCase(1, 1u, 1)]
         [TestCase(int.MaxValue, uint.MaxValue / 2, int.MaxValue)]
         [TestCase(int.MinValue, uint.MaxValue / 2 + 1, int.MinValue)]
-        public async Task TestPushReg(int value, uint expected_unsigned_value, int expected_signed_value)
+        public void TestPushReg(int value, uint expected_unsigned_value, int expected_signed_value)
         {
             var core = createBytomIncB1($"push RD0");
 
             core.RD0.writeInt32(value);
-            core.executeNext().Wait();
+            core.executeNext();
 
-            byte[] constant_bytes = await core.readBytesFromMemory(core.STP.readUInt32(), 4);
+            byte[] constant_bytes = core.readBytesFromMemory(core.STP.readUInt32(), 4);
 
             Assert.That(Serialization.UInt32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_unsigned_value));
             Assert.That(Serialization.Int32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_signed_value));
@@ -159,13 +171,13 @@ namespace Bytom.Hardware.Tests
         [TestCase(1, 1u, 1)]
         [TestCase(int.MaxValue, uint.MaxValue / 2, int.MaxValue)]
         [TestCase(int.MinValue, uint.MaxValue / 2 + 1, int.MinValue)]
-        public async Task TestPushCon(int value, uint expected_unsigned_value, int expected_signed_value)
+        public void TestPushCon(int value, uint expected_unsigned_value, int expected_signed_value)
         {
             var core = createBytomIncB1($"push {value}");
 
-            core.executeNext().Wait();
+            core.executeNext();
 
-            byte[] constant_bytes = await core.readBytesFromMemory(core.STP.readUInt32(), 4);
+            byte[] constant_bytes = core.readBytesFromMemory(core.STP.readUInt32(), 4);
 
             Assert.That(Serialization.UInt32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_unsigned_value));
             Assert.That(Serialization.Int32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_signed_value));
@@ -174,17 +186,17 @@ namespace Bytom.Hardware.Tests
         [TestCase(1, 1u, 1)]
         [TestCase(int.MaxValue, uint.MaxValue / 2, int.MaxValue)]
         [TestCase(int.MinValue, uint.MaxValue / 2 + 1, int.MinValue)]
-        public async Task TestPushMem(int value, uint expected_unsigned_value, int expected_signed_value)
+        public void TestPushMem(int value, uint expected_unsigned_value, int expected_signed_value)
         {
             var core = createBytomIncB1($"push [RD0]");
             // Write some random memory address to RD0
             uint address = 0x100;
-            await core.writeBytesToMemory(address, Serialization.Int32ToBytesBigEndian(value));
+            core.writeBytesToMemory(address, Serialization.Int32ToBytesBigEndian(value));
             core.RD0.writeUInt32(address);
 
-            await core.executeNext();
+            core.executeNext();
 
-            byte[] constant_bytes = await core.readBytesFromMemory(core.STP.readUInt32(), 4);
+            byte[] constant_bytes = core.readBytesFromMemory(core.STP.readUInt32(), 4);
 
             Assert.That(Serialization.UInt32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_unsigned_value));
             Assert.That(Serialization.Int32FromBytesBigEndian(constant_bytes), Is.EqualTo(expected_signed_value));
@@ -200,8 +212,8 @@ namespace Bytom.Hardware.Tests
                 pop RD0
             ");
 
-            core.executeNext().Wait();
-            core.executeNext().Wait();
+            core.executeNext();
+            core.executeNext();
 
             Assert.That(core.RD0.readUInt32(), Is.EqualTo(expected_unsigned_value));
             Assert.That(core.RD0.readInt32(), Is.EqualTo(expected_signed_value));
@@ -210,7 +222,7 @@ namespace Bytom.Hardware.Tests
         [TestCase(1, 1u, 1)]
         [TestCase(int.MaxValue, uint.MaxValue / 2, int.MaxValue)]
         [TestCase(int.MinValue, uint.MaxValue / 2 + 1, int.MinValue)]
-        public async Task TestPopMem(int value, uint expected_unsigned_value, int expected_signed_value)
+        public void TestPopMem(int value, uint expected_unsigned_value, int expected_signed_value)
         {
             var core = createBytomIncB1($@"
                 push {value}
@@ -219,10 +231,10 @@ namespace Bytom.Hardware.Tests
             uint address = 0x100;
             core.RD0.writeUInt32(address);
 
-            core.executeNext().Wait();
-            core.executeNext().Wait();
+            core.executeNext();
+            core.executeNext();
 
-            byte[] memory = await core.readBytesFromMemory(address, 4);
+            byte[] memory = core.readBytesFromMemory(address, 4);
 
             Assert.That(Serialization.UInt32FromBytesBigEndian(memory), Is.EqualTo(expected_unsigned_value));
             Assert.That(Serialization.Int32FromBytesBigEndian(memory), Is.EqualTo(expected_signed_value));
@@ -274,13 +286,13 @@ namespace Bytom.Hardware.Tests
                 {instruction} RD0, RD1
             ");
 
-            core.executeNext().Wait();
-            core.executeNext().Wait();
-            core.executeNext().Wait();
+            core.executeNext();
+            core.executeNext();
+            core.executeNext();
 
             Assert.That(core.RD0.readInt32(), Is.EqualTo(expected));
 
-            core.executeNext().Wait();
+            core.executeNext();
 
             Assert.That(core.CCR.readBit(0), Is.EqualTo(zero));
             Assert.That(core.CCR.readBit(2), Is.EqualTo(negative));
@@ -324,13 +336,13 @@ namespace Bytom.Hardware.Tests
                 {instruction} RD0, RD1
             ");
 
-            core.executeNext().Wait();
-            core.executeNext().Wait();
-            core.executeNext().Wait();
+            core.executeNext();
+            core.executeNext();
+            core.executeNext();
 
             Assert.That(core.RD0.readUInt32(), Is.EqualTo(expected));
 
-            core.executeNext().Wait();
+            core.executeNext();
 
             Assert.That(core.CCR.readBit(0), Is.EqualTo(zero));
             Assert.That(core.CCR.readBit(1), Is.EqualTo(carry));
@@ -345,7 +357,7 @@ namespace Bytom.Hardware.Tests
             ");
             core.RD0.writeInt32(address);
 
-            core.executeNext().Wait();
+            core.executeNext();
 
             Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
         }
@@ -358,7 +370,7 @@ namespace Bytom.Hardware.Tests
                 jmp {address}
             ");
 
-            core.executeNext().Wait();
+            core.executeNext();
 
             Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
         }
@@ -379,8 +391,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -397,8 +409,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -414,8 +426,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -431,8 +443,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -454,8 +466,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -472,8 +484,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -489,8 +501,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -506,8 +518,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -529,8 +541,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(2);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -547,8 +559,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -564,8 +576,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(2);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -581,8 +593,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(-1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -598,8 +610,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -621,8 +633,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(2);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -639,8 +651,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -656,8 +668,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(2);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -673,8 +685,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(-1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -690,8 +702,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -707,8 +719,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -730,8 +742,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -748,8 +760,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -765,8 +777,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -782,8 +794,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(-1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -799,8 +811,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -822,8 +834,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -840,8 +852,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(2);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -857,8 +869,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -874,8 +886,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(2);
                 core.RD2.writeInt32(-1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -891,8 +903,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
             }
@@ -908,8 +920,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(2);
                 core.RD2.writeInt32(1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -930,8 +942,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(-1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -952,8 +964,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(-1);
                 core.RD2.writeInt32(2);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -974,8 +986,8 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(1);
                 core.RD2.writeInt32(-1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
@@ -996,15 +1008,15 @@ namespace Bytom.Hardware.Tests
                 core.RD1.writeInt32(2);
                 core.RD2.writeInt32(-1);
 
-                core.executeNext().Wait();
-                core.executeNext().Wait();
+                core.executeNext();
+                core.executeNext();
 
                 Assert.That(core.IP.readUInt32(), Is.Not.EqualTo(address));
             }
         }
 
         [Test]
-        public async Task TestCallMem()
+        public void TestCallMem()
         {
             var address = 0x100;
             var core = createBytomIncB1($@"
@@ -1012,23 +1024,23 @@ namespace Bytom.Hardware.Tests
             ");
             core.RD0.writeInt32(address);
 
-            core.executeNext().Wait();
+            core.executeNext();
 
-            Assert.That(await core.popUInt32Stack(), Is.EqualTo(4u));
+            Assert.That(core.popUInt32Stack(), Is.EqualTo(4u));
             Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
         }
 
         [Test]
-        public async Task TestCallCon()
+        public void TestCallCon()
         {
             var address = 0x100;
             var core = createBytomIncB1($@"
                 call {address}
             ");
 
-            core.executeNext().Wait();
+            core.executeNext();
 
-            Assert.That(await core.popUInt32Stack(), Is.EqualTo(4u));
+            Assert.That(core.popUInt32Stack(), Is.EqualTo(4u));
             Assert.That(core.IP.readUInt32(), Is.EqualTo(address));
         }
 
@@ -1044,8 +1056,8 @@ namespace Bytom.Hardware.Tests
                 ret
             ");
 
-            core.executeNext().Wait();
-            core.executeNext().Wait();
+            core.executeNext();
+            core.executeNext();
 
             Assert.That(core.IP.readUInt32(), Is.EqualTo(4u));
         }

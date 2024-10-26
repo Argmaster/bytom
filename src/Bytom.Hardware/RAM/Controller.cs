@@ -18,12 +18,12 @@ namespace Bytom.Hardware.RAM
             this.end_address = end_address;
         }
 
-        public async Task waitUntilReady()
+        public void waitUntilReady()
         {
-            await stick.waitUntilReady();
+            stick.waitUntilReady();
         }
 
-        public async Task writeNoDelay(long global_address, byte content)
+        public void writeNoDelay(long global_address, byte content)
         {
             var local_address = global_address - start_address;
             if (global_address < start_address || global_address >= end_address)
@@ -32,10 +32,10 @@ namespace Bytom.Hardware.RAM
                     $"Writing outside of memory bounds 0x{global_address:X8} [local: {local_address}]  (0x{start_address:X8} - 0x{end_address:X8})"
                 );
             }
-            await stick.writeNoDelay(local_address, content);
+            stick.writeNoDelay(local_address, content);
         }
 
-        public async Task<byte> readNoDelay(long global_address)
+        public byte readNoDelay(long global_address)
         {
             var local_address = global_address - start_address;
             if (global_address < start_address || global_address >= end_address)
@@ -44,7 +44,7 @@ namespace Bytom.Hardware.RAM
                     $"Reading outside of memory bounds 0x{global_address:X8} [local: {local_address}] (0x{start_address:X8} - 0x{end_address:X8})"
                 );
             }
-            return await stick.readNoDelay(local_address);
+            return stick.readNoDelay(local_address);
         }
 
         public uint getCapacityBytes()
@@ -69,7 +69,7 @@ namespace Bytom.Hardware.RAM
             }
         }
 
-        public async Task writeAll(long address, byte[] content)
+        public void writeAll(long address, byte[] content)
         {
             long content_index = 0;
             long current_global_address = address;
@@ -78,17 +78,15 @@ namespace Bytom.Hardware.RAM
             {
                 if (current_global_address >= bank.start_address && current_global_address < bank.end_address)
                 {
-                    List<Task> tasks = new List<Task>();
                     for (
                         ;
                         current_global_address < bank.end_address && content_index < content.Length;
                         current_global_address++, content_index++
                     )
                     {
-                        tasks.Add(bank.writeNoDelay(current_global_address, content[content_index]));
+                        bank.writeNoDelay(current_global_address, content[content_index]);
                     }
-                    tasks.Add(bank.waitUntilReady());
-                    await Task.WhenAll(tasks.ToArray());
+                    bank.waitUntilReady();
 
                     if (content_index >= content.Length)
                     {
@@ -108,7 +106,7 @@ namespace Bytom.Hardware.RAM
             return total;
         }
 
-        public async Task<byte[]> readAll(long address, long length)
+        public byte[] readAll(long address, long length)
         {
             long content_index = 0;
             long current_global_address = address;
@@ -124,9 +122,9 @@ namespace Bytom.Hardware.RAM
                         current_global_address < bank.end_address && content_index < length;
                         current_global_address++, content_index++)
                     {
-                        content[content_index] = await bank.readNoDelay(current_global_address);
+                        content[content_index] = bank.readNoDelay(current_global_address);
                     }
-                    await bank.waitUntilReady();
+                    bank.waitUntilReady();
 
                     if (content_index >= content.Length)
                     {
@@ -135,6 +133,12 @@ namespace Bytom.Hardware.RAM
                 }
             }
             return content;
+        }
+
+        public void dumpMemoryContent(string file)
+        {
+            var content = readAll(0, getTotalMemoryBytes());
+            System.IO.File.WriteAllBytes(file, content);
         }
     }
 }

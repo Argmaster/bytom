@@ -1,12 +1,13 @@
+using System;
 using System.Collections.Generic;
 
 namespace Bytom.Hardware
 {
     public class DeviceManager
     {
-        public List<Device> devices { get; set; }
+        public Dictionary<uint, Device> devices { get; }
 
-        public DeviceManager(List<Device> devices)
+        public DeviceManager(Dictionary<uint, Device> devices)
         {
             this.devices = devices;
         }

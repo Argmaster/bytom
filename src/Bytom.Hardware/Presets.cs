@@ -6,18 +6,14 @@ namespace Bytom.Hardware
 {
     public class BytomIncGen1Core : Core
     {
-        public BytomIncGen1Core(Controller ram) : base(
-            0, 200, new List<Cache> { new Cache(256, 10) }, ram
-        )
+        public BytomIncGen1Core() : base(0, 200)
         { }
     }
 
     public class BytomIncGen1 : Package
     {
-        public BytomIncGen1(Controller ram) : base(
-            new List<Core>{
-            new BytomIncGen1Core(ram),
-            },
+        public BytomIncGen1() : base(
+            new List<Core>{new BytomIncGen1Core()},
             4096
         )
         { }

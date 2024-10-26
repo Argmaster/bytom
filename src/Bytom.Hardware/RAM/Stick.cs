@@ -1,7 +1,5 @@
-
-
 using System;
-using System.Threading.Tasks;
+
 
 namespace Bytom.Hardware.RAM
 {
@@ -22,28 +20,26 @@ namespace Bytom.Hardware.RAM
             memory = new byte[capacity_bytes];
         }
 
-        public async Task waitUntilReady()
+        public void waitUntilReady()
         {
-            await clock.waitForCycles(latency_cycles);
+            clock.waitForCycles(latency_cycles);
         }
 
-        public async Task writeNoDelay(long address, byte content)
+        public void writeNoDelay(long address, byte content)
         {
             if (address < 0 || address > capacity_bytes)
             {
                 throw new Exception($"Writing outside of memory bounds 0x{address:X8}");
             }
-            await Task.Delay(0);
             memory[address] = content;
         }
 
-        public async Task<byte> readNoDelay(long address)
+        public byte readNoDelay(long address)
         {
             if (address < 0 || address > capacity_bytes)
             {
                 throw new Exception($"Reading outside of memory bounds 0x{address:X8}");
             }
-            await Task.Delay(0);
             return memory[address];
         }
     }

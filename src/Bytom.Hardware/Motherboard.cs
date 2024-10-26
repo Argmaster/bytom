@@ -11,6 +11,7 @@ namespace Bytom.Hardware
         public FirmwareRom rom { get; set; }
         public DeviceManager device_manager { get; set; }
         public PowerStatus power_status { get; set; }
+        private Clock clock { get; set; }
 
         public Motherboard(
             CPU.Package cpu,
@@ -23,38 +24,38 @@ namespace Bytom.Hardware
             this.ram = ram;
             this.rom = rom;
             this.device_manager = device_manager;
-            this.cpu.motherboard = this;
+            this.clock = new Clock(1000);
+
             power_status = PowerStatus.OFF;
         }
-        public async Task powerOn()
+        public void powerOn()
         {
             if (power_status == PowerStatus.ON)
             {
                 throw new System.Exception("Motherboard is already powered on");
             }
             power_status = PowerStatus.ON;
-            byte[] firmware_image = await rom.readAll(0, cpu.firmware_size);
-            await ram.writeAll(0, firmware_image);
-            await cpu.powerOn();
+            byte[] firmware_image = rom.readAll(0, cpu.firmware_size);
+            ram.writeAll(0, firmware_image);
+            cpu.powerOn(this);
         }
 
-        public async Task powerOff()
+        public void powerOff()
         {
             if (power_status == PowerStatus.OFF)
             {
                 throw new System.Exception("Motherboard is already powered off");
             }
-            await cpu.powerOff();
+            cpu.powerOff();
             power_status = PowerStatus.OFF;
         }
 
-        public async Task softwarePowerOff()
+        public void softwarePowerOff()
         {
             if (power_status == PowerStatus.OFF)
             {
                 throw new System.Exception("Motherboard is already powered off");
             }
-            await Task.Delay(0);
             power_status = PowerStatus.OFF;
         }
 
@@ -67,11 +68,11 @@ namespace Bytom.Hardware
             return power_status;
         }
 
-        public async Task waitUntilRunning()
+        public void waitUntilRunning()
         {
             while (power_status != PowerStatus.OFF)
             {
-                await Task.Delay(10);
+                clock.waitForCycles(1);
             }
             getPowerStatus();
         }

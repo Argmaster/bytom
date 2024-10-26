@@ -26,38 +26,36 @@ namespace Bytom.Hardware
             clock = new Clock(0);
         }
 
-        public async Task writeAll(long address, byte[] content)
+        public void writeAll(long address, byte[] content)
         {
-            await clock.waitMilliseconds(write_latency_milliseconds);
-            await writeAllNoDelay(address, content);
+            clock.waitMicroseconds(write_latency_milliseconds * 1000);
+            writeAllNoDelay(address, content);
         }
 
-        public async Task writeAllNoDelay(long address, byte[] content)
+        public void writeAllNoDelay(long address, byte[] content)
         {
             if (address < 0 || address > capacity_bytes)
             {
                 throw new Exception($"Writing outside of memory bounds 0x{address:X8}");
             }
-            await Task.Delay(0);
             for (int i = 0; i < content.Length; i++)
             {
                 memory[address + i] = content[i];
             }
         }
 
-        public async Task<byte[]> readAll(uint address, uint length)
+        public byte[] readAll(uint address, uint length)
         {
-            await clock.waitMilliseconds(read_latency_milliseconds);
-            return await readAllNoDelay(address, length);
+            clock.waitMicroseconds(read_latency_milliseconds * 1000);
+            return readAllNoDelay(address, length);
         }
 
-        public async Task<byte[]> readAllNoDelay(uint address, uint length)
+        public byte[] readAllNoDelay(uint address, uint length)
         {
             if (address < 0 || address > capacity_bytes)
             {
                 throw new Exception($"Reading outside of memory bounds 0x{address:X8}");
             }
-            await Task.Delay(0);
             return memory[new Index((int)address)..new Index((int)(address + length))];
         }
     }

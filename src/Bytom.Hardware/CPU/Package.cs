@@ -7,8 +7,8 @@ namespace Bytom.Hardware.CPU
     {
         public List<Core> cores { get; }
         public uint firmware_size { get; }
-        public PowerStatus power_status { get; set; }
-        public Motherboard? motherboard { get; set; }
+        public PowerStatus power_status;
+        public Motherboard? motherboard;
 
         public Package(List<Core> cores, uint firmware_size)
         {
@@ -23,22 +23,23 @@ namespace Bytom.Hardware.CPU
             power_status = PowerStatus.OFF;
         }
 
-        public async Task powerOn()
+        public void powerOn(Motherboard motherboard)
         {
             if (power_status == PowerStatus.ON)
             {
                 throw new System.Exception("Package is already powered on");
             }
             power_status = PowerStatus.ON;
+            this.motherboard = motherboard;
 
             foreach (var core in cores)
             {
-                await core.powerOn();
+                core.powerOn(this);
             }
             getPowerStatus();
         }
 
-        public async Task powerOff()
+        public void powerOff()
         {
             if (power_status == PowerStatus.OFF)
             {
@@ -48,7 +49,10 @@ namespace Bytom.Hardware.CPU
 
             foreach (var core in cores)
             {
-                await core.powerOff();
+                if (core.getPowerStatus() == PowerStatus.ON)
+                {
+                    core.powerOff();
+                }
             }
             getPowerStatus();
         }
