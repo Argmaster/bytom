@@ -1,6 +1,5 @@
 
-
-function add(var x: $T; var y: $T;): $T
+function add(var x: i32; var y: i32;): i32
 {
     return asm {
         pop RD0

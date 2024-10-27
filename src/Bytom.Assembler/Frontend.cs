@@ -95,131 +95,131 @@ namespace Bytom.Assembler
                 case "add":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new Add(destination, source);
                     }
                 case "sub":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new Sub(destination, source);
                     }
                 case "inc":
                     {
                         expectOperandsCount(parameters, 1);
-                        Register destination = parseRegister(parameters[0]);
+                        OpRegister destination = parseRegister(parameters[0]);
                         return new Inc(destination);
                     }
                 case "dec":
                     {
                         expectOperandsCount(parameters, 1);
-                        Register destination = parseRegister(parameters[0]);
+                        OpRegister destination = parseRegister(parameters[0]);
                         return new Dec(destination);
                     }
                 case "mul":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new Mul(destination, source);
                     }
                 case "imul":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new IMul(destination, source);
                     }
                 case "div":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new Div(destination, source);
                     }
                 case "idiv":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new IDiv(destination, source);
                     }
                 case "and":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new And(destination, source);
                     }
                 case "or":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new Or(destination, source);
                     }
                 case "xor":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new Xor(destination, source);
                     }
                 case "not":
                     {
                         expectOperandsCount(parameters, 1);
-                        Register destination = parseRegister(parameters[0]);
+                        OpRegister destination = parseRegister(parameters[0]);
                         return new Not(destination);
                     }
                 case "shl":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new Shl(destination, source);
                     }
                 case "shr":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new Shr(destination, source);
                     }
                 case "fadd":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new Fadd(destination, source);
                     }
                 case "fsub":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new Fsub(destination, source);
                     }
                 case "fmul":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new Fmul(destination, source);
                     }
                 case "fdiv":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register destination = parseRegister(parameters[0]);
-                        Register source = parseRegister(parameters[1]);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        OpRegister source = parseRegister(parameters[1]);
                         return new Fdiv(destination, source);
                     }
                 case "fcmp":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register left = parseRegister(parameters[0]);
-                        Register right = parseRegister(parameters[1]);
+                        OpRegister left = parseRegister(parameters[0]);
+                        OpRegister right = parseRegister(parameters[1]);
                         return new Fcmp(left, right);
                     }
                 case "jmp":
@@ -264,8 +264,8 @@ namespace Bytom.Assembler
                 case "cmp":
                     {
                         expectOperandsCount(parameters, 2);
-                        Register left = parseRegister(parameters[0]);
-                        Register right = parseRegister(parameters[1]);
+                        OpRegister left = parseRegister(parameters[0]);
+                        OpRegister right = parseRegister(parameters[1]);
                         return new Cmp(left, right);
                     }
                 default:
@@ -288,20 +288,20 @@ namespace Bytom.Assembler
             {
                 frontend.expectOperandsCount(parameters, 1);
                 {
-                    MemoryAddress? destination = frontend.tryParseMemoryAddress(parameters[0]);
+                    OpMemoryAddress? destination = frontend.tryParseMemoryAddress(parameters[0]);
                     if (destination != null)
                     {
                         return (JMem)Activator.CreateInstance(typeof(JMem), destination);
                     }
                 }
                 {
-                    ConstantInt? destination = frontend.tryParseConstantInt(parameters[0]);
+                    OpConstantInt? destination = frontend.tryParseConstantInt(parameters[0]);
                     if (destination != null)
                     {
                         return (JCon)Activator.CreateInstance(typeof(JCon), destination);
                     }
                 }
-                return (JLabel)Activator.CreateInstance(typeof(JLabel), new Label(parameters[0].Trim()));
+                return (JLabel)Activator.CreateInstance(typeof(JLabel), new OpLabel(parameters[0].Trim()));
             }
         }
 
@@ -311,41 +311,40 @@ namespace Bytom.Assembler
             Operand destination = parseOperand(parameters[0]);
             switch (destination.GetType().Name)
             {
-                case "Register":
+                case "OpRegister":
                     {
                         Operand source = parseOperand(parameters[1]);
                         switch (source.GetType().Name)
                         {
-                            case "Register":
-                                return new MovRegReg((Register)destination, (Register)source);
-                            case "MemoryAddress":
-                                return new MovRegMem((Register)destination, (MemoryAddress)source);
-                            case "ConstantInt":
-                                return new MovRegCon((Register)destination, (ConstantInt)source);
-                            case "ConstantFloat":
-                                return new MovRegCon((Register)destination, (ConstantFloat)source);
+                            case "OpRegister":
+                                return new Nodes.MovRegReg((OpRegister)destination, (OpRegister)source);
+                            case "OpMemoryAddress":
+                                return new MovRegMem((OpRegister)destination, (OpMemoryAddress)source);
+                            case "OpConstantInt":
+                                return new MovRegCon((OpRegister)destination, (OpConstantInt)source);
+                            case "OpConstantFloat":
+                                return new MovRegCon((OpRegister)destination, (OpConstantFloat)source);
                         }
                         break;
                     }
-                case "MemoryAddress":
+                case "OpMemoryAddress":
                     {
                         Operand source = parseOperand(parameters[1]);
                         switch (source.GetType().Name)
                         {
-                            case "Register":
-                                return new MovMemReg((MemoryAddress)destination, (Register)source);
-                            case "MemoryAddress":
+                            case "OpRegister":
+                                return new MovMemReg((OpMemoryAddress)destination, (OpRegister)source);
+                            case "OpMemoryAddress":
                                 throw new Exception("Invalid source operand");
-                            case "ConstantInt":
-                                return new MovMemCon((MemoryAddress)destination, (ConstantInt)source);
-                            case "ConstantFloat":
-                                return new MovMemCon((MemoryAddress)destination, (ConstantFloat)source);
+                            case "OpConstantInt":
+                                return new MovMemCon((OpMemoryAddress)destination, (OpConstantInt)source);
+                            case "OpConstantFloat":
+                                return new MovMemCon((OpMemoryAddress)destination, (OpConstantFloat)source);
                         }
                         break;
                     }
                 default:
                     throw new Exception($"Invalid destination operand in line {lineIndex}: '{currentLine}'");
-
             }
             throw new NotImplementedException();
         }
@@ -355,14 +354,14 @@ namespace Bytom.Assembler
             Operand source = parseOperand(parameters[0]);
             switch (source.GetType().Name)
             {
-                case "Register":
-                    return new PushReg((Register)source);
-                case "MemoryAddress":
-                    return new PushMem((MemoryAddress)source);
-                case "ConstantInt":
-                    return new PushCon((ConstantInt)source);
-                case "ConstantFloat":
-                    return new PushCon((ConstantFloat)source);
+                case "OpRegister":
+                    return new PushReg((OpRegister)source);
+                case "OpMemoryAddress":
+                    return new PushMem((OpMemoryAddress)source);
+                case "OpConstantInt":
+                    return new PushCon((OpConstantInt)source);
+                case "OpConstantFloat":
+                    return new PushCon((OpConstantFloat)source);
                 default:
                     throw new Exception("Invalid source operand");
             }
@@ -373,10 +372,10 @@ namespace Bytom.Assembler
             Operand destination = parseOperand(parameters[0]);
             switch (destination.GetType().Name)
             {
-                case "Register":
-                    return new PopReg((Register)destination);
-                case "MemoryAddress":
-                    return new PopMem((MemoryAddress)destination);
+                case "OpRegister":
+                    return new PopReg((OpRegister)destination);
+                case "OpMemoryAddress":
+                    return new PopMem((OpMemoryAddress)destination);
                 default:
                     throw new Exception("Invalid destination operand");
             }
@@ -420,22 +419,22 @@ namespace Bytom.Assembler
             throw new Exception($"Invalid operand in line {lineIndex}: '{currentLine}'");
         }
 
-        private ConstantFloat? tryParseConstantFloat(string trimmed_source_code)
+        private OpConstantFloat? tryParseConstantFloat(string trimmed_source_code)
         {
             Match match = Regex.Match(trimmed_source_code, @"^([-+]?[0-9]+\.[0-9]+)$");
             if (match.Success)
             {
-                return new ConstantFloat(float.Parse(match.Groups[0].Value));
+                return new OpConstantFloat(float.Parse(match.Groups[0].Value));
             }
             return null;
         }
 
-        private ConstantInt? tryParseConstantInt(string trimmed_source_code)
+        private OpConstantInt? tryParseConstantInt(string trimmed_source_code)
         {
             Match match = Regex.Match(trimmed_source_code, @"^0x([0-9A-Fa-f]+)$");
             if (match.Success)
             {
-                return new ConstantInt(
+                return new OpConstantInt(
                     long.Parse(match.Groups[1].Value, NumberStyles.HexNumber)
                 );
             }
@@ -443,12 +442,12 @@ namespace Bytom.Assembler
             match = Regex.Match(trimmed_source_code, @"^([-+]?[0-9A-Fa-f]+)$");
             if (match.Success)
             {
-                return new ConstantInt(long.Parse(match.Groups[0].Value));
+                return new OpConstantInt(long.Parse(match.Groups[0].Value));
             }
             return null;
         }
 
-        private Register parseRegister(string source_code)
+        private OpRegister parseRegister(string source_code)
         {
             string trimmed_source_code = source_code.Trim();
             var operand = tryParseRegister(trimmed_source_code);
@@ -459,25 +458,25 @@ namespace Bytom.Assembler
             throw new Exception($"Invalid register in line {lineIndex}: '{currentLine}'");
         }
 
-        private static Register? tryParseRegister(string trimmed_source_code)
+        private static OpRegister? tryParseRegister(string trimmed_source_code)
         {
             var register_name = trimmed_source_code.ToUpper();
             if (Enum.GetNames(typeof(RegisterID)).Contains(register_name))
             {
                 Enum.TryParse(register_name, out RegisterID register);
-                return new Register(register);
+                return new OpRegister(register);
             }
             return null;
         }
 
-        private MemoryAddress? tryParseMemoryAddress(string source)
+        private OpMemoryAddress? tryParseMemoryAddress(string source)
         {
             if (source.StartsWith("[") && source.EndsWith("]"))
             {
                 var register_name = source.Substring(1, source.Length - 2).ToUpper();
                 if (Enum.TryParse(register_name, out RegisterID register))
                 {
-                    return new MemoryAddress(register);
+                    return new OpMemoryAddress(register);
                 }
                 throw new Exception($"Invalid register name {register_name} in line {lineIndex}: '{currentLine}'");
             }

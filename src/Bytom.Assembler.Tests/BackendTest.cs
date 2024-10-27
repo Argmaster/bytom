@@ -53,9 +53,9 @@ namespace Bytom.Assembler.Tests
             var code = backend.compile(
                 new AbstractSyntaxTree(
                     [
-                        new MovRegReg(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                        new Nodes.MovRegReg(
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -78,8 +78,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new MovRegMem(
-                            new Register(RegisterID.RD0),
-                            new MemoryAddress(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpMemoryAddress(RegisterID.RD1)
                         )
                     ]
                 )
@@ -102,8 +102,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new MovMemReg(
-                            new MemoryAddress(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpMemoryAddress(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -122,8 +122,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new MovRegCon(
-                            new Register(RegisterID.RD0),
-                            new ConstantInt(constant_value)
+                            new OpRegister(RegisterID.RD0),
+                            new OpConstantInt(constant_value)
                         )
                     ]
                 )
@@ -154,8 +154,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new MovMemCon(
-                            new MemoryAddress(RegisterID.RD0),
-                            new ConstantInt(constant_value)
+                            new OpMemoryAddress(RegisterID.RD0),
+                            new OpConstantInt(constant_value)
                         )
                     ]
                 )
@@ -187,8 +187,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new MovMemCon(
-                            new MemoryAddress(RegisterID.RD0),
-                            new ConstantFloat(constant_value)
+                            new OpMemoryAddress(RegisterID.RD0),
+                            new OpConstantFloat(constant_value)
                         )
                     ]
                 )
@@ -218,7 +218,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new PushReg(
-                            new Register(RegisterID.RD0)
+                            new OpRegister(RegisterID.RD0)
                         )
                     ]
                 )
@@ -241,7 +241,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new PushMem(
-                            new MemoryAddress(RegisterID.RD0)
+                            new OpMemoryAddress(RegisterID.RD0)
                         )
                     ]
                 )
@@ -264,7 +264,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new PopReg(
-                            new Register(RegisterID.RD0)
+                            new OpRegister(RegisterID.RD0)
                         )
                     ]
                 )
@@ -287,8 +287,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Add(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -312,8 +312,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Sub(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -337,7 +337,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Inc(
-                            new Register(RegisterID.RD0)
+                            new OpRegister(RegisterID.RD0)
                         )
                     ]
                 )
@@ -360,7 +360,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Dec(
-                            new Register(RegisterID.RD0)
+                            new OpRegister(RegisterID.RD0)
                         )
                     ]
                 )
@@ -384,8 +384,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Mul(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -408,8 +408,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new IMul(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -433,8 +433,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Div(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -458,8 +458,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new IDiv(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -483,8 +483,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new And(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -508,8 +508,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Or(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -533,8 +533,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Xor(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -558,7 +558,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Not(
-                            new Register(RegisterID.RD0)
+                            new OpRegister(RegisterID.RD0)
                         )
                     ]
                 )
@@ -582,8 +582,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Shl(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -607,8 +607,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Shr(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -632,8 +632,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Fadd(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -657,8 +657,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Fsub(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -682,8 +682,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Fmul(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -707,8 +707,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Fdiv(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -732,8 +732,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Fcmp(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )
@@ -756,7 +756,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new JmpMem(
-                            new MemoryAddress(RegisterID.RD0)
+                            new OpMemoryAddress(RegisterID.RD0)
                         )
                     ]
                 )
@@ -778,7 +778,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new JmpCon(
-                            new ConstantInt(0xFF)
+                            new OpConstantInt(0xFF)
                         )
                     ]
                 )
@@ -809,7 +809,7 @@ namespace Bytom.Assembler.Tests
                     [
                         new LabelNode("end"),
                         new JmpLabel(
-                            new Label("end")
+                            new OpLabel("end")
                         )
                     ]
                 )
@@ -839,7 +839,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new JeqMem(
-                            new MemoryAddress(RegisterID.RD0)
+                            new OpMemoryAddress(RegisterID.RD0)
                         )
                     ]
                 )
@@ -862,7 +862,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new JeqCon(
-                            new ConstantInt(0xFF)
+                            new OpConstantInt(0xFF)
                         )
                     ]
                 )
@@ -893,7 +893,7 @@ namespace Bytom.Assembler.Tests
                     [
                         new LabelNode("end"),
                         new JeqLabel(
-                            new Label("end")
+                            new OpLabel("end")
                         )
                     ]
                 )
@@ -923,7 +923,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new JneMem(
-                            new MemoryAddress(RegisterID.RD0)
+                            new OpMemoryAddress(RegisterID.RD0)
                         )
                     ]
                 )
@@ -946,7 +946,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new JneCon(
-                            new ConstantInt(0xFF)
+                            new OpConstantInt(0xFF)
                         )
                     ]
                 )
@@ -977,7 +977,7 @@ namespace Bytom.Assembler.Tests
                     [
                         new LabelNode("end"),
                         new JneLabel(
-                            new Label("end")
+                            new OpLabel("end")
                         )
                     ]
                 )
@@ -1009,7 +1009,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Nodes.JLT.Mem(
-                        new MemoryAddress(RegisterID.RD0)
+                        new OpMemoryAddress(RegisterID.RD0)
                     )
                     ]
                 )
@@ -1032,7 +1032,7 @@ namespace Bytom.Assembler.Tests
                     new AbstractSyntaxTree(
                         [
                             new Nodes.JLT.Con(
-                            new ConstantInt(0xFF)
+                            new OpConstantInt(0xFF)
                         )
                         ]
                     )
@@ -1063,7 +1063,7 @@ namespace Bytom.Assembler.Tests
                         [
                             new LabelNode("end"),
                         new Nodes.JLT.Label(
-                            new Label("end")
+                            new OpLabel("end")
                         )
                         ]
                     )
@@ -1096,7 +1096,7 @@ namespace Bytom.Assembler.Tests
                     new AbstractSyntaxTree(
                         [
                             new Nodes.JLE.Mem(
-                                new MemoryAddress(RegisterID.RD0)
+                                new OpMemoryAddress(RegisterID.RD0)
                             )
                         ]
                     )
@@ -1119,7 +1119,7 @@ namespace Bytom.Assembler.Tests
                     new AbstractSyntaxTree(
                         [
                             new Nodes.JLE.Con(
-                                new ConstantInt(0xFF)
+                                new OpConstantInt(0xFF)
                             )
                         ]
                     )
@@ -1150,7 +1150,7 @@ namespace Bytom.Assembler.Tests
                         [
                             new LabelNode("end"),
                             new Nodes.JLE.Label(
-                                new Label("end")
+                                new OpLabel("end")
                             )
                         ]
                     )
@@ -1183,7 +1183,7 @@ namespace Bytom.Assembler.Tests
                     new AbstractSyntaxTree(
                         [
                             new Nodes.JGT.Mem(
-                            new MemoryAddress(RegisterID.RD0)
+                            new OpMemoryAddress(RegisterID.RD0)
                         )
                         ]
                     )
@@ -1206,7 +1206,7 @@ namespace Bytom.Assembler.Tests
                     new AbstractSyntaxTree(
                         [
                             new Nodes.JGT.Con(
-                            new ConstantInt(0xFF)
+                            new OpConstantInt(0xFF)
                         )
                         ]
                     )
@@ -1237,7 +1237,7 @@ namespace Bytom.Assembler.Tests
                         [
                             new LabelNode("end"),
                         new Nodes.JGT.Label(
-                            new Label("end")
+                            new OpLabel("end")
                         )
                         ]
                     )
@@ -1271,7 +1271,7 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Nodes.JGE.Mem(
-                        new MemoryAddress(RegisterID.RD0)
+                        new OpMemoryAddress(RegisterID.RD0)
                     )
                     ]
                 )
@@ -1294,7 +1294,7 @@ namespace Bytom.Assembler.Tests
                     new AbstractSyntaxTree(
                         [
                             new Nodes.JGE.Con(
-                                new ConstantInt(0xFF)
+                                new OpConstantInt(0xFF)
                             )
                         ]
                     )
@@ -1325,7 +1325,7 @@ namespace Bytom.Assembler.Tests
                         [
                             new LabelNode("end"),
                             new Nodes.JGE.Label(
-                                new Label("end")
+                                new OpLabel("end")
                             )
                         ]
                     )
@@ -1359,7 +1359,7 @@ namespace Bytom.Assembler.Tests
                     new AbstractSyntaxTree(
                         [
                             new Nodes.CALL.Mem(
-                                new MemoryAddress(RegisterID.RD0)
+                                new OpMemoryAddress(RegisterID.RD0)
                             )
                         ]
                     )
@@ -1382,7 +1382,7 @@ namespace Bytom.Assembler.Tests
                     new AbstractSyntaxTree(
                         [
                             new Nodes.CALL.Con(
-                                new ConstantInt(0xFF)
+                                new OpConstantInt(0xFF)
                             )
                         ]
                     )
@@ -1413,7 +1413,7 @@ namespace Bytom.Assembler.Tests
                         [
                             new LabelNode("start"),
                             new Nodes.CALL.Label(
-                                new Label("start")
+                                new OpLabel("start")
                             )
                         ]
                     )
@@ -1466,8 +1466,8 @@ namespace Bytom.Assembler.Tests
                 new AbstractSyntaxTree(
                     [
                         new Cmp(
-                            new Register(RegisterID.RD0),
-                            new Register(RegisterID.RD1)
+                            new OpRegister(RegisterID.RD0),
+                            new OpRegister(RegisterID.RD1)
                         )
                     ]
                 )

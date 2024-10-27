@@ -1,62 +1,57 @@
-
-
 using System;
-using System.Threading.Tasks;
 
 namespace Bytom.Hardware
 {
-    public class FirmwareRom
+    public class FirmwareRom : MessageReceiver
     {
-        public uint capacity_bytes { get; }
-        public uint read_latency_milliseconds { get; }
-        public uint write_latency_milliseconds { get; }
-        public Clock clock { get; }
+        public Latency read_latency { get; }
+        public Latency write_latency { get; }
+        public long capacity_bytes { get; }
         private byte[] memory;
 
         public FirmwareRom(
-            uint capacity_bytes,
-            uint read_latency_milliseconds = 0,
-            uint write_latency_milliseconds = 0)
+            long capacity_bytes,
+            Latency read_latency,
+            Latency write_latency
+        ) : base(new Clock(1))
         {
             this.capacity_bytes = capacity_bytes;
-            this.read_latency_milliseconds = read_latency_milliseconds;
-            this.write_latency_milliseconds = write_latency_milliseconds;
-
+            this.read_latency = read_latency;
+            this.write_latency = write_latency;
+            if (capacity_bytes < 0)
+            {
+                throw new Exception("capacity_bytes must be greater than 0");
+            }
             memory = new byte[this.capacity_bytes];
-            clock = new Clock(0);
         }
 
-        public void writeAll(long address, byte[] content)
+        public override void write(WriteMessage message)
         {
-            clock.waitMicroseconds(write_latency_milliseconds * 1000);
-            writeAllNoDelay(address, content);
-        }
-
-        public void writeAllNoDelay(long address, byte[] content)
-        {
-            if (address < 0 || address > capacity_bytes)
+            clock.waitMicroseconds(write_latency.ToMicroseconds());
+            if (isInMyAddressRange(message.address))
             {
-                throw new Exception($"Writing outside of memory bounds 0x{address:X8}");
+                var address = message.address - address_range!.base_address;
+                memory[address.ToLong()] = message.data;
             }
-            for (int i = 0; i < content.Length; i++)
+            else
             {
-                memory[address + i] = content[i];
+                throw new Exception($"Address 0x{message.address.ToLong():X8} out of range");
             }
         }
 
-        public byte[] readAll(uint address, uint length)
+        public override void read(ReadMessage message)
         {
-            clock.waitMicroseconds(read_latency_milliseconds * 1000);
-            return readAllNoDelay(address, length);
-        }
-
-        public byte[] readAllNoDelay(uint address, uint length)
-        {
-            if (address < 0 || address > capacity_bytes)
+            clock.waitMicroseconds(read_latency.ToMicroseconds());
+            if (isInMyAddressRange(message.address))
             {
-                throw new Exception($"Reading outside of memory bounds 0x{address:X8}");
+                var address = message.address - address_range!.base_address;
+                var value = memory[address.ToLong()];
+                message.writeBackQueue.Enqueue(new WriteMessage(message.address, value));
             }
-            return memory[new Index((int)address)..new Index((int)(address + length))];
+            else
+            {
+                throw new Exception($"Address 0x{message.address.ToLong():X8} out of range");
+            }
         }
     }
 }

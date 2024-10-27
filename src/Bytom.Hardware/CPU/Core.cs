@@ -1,7 +1,9 @@
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using Bytom.Hardware.RAM;
 using Bytom.Tools;
 
 namespace Bytom.Hardware.CPU
@@ -48,7 +50,7 @@ namespace Bytom.Hardware.CPU
         public bool requested_power_off;
         public Clock clock { get; }
         public Package? package;
-        private Thread? thread;
+        public Thread? thread;
 
         public Register32 RD0;
         public Register32 RD1;
@@ -158,760 +160,36 @@ namespace Bytom.Hardware.CPU
                 { RegisterID.KERNEL_IP, KERNEL_IP },
             };
         }
+        public Register32 vInstruction = new Register32(0);
+        public Register32 vInstructionSize = new Register32(0);
+        public Register32 vRD0 = new Register32(0);
+        public Register32 vRD1 = new Register32(0);
+        public Register32 vRD2 = new Register32(0);
+        public Register32 vRD3 = new Register32(0);
+        public List<MicroOp> pipeline = new List<MicroOp>();
+        IEnumerator? currentMicroOp;
+        List<uint> interrupt_queue = new List<uint>();
 
-        public void executeNext()
+        public void primeMicroOpDecoding()
         {
-            uint instruction_pointer = IP.readUInt32();
-            byte[] instruction = readBytesFromMemory(instruction_pointer, 4);
-            instruction_pointer += 4;
-
-            InstructionDecoder decoder = new InstructionDecoder(instruction);
-
-            switch (decoder.GetOpCode())
+            pushMicroOp(new ReadMemory(IP, vInstruction));
+            pushMicroOp(new InstructionDecode(vInstruction));
+        }
+        public void executeMicroOp()
+        {
+            if (currentMicroOp?.MoveNext() ?? false)
             {
-                case OpCode.Nop:
-                    {
-                        break;
-                    }
-                case OpCode.Halt:
-                    {
-                        requested_power_off = true;
-                        power_status = PowerStatus.OFF;
-                        package?.powerOff();
-                        package?.motherboard?.softwarePowerOff();
-                        thread = null;
-                        package = null;
-                        break;
-                    }
-                case OpCode.MovRegReg:
-                    {
-                        writeBytesToRegister(
-                            decoder.GetFirstRegisterID(),
-                            readBytesFromRegister(decoder.GetSecondRegisterID())
-                        );
-                        break;
-                    }
-                case OpCode.MovRegMem:
-                    {
-                        writeBytesToRegister(
-                            decoder.GetFirstRegisterID(),
-                            readBytesFromMemory(
-                                readUInt32FromRegister(decoder.GetSecondRegisterID()),
-                                4
-                            )
-                        );
-                        break;
-                    }
-                case OpCode.MovMemReg:
-                    {
-                        writeBytesToMemory(
-                            readUInt32FromRegister(decoder.GetFirstRegisterID()),
-                            readBytesFromRegister(decoder.GetSecondRegisterID())
-                        );
-                        break;
-                    }
-                case OpCode.MovRegCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        instruction_pointer += 4;
-                        writeBytesToRegister(decoder.GetFirstRegisterID(), constant_bytes);
-                        break;
-                    }
-                case OpCode.MovMemCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        instruction_pointer += 4;
-                        writeBytesToMemory(
-                            readUInt32FromRegister(decoder.GetFirstRegisterID()),
-                            constant_bytes
-                        );
-                        break;
-                    }
-                case OpCode.PushReg:
-                    {
-                        pushStack(readBytesFromRegister(decoder.GetFirstRegisterID()));
-                        break;
-                    }
-                case OpCode.PushCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        instruction_pointer += 4;
-
-                        pushStack(constant_bytes);
-                        break;
-                    }
-                case OpCode.PushMem:
-                    {
-                        pushStack(
-                            readBytesFromMemory(
-                                readUInt32FromRegister(decoder.GetFirstRegisterID()),
-                                4
-                            )
-                        );
-                        break;
-                    }
-                case OpCode.PopReg:
-                    {
-                        writeBytesToRegister(decoder.GetFirstRegisterID(), popStack(4));
-                        break;
-                    }
-                case OpCode.PopMem:
-                    {
-                        writeBytesToMemory(
-                            readUInt32FromRegister(decoder.GetFirstRegisterID()),
-                            popStack(4)
-                        );
-                        break;
-                    }
-                case OpCode.Add:
-                    {
-                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = readInt32FromRegister(decoder.GetSecondRegisterID());
-                        CCR.writeUInt32(0u);
-                        long result = left + right;
-
-                        CCR.setZeroFlag(result == 0);
-                        CCR.setCarryFlag((ulong)(uint)left + (ulong)(uint)right > uint.MaxValue);
-                        CCR.setSignFlag((int)result < 0);
-                        CCR.setOverflowFlag((int)left + (int)right != result);
-
-                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
-                        break;
-                    }
-                case OpCode.Sub:
-                    {
-                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = readInt32FromRegister(decoder.GetSecondRegisterID());
-                        CCR.writeUInt32(0u);
-                        long result = left - right;
-
-                        CCR.setZeroFlag(result == 0);
-                        CCR.setCarryFlag((ulong)(uint)left - (ulong)(uint)right > uint.MaxValue);
-                        CCR.setSignFlag((int)result < 0);
-                        CCR.setOverflowFlag((int)left - (int)right != result);
-
-                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
-                        break;
-                    }
-                case OpCode.Inc:
-                    {
-                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = 1;
-                        CCR.writeUInt32(0u);
-                        long result = left - right;
-
-                        CCR.setZeroFlag(result == 0);
-                        CCR.setCarryFlag((ulong)(uint)left + (ulong)(uint)right > uint.MaxValue);
-                        CCR.setSignFlag((int)result < 0);
-                        CCR.setOverflowFlag((int)left + (int)right != result);
-
-                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
-                        break;
-                    }
-                case OpCode.Dec:
-                    {
-                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = 1;
-                        CCR.writeUInt32(0u);
-                        long result = left - right;
-
-                        CCR.setZeroFlag(result == 0);
-                        CCR.setCarryFlag((ulong)(uint)left - (ulong)(uint)right > uint.MaxValue);
-                        CCR.setSignFlag((int)result < 0);
-                        CCR.setOverflowFlag((int)left - (int)right != result);
-
-                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
-                        break;
-                    }
-                case OpCode.Mul:
-                    {
-                        long left = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = readUInt32FromRegister(decoder.GetSecondRegisterID());
-                        CCR.writeUInt32(0u);
-                        long result = left * right;
-
-                        CCR.setZeroFlag(result == 0);
-                        CCR.setCarryFlag((ulong)(uint)left * (ulong)(uint)right > uint.MaxValue);
-                        CCR.setSignFlag((int)result < 0);
-                        CCR.setOverflowFlag((int)left * (int)right != result);
-
-                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
-                        break;
-                    }
-                case OpCode.IMul:
-                    {
-                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = readInt32FromRegister(decoder.GetSecondRegisterID());
-                        CCR.writeUInt32(0u);
-                        long result = left * right;
-
-                        CCR.setZeroFlag(result == 0);
-                        CCR.setCarryFlag((ulong)(uint)left * (ulong)(uint)right > uint.MaxValue);
-                        CCR.setSignFlag((int)result < 0);
-                        CCR.setOverflowFlag((int)left * (int)right != result);
-
-                        writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
-                        break;
-                    }
-                case OpCode.Div:
-                    {
-                        long left = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = readUInt32FromRegister(decoder.GetSecondRegisterID());
-                        CCR.writeUInt32(0u);
-
-                        if (right != 0)
-                        {
-                            long result = left / right;
-                            long mod = left % right;
-
-                            CCR.setZeroFlag(result == 0);
-                            CCR.setCarryFlag(false);
-                            CCR.setSignFlag((int)result < 0);
-                            CCR.setOverflowFlag(false);
-                            writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
-                            writeInt32ToRegister(decoder.GetSecondRegisterID(), (int)mod);
-                        }
-                        else
-                        {
-                            CCR.setZeroDivisionFlag(true);
-                            writeUInt32ToRegister(decoder.GetFirstRegisterID(), 0);
-                            writeUInt32ToRegister(decoder.GetSecondRegisterID(), 0);
-                        }
-                        break;
-                    }
-                case OpCode.IDiv:
-                    {
-                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = readInt32FromRegister(decoder.GetSecondRegisterID());
-                        CCR.writeUInt32(0u);
-
-                        if (right != 0)
-                        {
-                            long result = left / right;
-                            long mod = left % right;
-
-                            CCR.setZeroFlag(result == 0);
-                            CCR.setCarryFlag(false);
-                            CCR.setSignFlag((int)result < 0);
-                            CCR.setOverflowFlag(false);
-                            writeInt32ToRegister(decoder.GetFirstRegisterID(), (int)result);
-                            writeInt32ToRegister(decoder.GetSecondRegisterID(), (int)mod);
-                        }
-                        else
-                        {
-                            CCR.setZeroDivisionFlag(true);
-                            writeUInt32ToRegister(decoder.GetFirstRegisterID(), 0);
-                            writeUInt32ToRegister(decoder.GetSecondRegisterID(), 0);
-                        }
-                        break;
-                    }
-                case OpCode.And:
-                    {
-                        uint left = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        uint right = readUInt32FromRegister(decoder.GetSecondRegisterID());
-                        CCR.writeUInt32(0u);
-                        uint result = left & right;
-
-                        CCR.setZeroFlag(result == 0);
-                        CCR.setCarryFlag(false);
-                        CCR.setSignFlag((int)result < 0);
-                        CCR.setOverflowFlag(false);
-
-                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
-                        break;
-                    }
-                case OpCode.Or:
-                    {
-                        uint left = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        uint right = readUInt32FromRegister(decoder.GetSecondRegisterID());
-                        CCR.writeUInt32(0u);
-                        uint result = left | right;
-
-                        CCR.setZeroFlag(result == 0);
-                        CCR.setCarryFlag(false);
-                        CCR.setSignFlag((int)result < 0);
-                        CCR.setOverflowFlag(false);
-
-                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
-                        break;
-                    }
-                case OpCode.Xor:
-                    {
-                        uint left = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        uint right = readUInt32FromRegister(decoder.GetSecondRegisterID());
-                        CCR.writeUInt32(0u);
-                        uint result = left ^ right;
-
-                        CCR.setZeroFlag(result == 0);
-                        CCR.setCarryFlag(false);
-                        CCR.setSignFlag((int)result < 0);
-                        CCR.setOverflowFlag(false);
-
-                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), result);
-                        break;
-                    }
-                case OpCode.Shl:
-                    {
-                        long left = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = readUInt32FromRegister(decoder.GetSecondRegisterID());
-                        CCR.writeUInt32(0u);
-                        long result;
-
-                        if (right > 31)
-                        {
-                            result = 0;
-                        }
-                        else
-                        {
-                            result = (left << (int)right) & 0xFF_FF_FF_FF;
-                        }
-
-                        CCR.setZeroFlag(result == 0);
-                        CCR.setCarryFlag(false);
-                        CCR.setSignFlag((int)result < 0);
-                        CCR.setOverflowFlag(right > 31);
-
-                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
-                        break;
-                    }
-                case OpCode.Shr:
-                    {
-                        long left = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = readUInt32FromRegister(decoder.GetSecondRegisterID());
-                        CCR.writeUInt32(0u);
-                        long result;
-
-                        if (right > 31)
-                        {
-                            result = 0;
-                        }
-                        else
-                        {
-                            result = (left >> (int)right) & 0xFF_FF_FF_FF;
-                        }
-
-                        CCR.setZeroFlag(result == 0);
-                        CCR.setCarryFlag(false);
-                        CCR.setSignFlag((int)result < 0);
-                        CCR.setOverflowFlag(right > 31);
-
-                        writeUInt32ToRegister(decoder.GetFirstRegisterID(), (uint)result);
-                        break;
-                    }
-                case OpCode.JmpMem:
-                    {
-                        instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        break;
-                    }
-                case OpCode.JmpCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
-                        break;
-                    }
-                case OpCode.JeqMem:
-                    {
-                        if (CCR.isEqual())
-                        {
-                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        }
-                        break;
-                    }
-                case OpCode.JeqCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        if (CCR.isEqual())
-                        {
-                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
-                        }
-                        else
-                        {
-                            instruction_pointer += 4;
-                        }
-                        break;
-                    }
-                case OpCode.JneMem:
-                    {
-                        if (CCR.isNotEqual())
-                        {
-                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        }
-                        break;
-                    }
-                case OpCode.JneCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        if (CCR.isNotEqual())
-                        {
-                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
-                        }
-                        else
-                        {
-                            instruction_pointer += 4;
-                        }
-                        break;
-                    }
-                case OpCode.JaMem:
-                    {
-                        if (CCR.isAbove())
-                        {
-                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        }
-                        break;
-                    }
-                case OpCode.JaCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        if (CCR.isAbove())
-                        {
-                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
-                        }
-                        else
-                        {
-                            instruction_pointer += 4;
-                        }
-                        break;
-                    }
-                case OpCode.JaeMem:
-                    {
-                        if (CCR.isAboveOrEqual())
-                        {
-                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        }
-                        break;
-                    }
-                case OpCode.JaeCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        if (CCR.isAboveOrEqual())
-                        {
-                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
-                        }
-                        else
-                        {
-                            instruction_pointer += 4;
-                        }
-                        break;
-                    }
-                case OpCode.JbMem:
-                    {
-                        if (CCR.isBelow())
-                        {
-                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        }
-                        break;
-                    }
-                case OpCode.JbCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        if (CCR.isBelow())
-                        {
-                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
-                        }
-                        else
-                        {
-                            instruction_pointer += 4;
-                        }
-                        break;
-                    }
-                case OpCode.JbeMem:
-                    {
-                        if (CCR.isBelowOrEqual())
-                        {
-                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        }
-                        break;
-                    }
-                case OpCode.JbeCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        if (CCR.isBelowOrEqual())
-                        {
-                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
-                        }
-                        else
-                        {
-                            instruction_pointer += 4;
-                        }
-                        break;
-                    }
-                case OpCode.JltMem:
-                    {
-                        if (CCR.isLessThan())
-                        {
-                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        }
-                        break;
-                    }
-                case OpCode.JltCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        if (CCR.isLessThan())
-                        {
-                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
-                        }
-                        else
-                        {
-                            instruction_pointer += 4;
-                        }
-                        break;
-                    }
-                case OpCode.JleMem:
-                    {
-                        if (CCR.isLessThanOrEqual())
-                        {
-                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        }
-                        break;
-                    }
-                case OpCode.JleCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        if (CCR.isLessThanOrEqual())
-                        {
-                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
-                        }
-                        else
-                        {
-                            instruction_pointer += 4;
-                        }
-                        break;
-                    }
-                case OpCode.JgtMem:
-                    {
-                        if (CCR.isGreaterThan())
-                        {
-                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        }
-                        break;
-                    }
-                case OpCode.JgtCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        if (CCR.isGreaterThan())
-                        {
-                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
-                        }
-                        else
-                        {
-                            instruction_pointer += 4;
-                        }
-                        break;
-                    }
-                case OpCode.JgeMem:
-                    {
-                        if (CCR.isGreaterThanOrEqual())
-                        {
-                            instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        }
-                        break;
-                    }
-                case OpCode.JgeCon:
-                    {
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        if (CCR.isGreaterThanOrEqual())
-                        {
-                            instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
-                        }
-                        else
-                        {
-                            instruction_pointer += 4;
-                        }
-                        break;
-                    }
-                case OpCode.CallMem:
-                    {
-                        pushUInt32Stack(instruction_pointer);
-                        instruction_pointer = readUInt32FromRegister(decoder.GetFirstRegisterID());
-                        break;
-                    }
-                case OpCode.CallCon:
-                    {
-                        pushUInt32Stack(instruction_pointer);
-                        byte[] constant_bytes = readBytesFromMemory(instruction_pointer, 4);
-                        instruction_pointer = Serialization.UInt32FromBytesBigEndian(constant_bytes);
-                        break;
-                    }
-                case OpCode.Ret:
-                    {
-                        instruction_pointer = popUInt32Stack();
-                        break;
-                    }
-                case OpCode.Cmp:
-                    {
-                        long left = readInt32FromRegister(decoder.GetFirstRegisterID());
-                        long right = readInt32FromRegister(decoder.GetSecondRegisterID());
-                        CCR.writeUInt32(0u);
-                        long result = left - right;
-
-                        CCR.setZeroFlag(result == 0);
-                        CCR.setCarryFlag((ulong)(uint)left - (ulong)(uint)right > uint.MaxValue);
-                        CCR.setSignFlag((int)result < 0);
-                        CCR.setOverflowFlag((int)left - (int)right != result);
-                        break;
-                    }
-
-                default:
-                    throw new System.Exception($"Opcode {decoder.GetOpCode()} not implemented.");
+                return;
             }
-
-            IP.writeUInt32(instruction_pointer);
-        }
-
-        public void pushUInt32Stack(uint data)
-        {
-            pushStack(Serialization.UInt32ToBytesBigEndian(data));
-        }
-
-        public void pushStack(byte[] data)
-        {
-            uint newAddress = STP.readUInt32() - (uint)data.Length;
-            writeBytesToMemory(newAddress, data);
-            STP.writeUInt32(newAddress);
-        }
-
-        public uint popUInt32Stack()
-        {
-            return Serialization.UInt32FromBytesBigEndian(popStack(4));
-        }
-
-        public byte[] popStack(uint length)
-        {
-            byte[] data = readBytesFromMemory(STP.readUInt32(), length);
-            STP.writeUInt32(STP.readUInt32() + length);
-            return data;
-        }
-
-        public byte[] readBytesFromMemory(uint instruction_pointer, uint length)
-        {
-            if (isVirtualMemoryEnabled())
+            if (pipeline.Count > 0)
             {
-                throw new System.Exception("Virtual memory not implemented.");
-            }
-            else
-            {
-                return GetMemoryController().readAll(instruction_pointer, length);
+                currentMicroOp = pipeline.First().execute(this).GetEnumerator();
+                pipeline.RemoveAt(0);
             }
         }
-
-        public void writeBytesToMemory(uint address, byte[] value)
+        public void pushMicroOp(MicroOp microOp)
         {
-            if (isVirtualMemoryEnabled())
-            {
-                throw new System.Exception("Virtual memory not implemented.");
-            }
-            else
-            {
-                GetMemoryController().writeAll(address, value);
-            }
-        }
-
-        public void writeBytesToRegister(RegisterID register_name, byte[] value)
-        {
-            var register = registers[register_name];
-
-            if (register.no_move_write)
-            {
-                throw new System.Exception($"Register {register_name} cannot be directly written to.");
-            }
-            if (register.write_kernel_only && !isKernelMode())
-            {
-                throw new System.Exception($"Register {register_name} can only be written in kernel mode.");
-            }
-            register.writeBytes(value);
-            return;
-        }
-
-        public void writeInt32ToRegister(RegisterID register_name, int value)
-        {
-            var register = registers[register_name];
-
-            if (register.no_move_write)
-            {
-                throw new System.Exception($"Register {register_name} cannot be directly written to.");
-            }
-            if (register.write_kernel_only && !isKernelMode())
-            {
-                throw new System.Exception($"Register {register_name} can only be written in kernel mode.");
-            }
-            register.writeInt32(value);
-            return;
-        }
-
-        public void writeUInt32ToRegister(RegisterID register_name, uint value)
-        {
-            var register = registers[register_name];
-
-            if (register.no_move_write)
-            {
-                throw new System.Exception($"Register {register_name} cannot be directly written to.");
-            }
-            if (register.write_kernel_only && !isKernelMode())
-            {
-                throw new System.Exception($"Register {register_name} can only be written in kernel mode.");
-            }
-            register.writeUInt32(value);
-            return;
-        }
-
-        public void writeFloat32ToRegister(RegisterID register_name, float value)
-        {
-            var register = registers[register_name];
-
-            if (register.no_move_write)
-            {
-                throw new System.Exception($"Register {register_name} cannot be directly written to.");
-            }
-            if (register.write_kernel_only && !isKernelMode())
-            {
-                throw new System.Exception($"Register {register_name} can only be written in kernel mode.");
-            }
-            register.writeFloat32(value);
-            return;
-        }
-
-        public byte[] readBytesFromRegister(RegisterID register_name)
-        {
-            var register = registers[register_name];
-
-            if (register.read_kernel_only && !isKernelMode())
-            {
-                throw new System.Exception($"Register {register_name} can only be read in kernel mode.");
-            }
-            return register.readBytes();
-        }
-
-        public int readInt32FromRegister(RegisterID register_name)
-        {
-            var register = registers[register_name];
-
-            if (register.read_kernel_only && !isKernelMode())
-            {
-                throw new System.Exception($"Register {register_name} can only be read in kernel mode.");
-            }
-            return register.readInt32();
-        }
-
-        public uint readUInt32FromRegister(RegisterID register_name)
-        {
-            var register = registers[register_name];
-
-            if (register.read_kernel_only && !isKernelMode())
-            {
-                throw new System.Exception($"Register {register_name} can only be read in kernel mode.");
-            }
-            return register.readUInt32();
-        }
-
-        public float readFloat32FromRegister(RegisterID register_name)
-        {
-            var register = registers[register_name];
-
-            if (register.read_kernel_only && !isKernelMode())
-            {
-                throw new System.Exception($"Register {register_name} can only be read in kernel mode.");
-            }
-            return register.readFloat32();
+            pipeline.Add(microOp);
         }
 
         public bool isKernelMode()
@@ -934,39 +212,43 @@ namespace Bytom.Hardware.CPU
             CR0.writeBit(0, value);
         }
 
-        public void powerOn(Package package)
+        public virtual void powerOn(Package package)
         {
-            if (power_status == PowerStatus.ON || thread != null)
+            if (power_status == PowerStatus.ON)
             {
                 throw new System.Exception("Core is already powered on");
             }
+            power_status = PowerStatus.STARTING;
             this.package = package;
+            powerOnInit();
             power_status = PowerStatus.ON;
-            reset();
-            thread = new Thread(executionLoop);
-            thread.Start();
         }
 
-        public void reset()
+        public virtual void powerOnInit()
         {
             foreach (var reg in registers.Values)
             {
                 reg.reset();
             }
-            STP.writeUInt32(GetMemoryController().getTotalMemoryBytes());
-            FBP.writeUInt32(GetMemoryController().getTotalMemoryBytes());
+            var end_address = GetMemoryController().getRamAddressRange().end_address.ToUInt32();
+            STP.writeUInt32(end_address);
+            FBP.writeUInt32(end_address);
+
+            thread = new Thread(executionLoop);
+            thread.Start();
         }
 
-        public Controller GetMemoryController()
+        public MemoryController GetMemoryController()
         {
-            return package!.motherboard!.ram;
+            return package!.motherboard!.controller;
         }
 
-        private void executionLoop()
+        public virtual void executionLoop()
         {
+            primeMicroOpDecoding();
             while (!requested_power_off)
             {
-                executeNext();
+                executeMicroOp();
                 clock.waitForCycles(1);
             }
             requested_power_off = false;
@@ -976,9 +258,21 @@ namespace Bytom.Hardware.CPU
             }
         }
 
-        public void powerOff()
+        public virtual void powerOff()
+        {
+            if (power_status == PowerStatus.OFF)
+            {
+                throw new System.Exception("Core is already powered off");
+            }
+            power_status = PowerStatus.STOPPING;
+            powerOffTeardown();
+            power_status = PowerStatus.OFF;
+        }
+
+        public virtual void powerOffTeardown()
         {
             requested_power_off = true;
+            pipeline.Clear();
             while (power_status == PowerStatus.ON)
             {
                 clock.waitForCycles(1);
@@ -987,6 +281,7 @@ namespace Bytom.Hardware.CPU
             thread = null;
             package = null;
         }
+
         public PowerStatus getPowerStatus()
         {
             return power_status;

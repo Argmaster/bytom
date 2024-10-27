@@ -2,29 +2,23 @@
 
 namespace Bytom.Hardware
 {
-    public enum PowerStatus { ON, OFF }
+    public enum PowerStatus { ON, OFF, STARTING, STOPPING }
 
     public class Motherboard
     {
-        public CPU.Package cpu { get; set; }
-        public RAM.Controller ram { get; set; }
-        public FirmwareRom rom { get; set; }
-        public DeviceManager device_manager { get; set; }
-        public PowerStatus power_status { get; set; }
-        private Clock clock { get; set; }
+        public CPU.Package cpu { get; }
+        public MemoryController controller { get; }
+        protected PowerStatus power_status;
+        protected Clock clock;
 
         public Motherboard(
             CPU.Package cpu,
-            RAM.Controller ram,
-            FirmwareRom rom,
-            DeviceManager device_manager
+            MemoryController controller
         )
         {
             this.cpu = cpu;
-            this.ram = ram;
-            this.rom = rom;
-            this.device_manager = device_manager;
-            this.clock = new Clock(1000);
+            this.controller = controller;
+            clock = new Clock(1);
 
             power_status = PowerStatus.OFF;
         }
@@ -34,10 +28,10 @@ namespace Bytom.Hardware
             {
                 throw new System.Exception("Motherboard is already powered on");
             }
-            power_status = PowerStatus.ON;
-            byte[] firmware_image = rom.readAll(0, cpu.firmware_size);
-            ram.writeAll(0, firmware_image);
+            power_status = PowerStatus.STARTING;
+            controller.powerOn(this);
             cpu.powerOn(this);
+            power_status = PowerStatus.ON;
         }
 
         public void powerOff()
@@ -47,6 +41,7 @@ namespace Bytom.Hardware
                 throw new System.Exception("Motherboard is already powered off");
             }
             cpu.powerOff();
+            controller.powerOff();
             power_status = PowerStatus.OFF;
         }
 

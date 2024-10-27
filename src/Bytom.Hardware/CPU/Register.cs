@@ -3,9 +3,36 @@ using Bytom.Tools;
 
 namespace Bytom.Hardware.CPU
 {
-    public class Register32
+    public abstract class Register
     {
         public byte[] value { get; set; }
+        public Register(byte[] value)
+        {
+            if (value.Length != getSizeBytes())
+            {
+                throw new Exception("Invalid number of bytes");
+            }
+            this.value = value;
+        }
+        public abstract void reset();
+        public abstract uint getSizeBytes();
+        public void writeBytes(byte[] value)
+        {
+            if (value.Length != getSizeBytes())
+            {
+                throw new Exception("Invalid number of bytes");
+            }
+            Array.Copy(value, this.value, getSizeBytes());
+        }
+
+        public byte[] readBytes()
+        {
+            return value;
+        }
+    }
+
+    public class Register32 : Register
+    {
         public uint initial_value { get; }
         public bool write_kernel_only { get; }
         public bool read_kernel_only { get; }
@@ -17,10 +44,8 @@ namespace Bytom.Hardware.CPU
             bool write_kernel_only = false,
             bool read_kernel_only = false,
             bool no_move_write = false
-        )
+        ) : base(new byte[4] { 0, 0, 0, 0 })
         {
-            value = new byte[4] { 0, 0, 0, 0 };
-
             this.initial_value = initial_value;
             this.write_kernel_only = write_kernel_only;
             this.read_kernel_only = read_kernel_only;
@@ -29,9 +54,14 @@ namespace Bytom.Hardware.CPU
             reset();
         }
 
-        public void reset()
+        public override void reset()
         {
             writeUInt32(initial_value);
+        }
+
+        public override uint getSizeBytes()
+        {
+            return 4;
         }
 
         public void writeUInt32(uint value)
@@ -64,19 +94,6 @@ namespace Bytom.Hardware.CPU
             return Serialization.Float32FromBytesBigEndian(value);
         }
 
-        public void writeBytes(byte[] value)
-        {
-            if (value.Length != 4)
-            {
-                throw new Exception("Invalid number of bytes");
-            }
-            Array.Copy(value, this.value, 4);
-        }
-
-        public byte[] readBytes()
-        {
-            return value;
-        }
         public bool readBit(int offset)
         {
             return (readUInt32() & (1u << offset)) != 0;
@@ -91,6 +108,14 @@ namespace Bytom.Hardware.CPU
             {
                 writeUInt32(readUInt32() & ~(1u << offset));
             }
+        }
+        public Address readAddress()
+        {
+            return new Address(readUInt32());
+        }
+        public void writeAddress(Address address)
+        {
+            writeUInt32(address.ToUInt32());
         }
     }
 

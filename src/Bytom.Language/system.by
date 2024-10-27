@@ -1,0 +1,27 @@
+from result import Result
+
+using AllocationResultT as Result<u32, u32>
+
+function allocate(
+    const size: u32;
+    const alignment: u32;
+): AllocationResultT
+{
+    return AllocationResultT(0, 0);
+}
+
+function deallocate(
+    const pointer: u32;
+    const alignment: u32;
+): AllocationResultT
+{
+    return AllocationResultT(0, 0);
+}
+
+function reallocate(
+    const pointer: u32;
+    const alignment: u32
+): AllocationResultT
+{
+    return AllocationResultT(0, 0);
+}

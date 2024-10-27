@@ -28,6 +28,11 @@ namespace Bytom.Hardware
 
         public void waitMicroseconds(long microseconds)
         {
+            if (microseconds >= 1000)
+            {
+                System.Threading.Thread.Sleep((int)(microseconds / 1000));
+                return;
+            }
             var stopwatch = Stopwatch.StartNew();
             long ticksToWait = microseconds * (Stopwatch.Frequency / 1_000_000);
 

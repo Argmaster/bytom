@@ -15,10 +15,10 @@ namespace Bytom.Assembler.Operands
         }
     }
 
-    public class Register : Operand
+    public class OpRegister : Operand
     {
         public RegisterID name { get; set; }
-        public Register(RegisterID name)
+        public OpRegister(RegisterID name)
         {
             this.name = name;
         }
@@ -28,10 +28,10 @@ namespace Bytom.Assembler.Operands
         }
     }
 
-    public class MemoryAddress : Operand
+    public class OpMemoryAddress : Operand
     {
         public RegisterID register { get; set; }
-        public MemoryAddress(RegisterID register)
+        public OpMemoryAddress(RegisterID register)
         {
             this.register = register;
         }
@@ -41,9 +41,9 @@ namespace Bytom.Assembler.Operands
         }
     }
 
-    public class Constant : Operand
+    public class OpConstant : Operand
     {
-        public Constant()
+        public OpConstant()
         {
         }
         public virtual byte[] GetBytes()
@@ -51,11 +51,11 @@ namespace Bytom.Assembler.Operands
             throw new NotImplementedException();
         }
     }
-    public class ConstantInt : Constant
+    public class OpConstantInt : OpConstant
     {
         public static readonly int operand_type_code = 0b0010;
         public long value { get; set; }
-        public ConstantInt(long value)
+        public OpConstantInt(long value)
         {
             this.value = value;
         }
@@ -69,11 +69,11 @@ namespace Bytom.Assembler.Operands
         }
     }
 
-    public class ConstantFloat : Constant
+    public class OpConstantFloat : OpConstant
     {
         public static readonly uint operand_type_code = 0b0011;
         public float value { get; set; }
-        public ConstantFloat(float value)
+        public OpConstantFloat(float value)
         {
             this.value = value;
         }
@@ -87,10 +87,10 @@ namespace Bytom.Assembler.Operands
         }
     }
 
-    public class Label : Operand
+    public class OpLabel : Operand
     {
         public string name { get; set; }
-        public Label(string name)
+        public OpLabel(string name)
         {
             this.name = name;
         }

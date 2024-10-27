@@ -108,10 +108,10 @@ namespace Bytom.Assembler.Nodes
 
     public class MovRegReg : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public MovRegReg(Register destination, Register source)
+        public MovRegReg(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -138,10 +138,10 @@ namespace Bytom.Assembler.Nodes
 
     public class MovRegMem : Instruction
     {
-        public Register destination { get; set; }
-        public MemoryAddress source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpMemoryAddress source { get; set; }
 
-        public MovRegMem(Register destination, MemoryAddress source)
+        public MovRegMem(OpRegister destination, OpMemoryAddress source)
         {
             this.destination = destination;
             this.source = source;
@@ -168,10 +168,10 @@ namespace Bytom.Assembler.Nodes
 
     public class MovMemReg : Instruction
     {
-        public MemoryAddress destination { get; set; }
-        public Register source { get; set; }
+        public OpMemoryAddress destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public MovMemReg(MemoryAddress destination, Register source)
+        public MovMemReg(OpMemoryAddress destination, OpRegister source)
         {
             this.source = source;
             this.destination = destination;
@@ -198,10 +198,10 @@ namespace Bytom.Assembler.Nodes
 
     public class MovRegCon : Instruction
     {
-        public Register destination { get; set; }
-        public Constant source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpConstant source { get; set; }
 
-        public MovRegCon(Register destination, Constant source)
+        public MovRegCon(OpRegister destination, OpConstant source)
         {
             this.destination = destination;
             this.source = source;
@@ -233,10 +233,10 @@ namespace Bytom.Assembler.Nodes
 
     public class MovMemCon : Instruction
     {
-        public MemoryAddress destination { get; set; }
-        public Constant source { get; set; }
+        public OpMemoryAddress destination { get; set; }
+        public OpConstant source { get; set; }
 
-        public MovMemCon(MemoryAddress destination, Constant source)
+        public MovMemCon(OpMemoryAddress destination, OpConstant source)
         {
             this.destination = destination;
             this.source = source;
@@ -268,9 +268,9 @@ namespace Bytom.Assembler.Nodes
 
     public class PushReg : Instruction
     {
-        public Register source { get; set; }
+        public OpRegister source { get; set; }
 
-        public PushReg(Register source)
+        public PushReg(OpRegister source)
         {
             this.source = source;
         }
@@ -295,9 +295,9 @@ namespace Bytom.Assembler.Nodes
 
     public class PushMem : Instruction
     {
-        public MemoryAddress source { get; set; }
+        public OpMemoryAddress source { get; set; }
 
-        public PushMem(MemoryAddress source)
+        public PushMem(OpMemoryAddress source)
         {
             this.source = source;
         }
@@ -322,9 +322,9 @@ namespace Bytom.Assembler.Nodes
 
     public class PushCon : Instruction
     {
-        public Constant source { get; set; }
+        public OpConstant source { get; set; }
 
-        public PushCon(Constant source)
+        public PushCon(OpConstant source)
         {
             this.source = source;
         }
@@ -354,9 +354,9 @@ namespace Bytom.Assembler.Nodes
 
     public class PopReg : Instruction
     {
-        public Register destination { get; set; }
+        public OpRegister destination { get; set; }
 
-        public PopReg(Register destination)
+        public PopReg(OpRegister destination)
         {
             this.destination = destination;
         }
@@ -381,9 +381,9 @@ namespace Bytom.Assembler.Nodes
 
     public class PopMem : Instruction
     {
-        public MemoryAddress destination { get; set; }
+        public OpMemoryAddress destination { get; set; }
 
-        public PopMem(MemoryAddress destination)
+        public PopMem(OpMemoryAddress destination)
         {
             this.destination = destination;
         }
@@ -408,10 +408,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Add : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public Add(Register destination, Register source)
+        public Add(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -438,10 +438,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Sub : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public Sub(Register destination, Register source)
+        public Sub(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -468,9 +468,9 @@ namespace Bytom.Assembler.Nodes
 
     public class Inc : Instruction
     {
-        public Register destination { get; set; }
+        public OpRegister destination { get; set; }
 
-        public Inc(Register destination)
+        public Inc(OpRegister destination)
         {
             this.destination = destination;
         }
@@ -495,9 +495,9 @@ namespace Bytom.Assembler.Nodes
 
     public class Dec : Instruction
     {
-        public Register destination { get; set; }
+        public OpRegister destination { get; set; }
 
-        public Dec(Register destination)
+        public Dec(OpRegister destination)
         {
             this.destination = destination;
         }
@@ -522,10 +522,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Mul : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public Mul(Register destination, Register source)
+        public Mul(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -552,10 +552,10 @@ namespace Bytom.Assembler.Nodes
 
     public class IMul : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public IMul(Register destination, Register source)
+        public IMul(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -582,10 +582,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Div : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public Div(Register destination, Register source)
+        public Div(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -612,10 +612,10 @@ namespace Bytom.Assembler.Nodes
 
     public class IDiv : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public IDiv(Register destination, Register source)
+        public IDiv(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -642,10 +642,10 @@ namespace Bytom.Assembler.Nodes
 
     public class And : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public And(Register destination, Register source)
+        public And(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -672,10 +672,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Or : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public Or(Register destination, Register source)
+        public Or(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -702,10 +702,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Xor : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public Xor(Register destination, Register source)
+        public Xor(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -732,9 +732,9 @@ namespace Bytom.Assembler.Nodes
 
     public class Not : Instruction
     {
-        public Register destination { get; set; }
+        public OpRegister destination { get; set; }
 
-        public Not(Register destination)
+        public Not(OpRegister destination)
         {
             this.destination = destination;
         }
@@ -759,10 +759,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Shl : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public Shl(Register destination, Register source)
+        public Shl(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -789,10 +789,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Shr : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public Shr(Register destination, Register source)
+        public Shr(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -819,10 +819,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Fadd : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public Fadd(Register destination, Register source)
+        public Fadd(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -849,10 +849,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Fsub : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public Fsub(Register destination, Register source)
+        public Fsub(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -879,10 +879,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Fmul : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public Fmul(Register destination, Register source)
+        public Fmul(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -909,10 +909,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Fdiv : Instruction
     {
-        public Register destination { get; set; }
-        public Register source { get; set; }
+        public OpRegister destination { get; set; }
+        public OpRegister source { get; set; }
 
-        public Fdiv(Register destination, Register source)
+        public Fdiv(OpRegister destination, OpRegister source)
         {
             this.destination = destination;
             this.source = source;
@@ -939,10 +939,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Fcmp : Instruction
     {
-        public Register left { get; set; }
-        public Register right { get; set; }
+        public OpRegister left { get; set; }
+        public OpRegister right { get; set; }
 
-        public Fcmp(Register left, Register right)
+        public Fcmp(OpRegister left, OpRegister right)
         {
             this.left = left;
             this.right = right;
@@ -970,9 +970,9 @@ namespace Bytom.Assembler.Nodes
     public class JumpMemoryAddressInstruction : Instruction
     {
 
-        public MemoryAddress destination { get; set; }
+        public OpMemoryAddress destination { get; set; }
 
-        public JumpMemoryAddressInstruction(MemoryAddress destination)
+        public JumpMemoryAddressInstruction(OpMemoryAddress destination)
         {
             this.destination = destination;
         }
@@ -988,9 +988,9 @@ namespace Bytom.Assembler.Nodes
     public class JumpConstantIntInstruction : Instruction
     {
 
-        public ConstantInt destination { get; set; }
+        public OpConstantInt destination { get; set; }
 
-        public JumpConstantIntInstruction(ConstantInt destination)
+        public JumpConstantIntInstruction(OpConstantInt destination)
         {
             this.destination = destination;
         }
@@ -1011,9 +1011,9 @@ namespace Bytom.Assembler.Nodes
     public class JumpLabelInstruction : Instruction
     {
 
-        public Label label { get; set; }
+        public OpLabel label { get; set; }
 
-        public JumpLabelInstruction(Label label)
+        public JumpLabelInstruction(OpLabel label)
         {
             this.label = label;
         }
@@ -1032,7 +1032,7 @@ namespace Bytom.Assembler.Nodes
 
     public class JmpMem : JumpMemoryAddressInstruction
     {
-        public JmpMem(MemoryAddress destination) : base(destination)
+        public JmpMem(OpMemoryAddress destination) : base(destination)
         {
         }
 
@@ -1050,7 +1050,7 @@ namespace Bytom.Assembler.Nodes
     public class JmpCon : JumpConstantIntInstruction
     {
 
-        public JmpCon(ConstantInt destination) : base(destination)
+        public JmpCon(OpConstantInt destination) : base(destination)
         {
         }
 
@@ -1068,7 +1068,7 @@ namespace Bytom.Assembler.Nodes
     public class JmpLabel : JumpLabelInstruction
     {
 
-        public JmpLabel(Label label) : base(label)
+        public JmpLabel(OpLabel label) : base(label)
         {
         }
 
@@ -1076,7 +1076,7 @@ namespace Bytom.Assembler.Nodes
             int offset
         )
         {
-            return new JmpCon(new ConstantInt(offset));
+            return new JmpCon(new OpConstantInt(offset));
         }
 
         public override string ToAssembly()
@@ -1087,7 +1087,7 @@ namespace Bytom.Assembler.Nodes
 
     public class JeqMem : JumpMemoryAddressInstruction
     {
-        public JeqMem(MemoryAddress destination) : base(destination)
+        public JeqMem(OpMemoryAddress destination) : base(destination)
         {
         }
 
@@ -1105,7 +1105,7 @@ namespace Bytom.Assembler.Nodes
     public class JeqCon : JumpConstantIntInstruction
     {
 
-        public JeqCon(ConstantInt destination) : base(destination)
+        public JeqCon(OpConstantInt destination) : base(destination)
         {
         }
 
@@ -1123,7 +1123,7 @@ namespace Bytom.Assembler.Nodes
     public class JeqLabel : JumpLabelInstruction
     {
 
-        public JeqLabel(Label label) : base(label)
+        public JeqLabel(OpLabel label) : base(label)
         {
         }
 
@@ -1131,7 +1131,7 @@ namespace Bytom.Assembler.Nodes
             int offset
         )
         {
-            return new JeqCon(new ConstantInt(offset));
+            return new JeqCon(new OpConstantInt(offset));
         }
 
         public override string ToAssembly()
@@ -1142,7 +1142,7 @@ namespace Bytom.Assembler.Nodes
 
     public class JneMem : JumpMemoryAddressInstruction
     {
-        public JneMem(MemoryAddress destination) : base(destination)
+        public JneMem(OpMemoryAddress destination) : base(destination)
         {
         }
 
@@ -1160,7 +1160,7 @@ namespace Bytom.Assembler.Nodes
     public class JneCon : JumpConstantIntInstruction
     {
 
-        public JneCon(ConstantInt destination) : base(destination)
+        public JneCon(OpConstantInt destination) : base(destination)
         {
         }
 
@@ -1178,7 +1178,7 @@ namespace Bytom.Assembler.Nodes
     public class JneLabel : JumpLabelInstruction
     {
 
-        public JneLabel(Label label) : base(label)
+        public JneLabel(OpLabel label) : base(label)
         {
         }
 
@@ -1186,7 +1186,7 @@ namespace Bytom.Assembler.Nodes
             int offset
         )
         {
-            return new JneCon(new ConstantInt(offset));
+            return new JneCon(new OpConstantInt(offset));
         }
 
         public override string ToAssembly()
@@ -1199,7 +1199,7 @@ namespace Bytom.Assembler.Nodes
     {
         public class Mem : JumpMemoryAddressInstruction
         {
-            public Mem(MemoryAddress destination) : base(destination)
+            public Mem(OpMemoryAddress destination) : base(destination)
             {
             }
 
@@ -1216,7 +1216,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-            public Con(ConstantInt destination) : base(destination)
+            public Con(OpConstantInt destination) : base(destination)
             {
             }
 
@@ -1233,7 +1233,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-            public Label(Operands.Label label) : base(label)
+            public Label(Operands.OpLabel label) : base(label)
             {
             }
 
@@ -1241,7 +1241,7 @@ namespace Bytom.Assembler.Nodes
                 int offset
             )
             {
-                return new Con(new ConstantInt(offset));
+                return new Con(new OpConstantInt(offset));
             }
 
             public override string ToAssembly()
@@ -1255,7 +1255,7 @@ namespace Bytom.Assembler.Nodes
     {
         public class Mem : JumpMemoryAddressInstruction
         {
-            public Mem(MemoryAddress destination) : base(destination)
+            public Mem(OpMemoryAddress destination) : base(destination)
             {
             }
 
@@ -1272,7 +1272,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-            public Con(ConstantInt destination) : base(destination)
+            public Con(OpConstantInt destination) : base(destination)
             {
             }
 
@@ -1289,7 +1289,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-            public Label(Operands.Label label) : base(label)
+            public Label(Operands.OpLabel label) : base(label)
             {
             }
 
@@ -1297,7 +1297,7 @@ namespace Bytom.Assembler.Nodes
                 int offset
             )
             {
-                return new Con(new ConstantInt(offset));
+                return new Con(new OpConstantInt(offset));
             }
 
             public override string ToAssembly()
@@ -1311,7 +1311,7 @@ namespace Bytom.Assembler.Nodes
     {
         public class Mem : JumpMemoryAddressInstruction
         {
-            public Mem(MemoryAddress destination) : base(destination)
+            public Mem(OpMemoryAddress destination) : base(destination)
             {
             }
 
@@ -1328,7 +1328,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-            public Con(ConstantInt destination) : base(destination)
+            public Con(OpConstantInt destination) : base(destination)
             {
             }
 
@@ -1345,7 +1345,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-            public Label(Operands.Label label) : base(label)
+            public Label(Operands.OpLabel label) : base(label)
             {
             }
 
@@ -1353,7 +1353,7 @@ namespace Bytom.Assembler.Nodes
                 int offset
             )
             {
-                return new Con(new ConstantInt(offset));
+                return new Con(new OpConstantInt(offset));
             }
 
             public override string ToAssembly()
@@ -1367,7 +1367,7 @@ namespace Bytom.Assembler.Nodes
     {
         public class Mem : JumpMemoryAddressInstruction
         {
-            public Mem(MemoryAddress destination) : base(destination)
+            public Mem(OpMemoryAddress destination) : base(destination)
             {
             }
 
@@ -1384,7 +1384,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-            public Con(ConstantInt destination) : base(destination)
+            public Con(OpConstantInt destination) : base(destination)
             {
             }
 
@@ -1401,7 +1401,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-            public Label(Operands.Label label) : base(label)
+            public Label(Operands.OpLabel label) : base(label)
             {
             }
 
@@ -1409,7 +1409,7 @@ namespace Bytom.Assembler.Nodes
                 int offset
             )
             {
-                return new Con(new ConstantInt(offset));
+                return new Con(new OpConstantInt(offset));
             }
 
             public override string ToAssembly()
@@ -1423,7 +1423,7 @@ namespace Bytom.Assembler.Nodes
     {
         public class Mem : JumpMemoryAddressInstruction
         {
-            public Mem(MemoryAddress destination) : base(destination)
+            public Mem(OpMemoryAddress destination) : base(destination)
             {
             }
 
@@ -1440,7 +1440,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-            public Con(ConstantInt destination) : base(destination)
+            public Con(OpConstantInt destination) : base(destination)
             {
             }
 
@@ -1457,7 +1457,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-            public Label(Operands.Label label) : base(label)
+            public Label(Operands.OpLabel label) : base(label)
             {
             }
 
@@ -1465,7 +1465,7 @@ namespace Bytom.Assembler.Nodes
                 int offset
             )
             {
-                return new Con(new ConstantInt(offset));
+                return new Con(new OpConstantInt(offset));
             }
 
             public override string ToAssembly()
@@ -1479,7 +1479,7 @@ namespace Bytom.Assembler.Nodes
     {
         public class Mem : JumpMemoryAddressInstruction
         {
-            public Mem(MemoryAddress destination) : base(destination)
+            public Mem(OpMemoryAddress destination) : base(destination)
             {
             }
 
@@ -1496,7 +1496,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-            public Con(ConstantInt destination) : base(destination)
+            public Con(OpConstantInt destination) : base(destination)
             {
             }
 
@@ -1513,7 +1513,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-            public Label(Operands.Label label) : base(label)
+            public Label(Operands.OpLabel label) : base(label)
             {
             }
 
@@ -1522,7 +1522,7 @@ namespace Bytom.Assembler.Nodes
                 int offset
             )
             {
-                return new Con(new ConstantInt(offset));
+                return new Con(new OpConstantInt(offset));
             }
 
             public override string ToAssembly()
@@ -1536,7 +1536,7 @@ namespace Bytom.Assembler.Nodes
     {
         public class Mem : JumpMemoryAddressInstruction
         {
-            public Mem(MemoryAddress destination) : base(destination)
+            public Mem(OpMemoryAddress destination) : base(destination)
             {
             }
 
@@ -1553,7 +1553,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-            public Con(ConstantInt destination) : base(destination)
+            public Con(OpConstantInt destination) : base(destination)
             {
             }
 
@@ -1570,7 +1570,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Label : JumpLabelInstruction
         {
-            public Label(Operands.Label label) : base(label)
+            public Label(Operands.OpLabel label) : base(label)
             {
             }
 
@@ -1578,7 +1578,7 @@ namespace Bytom.Assembler.Nodes
                 int offset
             )
             {
-                return new Con(new ConstantInt(offset));
+                return new Con(new OpConstantInt(offset));
             }
 
             public override string ToAssembly()
@@ -1592,7 +1592,7 @@ namespace Bytom.Assembler.Nodes
     {
         public class Mem : JumpMemoryAddressInstruction
         {
-            public Mem(MemoryAddress destination) : base(destination)
+            public Mem(OpMemoryAddress destination) : base(destination)
             {
             }
 
@@ -1609,7 +1609,7 @@ namespace Bytom.Assembler.Nodes
 
         public class Con : JumpConstantIntInstruction
         {
-            public Con(ConstantInt destination) : base(destination)
+            public Con(OpConstantInt destination) : base(destination)
             {
             }
 
@@ -1627,7 +1627,7 @@ namespace Bytom.Assembler.Nodes
         public class Label : JumpLabelInstruction
         {
 
-            public Label(Operands.Label label) : base(label)
+            public Label(Operands.OpLabel label) : base(label)
             {
             }
 
@@ -1635,7 +1635,7 @@ namespace Bytom.Assembler.Nodes
                 int offset
             )
             {
-                return new Con(new ConstantInt(offset));
+                return new Con(new OpConstantInt(offset));
             }
 
             public override string ToAssembly()
@@ -1649,7 +1649,7 @@ namespace Bytom.Assembler.Nodes
     {
         public class Mem : JumpMemoryAddressInstruction
         {
-            public Mem(MemoryAddress destination) : base(destination)
+            public Mem(OpMemoryAddress destination) : base(destination)
             {
             }
 
@@ -1667,7 +1667,7 @@ namespace Bytom.Assembler.Nodes
         public class Con : JumpConstantIntInstruction
         {
 
-            public Con(ConstantInt destination) : base(destination)
+            public Con(OpConstantInt destination) : base(destination)
             {
             }
 
@@ -1685,7 +1685,7 @@ namespace Bytom.Assembler.Nodes
         public class Label : JumpLabelInstruction
         {
 
-            public Label(Operands.Label label) : base(label)
+            public Label(Operands.OpLabel label) : base(label)
             {
             }
 
@@ -1694,7 +1694,7 @@ namespace Bytom.Assembler.Nodes
                 int offset
             )
             {
-                return new Con(new ConstantInt(offset));
+                return new Con(new OpConstantInt(offset));
             }
 
             public override string ToAssembly()
@@ -1729,10 +1729,10 @@ namespace Bytom.Assembler.Nodes
 
     public class Cmp : Instruction
     {
-        public Register left { get; set; }
-        public Register right { get; set; }
+        public OpRegister left { get; set; }
+        public OpRegister right { get; set; }
 
-        public Cmp(Register left, Register right)
+        public Cmp(OpRegister left, OpRegister right)
         {
             this.left = left;
             this.right = right;
