@@ -40,7 +40,7 @@ namespace Bytom.Hardware.CPU
 
             for (int i = 0; i < register_size; i++)
             {
-                core.GetMemoryController().pushRead(new ReadMessage(address_value + i, writeBackQueue));
+                core.GetMemoryController().pushIoMessage(new ReadMessage(address_value + i, writeBackQueue));
             }
             var bytes_read = 0;
 
@@ -70,7 +70,7 @@ namespace Bytom.Hardware.CPU
 
             for (int i = 0; i < register_size; i++)
             {
-                core.GetMemoryController().pushWrite(new WriteMessage(address_value + i, buffer[i]));
+                core.GetMemoryController().pushIoMessage(new WriteMessage(address_value + i, buffer[i]));
             }
             yield break;
         }

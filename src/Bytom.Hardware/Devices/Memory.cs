@@ -1,43 +1,36 @@
 using System;
+using System.Collections;
+using Bytom.Tools;
 
 
 namespace Bytom.Hardware
 {
-    public class RAM : MessageReceiver
+    public class Memory : MessageReceiver
     {
         public uint capacity_bytes { get; }
         public uint write_latency_cycles { get; }
         public uint read_latency_cycles { get; }
         public byte[] memory { get; }
 
-        public RAM(
+        public Memory(
             uint capacity_bytes,
-            uint clock_speed_hz,
             uint write_latency_cycles,
-            uint read_latency_cycles
-        ) : base(new Clock(clock_speed_hz))
+            uint read_latency_cycles,
+            uint bandwidth_bytes,
+            Clock clock
+        ) : base(bandwidth_bytes, clock)
         {
             this.capacity_bytes = capacity_bytes;
             this.write_latency_cycles = write_latency_cycles;
             this.read_latency_cycles = read_latency_cycles;
             memory = new byte[capacity_bytes];
-            Array.Fill<byte>(memory, 0);
         }
 
-        public override void beforeThreadStart()
+        public override IEnumerable write(WriteMessage message)
         {
-            address_range = memory_controller!.allocateAddressRange(capacity_bytes);
-        }
+            foreach (var _ in Itertools.yieldVoidTimes(write_latency_cycles))
+            { yield return null; }
 
-        public override void powerOff()
-        {
-            base.powerOff();
-            Array.Fill<byte>(memory, 0);
-        }
-
-        public override void write(WriteMessage message)
-        {
-            clock.waitForCycles(write_latency_cycles);
             if (isInMyAddressRange(message.address))
             {
                 var address = message.address - address_range!.base_address;
@@ -49,9 +42,11 @@ namespace Bytom.Hardware
             }
         }
 
-        public override void read(ReadMessage message)
+        public override IEnumerable read(ReadMessage message)
         {
-            clock.waitForCycles(read_latency_cycles);
+            foreach (var _ in Itertools.yieldVoidTimes(read_latency_cycles))
+            { yield return null; }
+
             if (isInMyAddressRange(message.address))
             {
                 var address = message.address - address_range!.base_address;
@@ -62,6 +57,11 @@ namespace Bytom.Hardware
             {
                 throw new Exception($"Address 0x{message.address.ToLong():X8} out of range");
             }
+        }
+
+        public uint getCapacityBytes()
+        {
+            return capacity_bytes;
         }
 
         public void writeDebug(byte[] data, int index)

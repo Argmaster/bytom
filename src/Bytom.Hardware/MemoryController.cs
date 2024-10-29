@@ -21,7 +21,7 @@ namespace Bytom.Hardware
             address_ranges = ram_address_ranges;
         }
 
-        public void pushWrite(WriteMessage message)
+        public void pushIoMessage(IoMessage message)
         {
             if (power_status == PowerStatus.OFF)
             {
@@ -31,22 +31,7 @@ namespace Bytom.Hardware
             {
                 if (device.isInMyAddressRange(message.address))
                 {
-                    device.pushWrite(message);
-                }
-            }
-        }
-
-        public void pushRead(ReadMessage message)
-        {
-            if (power_status == PowerStatus.OFF)
-            {
-                throw new System.Exception("MemoryController is powered off");
-            }
-            foreach (var device in devices)
-            {
-                if (device.isInMyAddressRange(message.address))
-                {
-                    device.pushRead(message);
+                    device.pushIoMessage(message);
                 }
             }
         }

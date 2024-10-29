@@ -15,7 +15,13 @@ namespace Bytom.Hardware.Tests
         [SetUp]
         public void Setup()
         {
-            ram = new RAM(256, 500, 0, 0);
+            ram = new RAM(
+                capacity_bytes: 256,
+                clock_speed_hz: 500,
+                read_latency_cycles: 0,
+                write_latency_cycles: 0,
+                bandwidth_bytes: 1
+            );
             controller = new MemoryController([ram]);
             core = new Core(0, 500);
             cpu = new Package([core], 128);

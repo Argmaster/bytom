@@ -1,4 +1,6 @@
+using System;
 using System.Diagnostics;
+using System.Threading;
 
 
 namespace Bytom.Hardware
@@ -18,6 +20,11 @@ namespace Bytom.Hardware
         public long getCycleLengthMicroseconds()
         {
             return 1_000_000 / frequency_hz;
+        }
+
+        public virtual TickDisposable startTick()
+        {
+            return new TickDisposable(this);
         }
 
         public void waitForCycles(uint cycles)
@@ -42,6 +49,33 @@ namespace Bytom.Hardware
             }
 
             stopwatch.Stop();
+        }
+    }
+
+    public class TickDisposable : IDisposable
+    {
+        private Clock clock;
+        private Stopwatch stopwatch;
+        public TickDisposable(Clock clock)
+        {
+            this.clock = clock;
+            this.stopwatch = Stopwatch.StartNew();
+        }
+
+        public void Dispose()
+        {
+            var ticks_per_cycle = Stopwatch.Frequency / clock.frequency_hz;
+            while (stopwatch.ElapsedTicks < ticks_per_cycle)
+            {
+                // Busy-wait
+            }
+        }
+    }
+
+    public class PerformanceClock : Clock
+    {
+        public PerformanceClock(uint frequency_hz) : base(frequency_hz)
+        {
         }
     }
 }
