@@ -62,6 +62,24 @@ namespace Bytom.Hardware.CPU
     {
         AluLatencies latencies;
 
+        public ALU()
+        {
+            this.latencies = new AluLatencies
+            {
+                add = 1,
+                sub = 1,
+                unsigned_mul = 1,
+                signed_mul = 1,
+                unsigned_div = 1,
+                signed_div = 1,
+                and = 1,
+                or = 1,
+                xor = 1,
+                shl = 1,
+                shr = 1
+            };
+        }
+
         public ALU(AluLatencies latencies)
         {
             this.latencies = latencies;
