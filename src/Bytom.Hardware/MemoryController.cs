@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,7 +37,7 @@ namespace Bytom.Hardware
             }
         }
 
-        public void powerOn(Motherboard motherboard)
+        public void powerOn(Motherboard? motherboard)
         {
             if (power_status == PowerStatus.ON)
             {
@@ -46,10 +47,12 @@ namespace Bytom.Hardware
 
             this.motherboard = motherboard;
 
+            Func<MessageReceiver, bool> isRamLike = device => (device is RAM || device.GetType().IsSubclassOf(typeof(RAM)));
+
             address_ranges = ram_address_ranges;
             foreach (var device in devices)
             {
-                if (device is RAM)
+                if (isRamLike(device))
                     device.powerOn(this);
             }
 
@@ -64,7 +67,7 @@ namespace Bytom.Hardware
             );
             foreach (var device in devices)
             {
-                if (!(device is RAM))
+                if (!isRamLike(device))
                     device.powerOn(this);
             }
             power_status = PowerStatus.ON;

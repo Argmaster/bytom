@@ -11,7 +11,22 @@ namespace Bytom.Hardware
         {
             this.address = address;
         }
-
+        public static bool operator ==(Address a, Address b)
+        {
+            return a.address == b.address;
+        }
+        public static bool operator !=(Address a, Address b)
+        {
+            return a.address != b.address;
+        }
+        public override bool Equals(object obj)
+        {
+            return obj is Address address && this == address;
+        }
+        public override int GetHashCode()
+        {
+            return address.GetHashCode();
+        }
         public static bool operator >=(Address a, Address b)
         {
             return a.address >= b.address;
@@ -51,6 +66,10 @@ namespace Bytom.Hardware
         public byte[] ToBytes()
         {
             return Serialization.UInt32ToBytesBigEndian((uint)address);
+        }
+        public override string ToString()
+        {
+            return $"Address(0x{address:X8})";
         }
     }
 

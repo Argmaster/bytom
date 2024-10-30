@@ -7,36 +7,19 @@ using System.Threading;
 
 namespace Bytom.Hardware
 {
-
-    public class IoQueue
-    {
-        public ConcurrentQueue<IoMessage> io_queue { get; }
-        public List<IEnumerator> tasks_running { get; }
-        public uint max_tasks_running { get; }
-
-        public IoQueue(uint max_tasks_running = 1)
-        {
-            io_queue = new ConcurrentQueue<IoMessage>();
-            tasks_running = new List<IEnumerator>();
-            this.max_tasks_running = max_tasks_running;
-        }
-
-        public bool isDone()
-        {
-            return io_queue.IsEmpty && tasks_running.Count == 0;
-        }
-
-        public void push(IoMessage message)
-        {
-            io_queue.Enqueue(message);
-        }
-    }
-
     public class MessageReceiver : IDisposable
     {
         public AddressRange? address_range { get; set; }
         public Clock clock { get; }
-        public IoQueue queue { get; }
+
+        // Queue for receiving read/write messages.
+        public ConcurrentQueue<IoMessage> io_queue { get; }
+        // List of tasks which were taken from the queue and primed to run.
+        public List<IEnumerator> tasks_running { get; }
+        // Maximum number of tasks that can be running at once enforced during
+        // dequeuing of read/write messages.
+        public uint max_tasks_running { get; }
+
         public MemoryController? memory_controller;
         public PowerStatus power_status = PowerStatus.OFF;
         public bool requested_power_off = false;
@@ -45,7 +28,9 @@ namespace Bytom.Hardware
         public MessageReceiver(uint max_tasks_running, Clock clock)
         {
             this.clock = clock;
-            queue = new IoQueue(max_tasks_running);
+            io_queue = new ConcurrentQueue<IoMessage>();
+            tasks_running = new List<IEnumerator>();
+            this.max_tasks_running = max_tasks_running;
         }
 
         public void Dispose()
@@ -62,7 +47,12 @@ namespace Bytom.Hardware
             {
                 throw new InvalidOperationException("Memory is not powered on");
             }
-            queue.push(message);
+            io_queue.Enqueue(message);
+        }
+
+        public bool isDone()
+        {
+            return io_queue.IsEmpty && tasks_running.Count == 0;
         }
 
         public virtual void powerOn(MemoryController? controller)
@@ -70,6 +60,10 @@ namespace Bytom.Hardware
             if (power_status == PowerStatus.ON)
             {
                 throw new InvalidOperationException("Memory is already powered on");
+            }
+            if (power_status == PowerStatus.STARTING)
+            {
+                return;
             }
             power_status = PowerStatus.STARTING;
             memory_controller = controller;
@@ -116,7 +110,7 @@ namespace Bytom.Hardware
         {
             var tasks_to_remove = new List<IEnumerator>();
 
-            foreach (var task in queue.tasks_running)
+            foreach (var task in tasks_running)
             {
                 if (!task.MoveNext())
                 {
@@ -126,22 +120,22 @@ namespace Bytom.Hardware
 
             foreach (var task in tasks_to_remove)
             {
-                queue.tasks_running.Remove(task);
+                tasks_running.Remove(task);
             }
         }
 
         private void runQueuedTasks()
         {
-            while (queue.tasks_running.Count < queue.max_tasks_running)
+            while (tasks_running.Count < max_tasks_running)
             {
-                if (queue.io_queue.TryDequeue(out var message))
+                if (io_queue.TryDequeue(out var message))
                 {
                     if (message is WriteMessage)
-                        queue.tasks_running.Add(
+                        tasks_running.Add(
                             write((WriteMessage)message).GetEnumerator()
                         );
                     else if (message is ReadMessage)
-                        queue.tasks_running.Add(
+                        tasks_running.Add(
                             read((ReadMessage)message).GetEnumerator()
                         );
                     else
@@ -172,7 +166,7 @@ namespace Bytom.Hardware
             }
             power_status = PowerStatus.STOPPING;
             // Wait for message buffers to be empty.
-            while (!queue.isDone())
+            while (!isDone())
             { }
             powerOffTeardown();
             powerOffCheck();
