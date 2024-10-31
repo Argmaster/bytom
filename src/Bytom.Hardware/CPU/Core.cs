@@ -238,7 +238,7 @@ namespace Bytom.Hardware.CPU
             thread.Start();
         }
 
-        public MemoryController GetMemoryController()
+        public IoController GetMemoryController()
         {
             return package!.motherboard!.controller;
         }

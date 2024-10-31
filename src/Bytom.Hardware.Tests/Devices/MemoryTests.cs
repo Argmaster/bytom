@@ -1,5 +1,6 @@
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace Bytom.Hardware.Tests
 {
@@ -65,9 +66,16 @@ namespace Bytom.Hardware.Tests
         public void TestPushIoPowerOff()
         {
             var memory = createMemory<MemT>();
-            Assert.Throws<InvalidOperationException>(
-                () => memory!.pushIoMessage(new WriteMessage(Address.zero, 1))
-            );
+            try
+            {
+                memory!.pushIoMessage(new WriteMessage(Address.zero, 1));
+            }
+            catch (Exception e)
+            {
+                StringAssert.Contains("Device is powered off", e.Message);
+                return;
+            }
+            Assert.Fail("Expected exception not thrown");
         }
 
         [Test]

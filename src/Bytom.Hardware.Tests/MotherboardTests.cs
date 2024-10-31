@@ -7,7 +7,7 @@ namespace Bytom.Hardware.Tests
     {
 
         public RAM? ram;
-        public MemoryController? controller;
+        public IoController? controller;
         public Core? core;
         public Package? cpu;
         public Motherboard? motherboard;
@@ -22,7 +22,7 @@ namespace Bytom.Hardware.Tests
                 write_latency_cycles: 0,
                 bandwidth_bytes: 1
             );
-            controller = new MemoryController([ram]);
+            controller = new IoController([ram], []);
             core = new Core(0, 500);
             cpu = new Package([core], 128);
             motherboard = new Motherboard(cpu, controller);

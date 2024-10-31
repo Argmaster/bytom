@@ -7,13 +7,13 @@ namespace Bytom.Hardware
     public class Motherboard
     {
         public CPU.Package cpu { get; }
-        public MemoryController controller { get; }
+        public IoController controller { get; }
         protected PowerStatus power_status;
         protected Clock clock;
 
         public Motherboard(
             CPU.Package cpu,
-            MemoryController controller
+            IoController controller
         )
         {
             this.cpu = cpu;

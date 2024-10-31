@@ -6,7 +6,6 @@ namespace Bytom.Hardware
 {
     public class FirmwareRom : Memory
     {
-
         public FirmwareRom(
             uint capacity_bytes,
             uint clock_speed_hz,

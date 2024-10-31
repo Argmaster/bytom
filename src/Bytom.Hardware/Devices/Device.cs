@@ -2,14 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 
 namespace Bytom.Hardware
 {
-    public class MessageReceiver : IDisposable
+    public class Device : IDisposable
     {
-        public AddressRange? address_range { get; set; }
         public Clock clock { get; }
 
         // Queue for receiving read/write messages.
@@ -20,12 +20,12 @@ namespace Bytom.Hardware
         // dequeuing of read/write messages.
         public uint max_tasks_running { get; }
 
-        public MemoryController? memory_controller;
+        public IoController? memory_controller;
         public PowerStatus power_status = PowerStatus.OFF;
         public bool requested_power_off = false;
         public Thread? thread = null;
 
-        public MessageReceiver(uint max_tasks_running, Clock clock)
+        public Device(uint max_tasks_running, Clock clock)
         {
             this.clock = clock;
             io_queue = new ConcurrentQueue<IoMessage>();
@@ -43,10 +43,7 @@ namespace Bytom.Hardware
 
         public void pushIoMessage(IoMessage message)
         {
-            if (power_status != PowerStatus.ON)
-            {
-                throw new InvalidOperationException("Memory is not powered on");
-            }
+            Debug.Assert(power_status != PowerStatus.OFF, "Device is powered off");
             io_queue.Enqueue(message);
         }
 
@@ -55,20 +52,26 @@ namespace Bytom.Hardware
             return io_queue.IsEmpty && tasks_running.Count == 0;
         }
 
-        public virtual void powerOn(MemoryController? controller)
+        public virtual void powerOn(IoController? controller)
         {
-            if (power_status == PowerStatus.ON)
+            Debug.Assert(power_status == PowerStatus.OFF, "Device is already powered on");
+            Debug.Assert(power_status != PowerStatus.STARTING, "Device is already starting");
+            try
             {
-                throw new InvalidOperationException("Memory is already powered on");
+                power_status = PowerStatus.STARTING;
+                memory_controller = controller;
+                powerOnInit();
             }
-            if (power_status == PowerStatus.STARTING)
+            catch (Exception e)
             {
-                return;
+                memory_controller = null;
+                power_status = PowerStatus.OFF;
+                throw e;
             }
-            power_status = PowerStatus.STARTING;
-            memory_controller = controller;
-            powerOnInit();
-            power_status = PowerStatus.ON;
+            finally
+            {
+                power_status = PowerStatus.ON;
+            }
         }
 
         public virtual void powerOnInit()
@@ -102,7 +105,7 @@ namespace Bytom.Hardware
 
         public virtual void tick()
         {
-            runQueuedTasks();
+            scheduleQueuedTasks();
             advanceRunningTasks();
         }
 
@@ -124,7 +127,7 @@ namespace Bytom.Hardware
             }
         }
 
-        private void runQueuedTasks()
+        private void scheduleQueuedTasks()
         {
             while (tasks_running.Count < max_tasks_running)
             {
@@ -160,16 +163,16 @@ namespace Bytom.Hardware
 
         public virtual void powerOff()
         {
-            if (power_status == PowerStatus.OFF)
-            {
-                throw new InvalidOperationException("Memory is already powered off");
-            }
+            Debug.Assert(power_status != PowerStatus.OFF, "Device is already powered off");
+
             power_status = PowerStatus.STOPPING;
             // Wait for message buffers to be empty.
             while (!isDone())
             { }
             powerOffTeardown();
-            powerOffCheck();
+
+            Debug.Assert(power_status == PowerStatus.OFF, "Device failed to power off");
+            Debug.Assert(thread?.IsAlive == false, "Device thread is still running");
         }
 
         public virtual void powerOffTeardown()
@@ -177,22 +180,15 @@ namespace Bytom.Hardware
             requested_power_off = true;
             thread?.Join();
         }
-        public virtual void powerOffCheck()
-        {
-            if (power_status != PowerStatus.OFF)
-            {
-                throw new InvalidOperationException("Memory failed to power off");
-            }
-        }
 
         public PowerStatus getPowerStatus()
         {
             return power_status;
         }
 
-        public bool isInMyAddressRange(Address address)
+        public virtual bool isInMyAddressRange(Address address)
         {
-            return address_range?.contains(address) ?? false;
+            throw new NotImplementedException();
         }
     }
 }

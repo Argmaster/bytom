@@ -7,6 +7,7 @@ namespace Bytom.Hardware
     {
         private long address { get; }
         public static Address zero { get { return new Address(0); } }
+        public static Address max_address { get { return new Address(uint.MaxValue); } }
         public Address(long address)
         {
             this.address = address;

@@ -5,7 +5,7 @@ using Bytom.Tools;
 
 namespace Bytom.Hardware
 {
-    public class Memory : MessageReceiver
+    public class Memory : SingleAddressDevice
     {
         public uint capacity_bytes { get; }
         public uint write_latency_cycles { get; }

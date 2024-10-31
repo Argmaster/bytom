@@ -43,7 +43,7 @@ namespace Bytom.Hardware.Tests
         public void TestAllocateAddressRange()
         {
             var ram = new RAM(1024, 1000, 1, 1, 1);
-            var controller = new MemoryController([ram]);
+            var controller = new IoController([ram], []);
 
             controller.powerOn(null);
 

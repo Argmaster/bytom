@@ -24,11 +24,6 @@ namespace Bytom.Hardware
             Array.Fill<byte>(memory, 0);
         }
 
-        public override void beforeThreadStart()
-        {
-            address_range = memory_controller!.allocateAddressRange(capacity_bytes);
-        }
-
         public override void powerOff()
         {
             base.powerOff();
