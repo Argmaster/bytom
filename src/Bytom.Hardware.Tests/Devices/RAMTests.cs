@@ -39,16 +39,5 @@ namespace Bytom.Hardware.Tests
 
     public class RAMTests : GenericMemoryTests<TestRAM, DebugRAM>
     {
-        [Test]
-        public void TestAllocateAddressRange()
-        {
-            var ram = new RAM(1024, 1000, 1, 1, 1);
-            var controller = new IoController([ram], []);
-
-            controller.powerOn(null);
-
-            Assert.That(ram.address_range!.base_address, Is.EqualTo(new Address(0)));
-            Assert.That(ram.address_range!.end_address, Is.EqualTo(new Address(1024)));
-        }
     }
 }

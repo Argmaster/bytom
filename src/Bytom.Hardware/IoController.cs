@@ -64,10 +64,13 @@ namespace Bytom.Hardware
 
             this.motherboard = motherboard;
 
+            Debug.Assert(address_ranges.Count == 0, "Address ranges occupied before power on");
             foreach (var ram in ram_slots)
             {
                 ram.powerOn(this);
-                address_ranges.Add(new AddressRange(forward_allocation_address, ram.getCapacityBytes()));
+                var ram_slot_address_range = new AddressRange(forward_allocation_address, ram.getCapacityBytes());
+                address_ranges.Add(ram_slot_address_range);
+                ram.address_range = ram_slot_address_range;
                 forward_allocation_address += ram.getCapacityBytes();
             }
             Debug.Assert(address_ranges.Count != 0, "No address ranges allocated to RAM devices.");
@@ -115,25 +118,14 @@ namespace Bytom.Hardware
         public AddressRange allocateAddressRange(long size)
         {
             Debug.Assert(power_status != PowerStatus.OFF, "MemoryController is powered off");
+            Debug.Assert(ram_address_range != null, "RAM address range not allocated");
 
-            if (address_ranges.Count == 0)
-            {
-                address_ranges.Add(new AddressRange(Address.zero, size));
-                return address_ranges.Last();
-            }
-            else
-            {
-                var last_address_range = address_ranges.Last();
-                var new_address_range = new AddressRange(last_address_range.end_address, size);
-                if (new_address_range.end_address.ToLong() > 0xFFFFFFFF)
-                {
-                    // Maybe at some point it could be useful to actually implement
-                    // some algorithm to reuse reclaimed address space.
-                    throw new Exception("Out of address space");
-                }
-                address_ranges.Add(new_address_range);
-                return new_address_range;
-            }
+            var new_start_address = backward_allocation_address - size;
+            Debug.Assert(new_start_address >= ram_address_range!.end_address, "Out of address space");
+
+            var new_address_range = new AddressRange(new_start_address, size);
+            address_ranges.Add(new_address_range);
+            return new_address_range;
         }
 
         public void deallocateAddressRange(Address base_address)

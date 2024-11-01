@@ -52,6 +52,10 @@ namespace Bytom.Hardware
         {
             return new Address(a.address - b.address);
         }
+        public static Address operator -(Address a, long b)
+        {
+            return new Address(a.address - b);
+        }
         public long ToLong()
         {
             return address;
@@ -76,8 +80,11 @@ namespace Bytom.Hardware
 
     public class AddressRange
     {
+        // Address of the first byte in the range.
         public Address base_address { get; }
+        // Size of the range in bytes.
         public long size { get; }
+        // Address of the first byte after the range.
         public Address end_address { get { return base_address + size; } }
 
         public AddressRange(
@@ -97,6 +104,33 @@ namespace Bytom.Hardware
         public bool contains(Address address)
         {
             return address >= base_address && address < end_address;
+        }
+
+        public override string ToString()
+        {
+            return $"AddressRange({base_address}, {end_address})";
+        }
+
+        public static bool operator ==(AddressRange a, AddressRange b)
+        {
+            return a.base_address == b.base_address && a.size == b.size;
+        }
+
+        public static bool operator !=(AddressRange a, AddressRange b)
+        {
+            return a.base_address != b.base_address || a.size != b.size;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is AddressRange range &&
+                    base_address == range.base_address &&
+                    size == range.size;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(base_address, size);
         }
     }
 }
