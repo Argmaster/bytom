@@ -11,5 +11,15 @@ namespace Bytom.Tools
                 yield return null;
             }
         }
+        public static void exhaust(IEnumerable enumerable)
+        {
+            foreach (var _ in enumerable)
+            { }
+        }
+        public static void saturate(IEnumerator enumerable)
+        {
+            while (enumerable.MoveNext())
+            { }
+        }
     }
 }

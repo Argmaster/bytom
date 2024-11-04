@@ -5,14 +5,19 @@ namespace Bytom.Hardware.CPU
 {
     public abstract class Register
     {
+        // Current value of the register as array of bytes big-endian.
         public byte[] value { get; set; }
-        public Register(byte[] value)
+        // Human readable name of the register used for debugging purposes.
+        public string name { get; }
+
+        public Register(byte[] value, string name = "Register")
         {
             if (value.Length != getSizeBytes())
             {
                 throw new Exception("Invalid number of bytes");
             }
             this.value = value;
+            this.name = name;
         }
         public abstract void reset();
         public abstract uint getSizeBytes();
@@ -29,6 +34,11 @@ namespace Bytom.Hardware.CPU
         {
             return value;
         }
+
+        public override string ToString()
+        {
+            return $"Register::{name}({BitConverter.ToString(value)})";
+        }
     }
 
     public class Register32 : Register
@@ -43,8 +53,9 @@ namespace Bytom.Hardware.CPU
             uint initial_value,
             bool write_kernel_only = false,
             bool read_kernel_only = false,
-            bool no_move_write = false
-        ) : base(new byte[4] { 0, 0, 0, 0 })
+            bool no_move_write = false,
+            string name = "Register32"
+        ) : base(new byte[4] { 0, 0, 0, 0 }, name)
         {
             this.initial_value = initial_value;
             this.write_kernel_only = write_kernel_only;
@@ -53,17 +64,17 @@ namespace Bytom.Hardware.CPU
 
             reset();
         }
-
+        // Reset the register to its initial value.
         public override void reset()
         {
             writeUInt32(initial_value);
         }
-
+        // Get size of register in bytes.
         public override uint getSizeBytes()
         {
             return 4;
         }
-
+        // Overwrite value of register with unsigned 32-bit integer value.
         public void writeUInt32(uint value)
         {
             Serialization.UInt32ToBytesBigEndian(value).CopyTo(this.value, 0);
@@ -98,6 +109,7 @@ namespace Bytom.Hardware.CPU
         {
             return (readUInt32() & (1u << offset)) != 0;
         }
+
         public void writeBit(int offset, bool set)
         {
             if (set)
@@ -109,19 +121,27 @@ namespace Bytom.Hardware.CPU
                 writeUInt32(readUInt32() & ~(1u << offset));
             }
         }
+
         public Address readAddress()
         {
             return new Address(readUInt32());
         }
+
         public void writeAddress(Address address)
         {
             writeUInt32(address.ToUInt32());
+        }
+
+        public override string ToString()
+        {
+            return $"Register32::{name}({BitConverter.ToString(value)})";
         }
     }
 
     public class ConditionCodeRegister : Register32
     {
-        public ConditionCodeRegister() : base(0)
+        public ConditionCodeRegister(string name = "ConditionCodeRegister")
+            : base(0, name: name, no_move_write: true)
         {
         }
 

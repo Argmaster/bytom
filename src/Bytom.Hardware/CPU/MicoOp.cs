@@ -3,7 +3,6 @@
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Bytom.Tools;
 
 namespace Bytom.Hardware.CPU
@@ -372,6 +371,9 @@ namespace Bytom.Hardware.CPU
                     popStackValue(core, core.IP);
                     pushContinueExecution(core);
                     break;
+
+                default:
+                    throw new NotImplementedException(decoder.GetOpCode().ToString());
             }
             yield break;
         }
@@ -421,13 +423,14 @@ namespace Bytom.Hardware.CPU
                 )
             );
         }
-
+        // Push ReadMemory operation to the core pipeline followed by update of the
+        // instruction pointer.
         private static void readInstructionConstant(Core core, Register32 destination)
         {
             core.pushMicroOp(new ReadMemory(destination: destination, address: core.IP));
             updateInstructionPointer(core, 4u);
         }
-
+        // Add `size` to the instruction pointer.
         private static void updateInstructionPointer(Core core, uint size)
         {
             core.pushMicroOp(
@@ -479,7 +482,8 @@ namespace Bytom.Hardware.CPU
         }
         public override IEnumerable execute(Core core)
         {
-            yield return null;
+            destination.writeBytes(source.readBytes());
+            yield break;
         }
     }
     public class WriteRegister : MicroOp
@@ -493,7 +497,8 @@ namespace Bytom.Hardware.CPU
         }
         public override IEnumerable execute(Core core)
         {
-            yield return null;
+            destination.writeBytes(source);
+            yield break;
         }
     }
     public class JmpIfCondition : MicroOp

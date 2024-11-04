@@ -118,7 +118,7 @@ namespace Bytom.Hardware
         public AddressRange allocateAddressRange(long size)
         {
             Debug.Assert(power_status != PowerStatus.OFF, "MemoryController is powered off");
-            Debug.Assert(ram_address_range != null, "RAM address range not allocated");
+            Debug.Assert(!(ram_address_range is null), "RAM address range not allocated");
 
             var new_start_address = backward_allocation_address - size;
             Debug.Assert(new_start_address >= ram_address_range!.end_address, "Out of address space");

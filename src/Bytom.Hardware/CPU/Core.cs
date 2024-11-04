@@ -52,36 +52,57 @@ namespace Bytom.Hardware.CPU
         public Package? package;
         public Thread? thread;
 
-        public Register32 RD0;
-        public Register32 RD1;
-        public Register32 RD2;
-        public Register32 RD3;
-        public Register32 RD4;
-        public Register32 RD5;
-        public Register32 RD6;
-        public Register32 RD7;
-        public Register32 RD8;
-        public Register32 RD9;
-        public Register32 RDA;
-        public Register32 RDB;
-        public Register32 RDC;
-        public Register32 RDD;
-        public Register32 RDE;
-        public Register32 RDF;
+        public Register32 RD0 = new Register32(0, name: "RD0");
+        public Register32 RD1 = new Register32(0, name: "RD1");
+        public Register32 RD2 = new Register32(0, name: "RD2");
+        public Register32 RD3 = new Register32(0, name: "RD3");
+        public Register32 RD4 = new Register32(0, name: "RD4");
+        public Register32 RD5 = new Register32(0, name: "RD5");
+        public Register32 RD6 = new Register32(0, name: "RD6");
+        public Register32 RD7 = new Register32(0, name: "RD7");
+        public Register32 RD8 = new Register32(0, name: "RD8");
+        public Register32 RD9 = new Register32(0, name: "RD9");
+        public Register32 RDA = new Register32(0, name: "RDA");
+        public Register32 RDB = new Register32(0, name: "RDB");
+        public Register32 RDC = new Register32(0, name: "RDC");
+        public Register32 RDD = new Register32(0, name: "RDD");
+        public Register32 RDE = new Register32(0, name: "RDE");
+        public Register32 RDF = new Register32(0, name: "RDF");
 
-        public ConditionCodeRegister CCR;
-        public Register32 CR0;
-        public Register32 STP;
-        public Register32 FBP;
-        public Register32 VATTA;
-        public Register32 IDT;
-        public Register32 IRA;
-        public Register32 IP;
-        public Register32 TRA;
-        public Register32 TDTA;
-        public Register32 KERNEL_STP;
-        public Register32 KERNEL_FBP;
-        public Register32 KERNEL_IP;
+        public ConditionCodeRegister CCR = new ConditionCodeRegister(name: "CCR");
+        public Register32 CR0 = new Register32(0b10000000_00000000_00000000_00000000, name: "CR0");
+        public Register32 STP = new Register32(0, name: "STP");
+        public Register32 FBP = new Register32(0, name: "FBP");
+        public Register32 VATTA = new Register32(0, name: "VATTA");
+        public Register32 IDT = new Register32(0, name: "IDT");
+        public Register32 IRA = new Register32(0, name: "IRA");
+        public Register32 IP = new Register32(0, name: "IP");
+        public Register32 TRA = new Register32(0, name: "TRA");
+        public Register32 TDTA = new Register32(0, name: "TDTA");
+        public Register32 KERNEL_STP = new Register32(0, name: "KERNEL_STP");
+        public Register32 KERNEL_FBP = new Register32(0, name: "KERNEL_FBP");
+        public Register32 KERNEL_IP = new Register32(0, name: "KERNEL_IP");
+        // Register containing the instruction to be executed after it was fetched from
+        // memory.
+        public Register32 vInstruction = new Register32(0, name: "vInstruction");
+        // Register containing the size of the instruction to be executed, used
+        // to offset the instruction pointer.
+        public Register32 vInstructionSize = new Register32(0, name: "vInstructionSize");
+        // Hidden intermediate register 0 used by micro-ops.
+        public Register32 vRD0 = new Register32(0, name: "vRD0");
+        // Hidden intermediate register 1 used by micro-ops.
+        public Register32 vRD1 = new Register32(0, name: "vRD1");
+        // Hidden intermediate register 2 used by micro-ops.
+        public Register32 vRD2 = new Register32(0, name: "vRD2");
+        // Hidden intermediate register 3 used by micro-ops.
+        public Register32 vRD3 = new Register32(0, name: "vRD3");
+        // Pipeline containing scheduled micro-ops.
+        public List<MicroOp> pipeline = new List<MicroOp>();
+        // Micro-op that was primed and currently is being executed.
+        // Execution of micro-op can take multiple cycles, for example if this is
+        // a blocking memory read operation.
+        IEnumerator? currentMicroOp;
+        List<uint> interrupt_queue = new List<uint>();
 
         public Dictionary<RegisterID, Register32> registers;
 
@@ -95,38 +116,6 @@ namespace Bytom.Hardware.CPU
 
             power_status = PowerStatus.OFF;
             clock = new Clock(clock_speed_hz);
-
-            RD0 = new Register32(0);
-            RD1 = new Register32(0);
-            RD2 = new Register32(0);
-            RD3 = new Register32(0);
-            RD4 = new Register32(0);
-            RD5 = new Register32(0);
-            RD6 = new Register32(0);
-            RD7 = new Register32(0);
-            RD8 = new Register32(0);
-            RD9 = new Register32(0);
-            RDA = new Register32(0);
-            RDB = new Register32(0);
-            RDC = new Register32(0);
-            RDD = new Register32(0);
-            RDE = new Register32(0);
-            RDF = new Register32(0);
-
-            CCR = new ConditionCodeRegister();
-            CR0 = new Register32(0b10000000_00000000_00000000_00000000);
-            STP = new Register32(0);
-            FBP = new Register32(0);
-            VATTA = new Register32(0);
-            IDT = new Register32(0);
-            IRA = new Register32(0);
-            IP = new Register32(0);
-            TRA = new Register32(0);
-            TDTA = new Register32(0);
-            KERNEL_STP = new Register32(0);
-            KERNEL_FBP = new Register32(0);
-            KERNEL_IP = new Register32(0);
-
 
             registers = new Dictionary<RegisterID, Register32>{
                 { RegisterID.RD0, RD0 },
@@ -160,21 +149,14 @@ namespace Bytom.Hardware.CPU
                 { RegisterID.KERNEL_IP, KERNEL_IP },
             };
         }
-        public Register32 vInstruction = new Register32(0);
-        public Register32 vInstructionSize = new Register32(0);
-        public Register32 vRD0 = new Register32(0);
-        public Register32 vRD1 = new Register32(0);
-        public Register32 vRD2 = new Register32(0);
-        public Register32 vRD3 = new Register32(0);
-        public List<MicroOp> pipeline = new List<MicroOp>();
-        IEnumerator? currentMicroOp;
-        List<uint> interrupt_queue = new List<uint>();
 
         public void primeMicroOpDecoding()
         {
             pushMicroOp(new ReadMemory(IP, vInstruction));
             pushMicroOp(new InstructionDecode(vInstruction));
         }
+        // Execute the next tick on the current micro-op or if it's finished then
+        // start execution of the next micro-op in the pipeline.
         public void executeMicroOp()
         {
             if (currentMicroOp?.MoveNext() ?? false)
@@ -187,43 +169,45 @@ namespace Bytom.Hardware.CPU
                 pipeline.RemoveAt(0);
             }
         }
+        // Push a micro-op to the pipeline.
         public void pushMicroOp(MicroOp microOp)
         {
             pipeline.Add(microOp);
         }
-
+        // Get the kernel mode bit from the control register 0.
         public bool isKernelMode()
         {
             return CR0.readBit(31);
         }
-
+        // Set the kernel mode bit in the control register 0.
         public void setKernelModeBit(bool value)
         {
             CR0.writeBit(31, value);
         }
-
+        // Get the virtual memory enabled bit from the control register 0.
         public bool isVirtualMemoryEnabled()
         {
             return CR0.readBit(0);
         }
-
+        // Set the virtual memory enabled bit in the control register 0.
         public void setVirtualMemoryEnabledBit(bool value)
         {
             CR0.writeBit(0, value);
         }
-
+        // Method for starting the core and initializing it's execution loop.
         public virtual void powerOn(Package package)
         {
             if (power_status == PowerStatus.ON)
             {
-                throw new System.Exception("Core is already powered on");
+                throw new Exception("Core is already powered on");
             }
             power_status = PowerStatus.STARTING;
             this.package = package;
             powerOnInit();
             power_status = PowerStatus.ON;
         }
-
+        // Function invoked during initialization phase of core after the signal to
+        // power on is received.
         public virtual void powerOnInit()
         {
             foreach (var reg in registers.Values)
@@ -237,12 +221,12 @@ namespace Bytom.Hardware.CPU
             thread = new Thread(executionLoop);
             thread.Start();
         }
-
+        // Get reference to the memory controller of the motherboard or throw an exception.
         public IoController GetMemoryController()
         {
             return package!.motherboard!.controller;
         }
-
+        // Function used as main execution loop of the thread representing running core.
         public virtual void executionLoop()
         {
             primeMicroOpDecoding();
@@ -257,7 +241,8 @@ namespace Bytom.Hardware.CPU
                 throw new System.Exception("Incorrect core power state");
             }
         }
-
+        // Method for stopping the core. It will wait for the current instruction to finish
+        // executing and then stop the core.
         public virtual void powerOff()
         {
             if (power_status == PowerStatus.OFF)
@@ -268,7 +253,7 @@ namespace Bytom.Hardware.CPU
             powerOffTeardown();
             power_status = PowerStatus.OFF;
         }
-
+        // Perform cleanup of the core after power off signal was received.
         public virtual void powerOffTeardown()
         {
             requested_power_off = true;
@@ -281,7 +266,7 @@ namespace Bytom.Hardware.CPU
             thread = null;
             package = null;
         }
-
+        // Get the current power status of the core.
         public PowerStatus getPowerStatus()
         {
             return power_status;
