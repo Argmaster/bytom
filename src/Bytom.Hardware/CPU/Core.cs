@@ -214,9 +214,12 @@ namespace Bytom.Hardware.CPU
             {
                 reg.reset();
             }
-            var end_address = GetMemoryController().getRamAddressRange().end_address.ToUInt32();
-            STP.writeUInt32(end_address);
-            FBP.writeUInt32(end_address);
+            var ram_end_address = GetMemoryController().getRamAddressRange().end_address.ToUInt32();
+            STP.writeUInt32(ram_end_address);
+            FBP.writeUInt32(ram_end_address);
+
+            var firmware_address = GetMemoryController().getFirmwareAddressRange().base_address.ToUInt32();
+            IP.writeUInt32(firmware_address);
 
             thread = new Thread(executionLoop);
             thread.Start();

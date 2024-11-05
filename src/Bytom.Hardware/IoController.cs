@@ -10,17 +10,20 @@ namespace Bytom.Hardware
     public class IoController
     {
         public List<RAM> ram_slots;
+        public FirmwareRom firmware_rom;
         public List<Device> devices;
         public List<AddressRange> address_ranges;
         public Address forward_allocation_address = Address.zero;
         public Address backward_allocation_address = Address.max_address;
         public AddressRange? ram_address_range;
+        public AddressRange? firmware_address_range;
         public Motherboard? motherboard;
         public PowerStatus power_status = PowerStatus.OFF;
 
-        public IoController(List<RAM> ram_slots, List<Device> devices)
+        public IoController(List<RAM> ram_slots, FirmwareRom firmware_rom, List<Device> devices)
         {
             this.ram_slots = ram_slots;
+            this.firmware_rom = firmware_rom;
             Debug.Assert(ram_slots.Count != 0, "No RAM devices found");
             Debug.Assert(
                 ram_slots.Aggregate(
@@ -47,6 +50,11 @@ namespace Bytom.Hardware
                     return;
                 }
             }
+            if (firmware_rom.isInMyAddressRange(message.address))
+            {
+                firmware_rom.pushIoMessage(message);
+                return;
+            }
             foreach (var device in devices)
             {
                 if (device.isInMyAddressRange(message.address))
@@ -55,6 +63,7 @@ namespace Bytom.Hardware
                     return;
                 }
             }
+            Debug.Assert(false, $"Address {message.address:X8} not allocated to any device.");
         }
 
         public void powerOn(Motherboard? motherboard)
@@ -65,6 +74,7 @@ namespace Bytom.Hardware
             this.motherboard = motherboard;
 
             Debug.Assert(address_ranges.Count == 0, "Address ranges occupied before power on");
+            // Power on RAM devices and allocate address ranges for them.
             foreach (var ram in ram_slots)
             {
                 ram.powerOn(this);
@@ -76,6 +86,13 @@ namespace Bytom.Hardware
             Debug.Assert(address_ranges.Count != 0, "No address ranges allocated to RAM devices.");
             ram_address_range = AddressRange.FromSpan(Address.zero, address_ranges.Last().end_address);
 
+            // Power on firmware and allocate address range for it.
+            firmware_rom.powerOn(this);
+            firmware_address_range = allocateAddressRange(firmware_rom.getCapacityBytes());
+            firmware_rom.address_range = firmware_address_range;
+            address_ranges.Add(firmware_address_range);
+
+            // Power on rest of the devices.
             foreach (var device in devices)
             {
                 device.powerOn(this);
@@ -89,6 +106,12 @@ namespace Bytom.Hardware
             return ram_address_range ?? throw new Exception("RAM address range not allocated");
         }
 
+        public AddressRange getFirmwareAddressRange()
+        {
+            Debug.Assert(power_status != PowerStatus.OFF, "MemoryController is powered off");
+            return firmware_address_range ?? throw new Exception("Firmware address range not allocated");
+        }
+
         public void powerOff()
         {
             Debug.Assert(power_status != PowerStatus.OFF, "MemoryController is powered off");
@@ -99,6 +122,10 @@ namespace Bytom.Hardware
                 device.powerOff();
                 Debug.Assert(device.getPowerStatus() == PowerStatus.OFF, "Device is still powered on");
             }
+
+            firmware_rom.powerOff();
+            Debug.Assert(firmware_rom.getPowerStatus() == PowerStatus.OFF, "Device is still powered on");
+
             foreach (var ram in ram_slots)
             {
                 ram.powerOff();
@@ -107,7 +134,6 @@ namespace Bytom.Hardware
             address_ranges.Clear();
             motherboard = null;
             power_status = PowerStatus.OFF;
-
         }
 
         public PowerStatus getPowerStatus()

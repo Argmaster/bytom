@@ -5,14 +5,12 @@ namespace Bytom.Hardware.CPU
     public class Package
     {
         public List<Core> cores { get; }
-        public uint firmware_size { get; }
         protected PowerStatus power_status;
         public Motherboard? motherboard;
 
-        public Package(List<Core> cores, uint firmware_size)
+        public Package(List<Core> cores)
         {
             this.cores = cores;
-            this.firmware_size = firmware_size;
             power_status = PowerStatus.OFF;
         }
 
