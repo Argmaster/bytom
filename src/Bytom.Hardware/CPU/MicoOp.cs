@@ -394,7 +394,7 @@ namespace Bytom.Hardware.CPU
             );
             core.pushMicroOp(
                 new ALUOperation32(
-                    operation: ALUOperationType.ADD,
+                    operation: ALUOperationType.SUB,
                     left: core.STP,
                     right: core.vRD1
                 )
@@ -417,7 +417,7 @@ namespace Bytom.Hardware.CPU
             );
             core.pushMicroOp(
                 new ALUOperation32(
-                    operation: ALUOperationType.SUB,
+                    operation: ALUOperationType.ADD,
                     left: core.STP,
                     right: core.vRD1
                 )
