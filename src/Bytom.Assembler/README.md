@@ -459,14 +459,25 @@ Software interrupt. The int instruction generates a software interrupt by invoki
 interrupt handler specified by the interrupt code in the second operand.
 
 - `int <reg>` - `0b0000_xxxx_xx00_0000_1000_0000_0000_0000` # 32 bit
-- `int <con>` - `0b0000_0000_zzzz_zzzz_1000_0000_0000_0000` # 32 bit (zzzz_zzzz is 8 bit
-  interrupt code)
 
 ### iret
 
 Return to the instruction following the last interrupt.
 
-- `iret` - `0b0000_0000_0000_0000_1000_0000_0000_0001` # 32 bit
+- `iret` - `0b0000_0000_0000_0000_1000_0000_0000_0100` # 32 bit
+
+### cpuid
+
+Query the CPU for information about its capabilities. Information queried is identified
+by the value of register operand.
+
+- `cpuid <reg>` - `0b0000_xxxx_xx00_0000_1000_0000_0000_1000` # 32 bit
+
+Available information:
+
+- `0x00` - Manufacturer name returned in `RD0`, `RD1`, `RD2`, `RD3` in that order.
+- `0x0A` - CPU core index `RD0`, CPU thread index `RD1`, CPU package index `RD2`
+- `0x0B` - CPU core count `RD0`, CPU thread count `RD1`, CPU package count `RD2`
 
 ## Address translation
 

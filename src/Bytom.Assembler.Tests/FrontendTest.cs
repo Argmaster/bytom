@@ -586,5 +586,32 @@ namespace Bytom.Assembler.Tests
             Assert.That(instructions.Count, Is.EqualTo(1));
             Assert.IsInstanceOf<Cmp>(instructions[0]);
         }
+
+        [Test]
+        public void TestInt()
+        {
+            Frontend frontend = new Frontend();
+            var instructions = frontend.parse("INT RD0").nodes;
+            Assert.That(instructions.Count, Is.EqualTo(1));
+            Assert.IsInstanceOf<Int>(instructions[0]);
+        }
+
+        [Test]
+        public void TestIRet()
+        {
+            Frontend frontend = new Frontend();
+            var instructions = frontend.parse("IRET").nodes;
+            Assert.That(instructions.Count, Is.EqualTo(1));
+            Assert.IsInstanceOf<IRet>(instructions[0]);
+        }
+
+        [Test]
+        public void TestCpuId()
+        {
+            Frontend frontend = new Frontend();
+            var instructions = frontend.parse("CPUID RD0").nodes;
+            Assert.That(instructions.Count, Is.EqualTo(1));
+            Assert.IsInstanceOf<CpuId>(instructions[0]);
+        }
     }
 }

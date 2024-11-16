@@ -1756,4 +1756,78 @@ namespace Bytom.Assembler.Nodes
             return $"cmp {left.ToAssembly()}, {right.ToAssembly()}";
         }
     }
+
+    public class Int : Instruction
+    {
+        public OpRegister interrupt { get; set; }
+
+        public Int(OpRegister interrupt)
+        {
+            this.interrupt = interrupt;
+        }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.Int;
+        }
+
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(GetOpCode())
+                .SetFirstRegisterID(interrupt.name)
+                .GetInstruction();
+        }
+
+        public override string ToAssembly()
+        {
+            return $"int {interrupt.ToAssembly()}";
+        }
+    }
+
+    public class IRet : Instruction
+    {
+        public IRet() { }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.IRet;
+        }
+
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(GetOpCode())
+                .GetInstruction();
+        }
+
+        public override string ToAssembly()
+        {
+            return "iret";
+        }
+    }
+
+    public class CpuId : Instruction
+    {
+        public OpRegister code { get; set; }
+
+        public CpuId(OpRegister code)
+        {
+            this.code = code;
+        }
+
+        public override OpCode GetOpCode()
+        {
+            return OpCode.CpuId;
+        }
+
+        public override byte[] ToMachineCode()
+        {
+            return new MachineInstructionBuilder(GetOpCode())
+                .GetInstruction();
+        }
+
+        public override string ToAssembly()
+        {
+            return $"cpuid {code.ToAssembly()}";
+        }
+    }
 }

@@ -73,7 +73,8 @@ namespace Bytom.Hardware.CPU
         OutConCon = 0b0000_1000_0010_0011,
         // Kernel related instructions
         Int = 0b1000_0000_0000_0000,
-        IRet = 0b1000_0000_0000_0001,
+        IRet = 0b1000_0000_0000_0100,
+        CpuId = 0b1000_0000_0000_1000,
     }
 
     public class InstructionDecoder

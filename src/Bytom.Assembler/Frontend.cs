@@ -261,6 +261,7 @@ namespace Bytom.Assembler
                 case "ret":
                     expectOperandsCount(parameters, 0);
                     return new Ret();
+
                 case "cmp":
                     {
                         expectOperandsCount(parameters, 2);
@@ -268,6 +269,25 @@ namespace Bytom.Assembler
                         OpRegister right = parseRegister(parameters[1]);
                         return new Cmp(left, right);
                     }
+
+                case "int":
+                    {
+                        expectOperandsCount(parameters, 1);
+                        OpRegister interrupt = parseRegister(parameters[0]);
+                        return new Int(interrupt);
+                    }
+
+                case "iret":
+                    expectOperandsCount(parameters, 0);
+                    return new IRet();
+
+                case "cpuid":
+                    {
+                        expectOperandsCount(parameters, 1);
+                        OpRegister destination = parseRegister(parameters[0]);
+                        return new CpuId(destination);
+                    }
+
                 default:
                     throw new Exception($"Invalid instruction {instruction_name} in line {lineIndex}: '{currentLine}'");
             }

@@ -1503,5 +1503,41 @@ halt
 "
             ));
         }
+
+        [Test]
+        public void TestInt()
+        {
+            var frontend = new Frontend();
+            var instructions = frontend.parse(@"int RD0");
+
+            Backend backend = new Backend();
+            var code = backend.compile(instructions);
+
+            Assert.That(code.ToAssembly(), Is.EqualTo("int RD0\n"));
+        }
+
+        [Test]
+        public void TestIRet()
+        {
+            var frontend = new Frontend();
+            var instructions = frontend.parse(@"iret");
+
+            Backend backend = new Backend();
+            var code = backend.compile(instructions);
+
+            Assert.That(code.ToAssembly(), Is.EqualTo("iret\n"));
+        }
+
+        [Test]
+        public void TestCpuId()
+        {
+            var frontend = new Frontend();
+            var instructions = frontend.parse(@"cpuid RD0");
+
+            Backend backend = new Backend();
+            var code = backend.compile(instructions);
+
+            Assert.That(code.ToAssembly(), Is.EqualTo("cpuid RD0\n"));
+        }
     }
 }

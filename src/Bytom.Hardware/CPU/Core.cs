@@ -232,7 +232,6 @@ namespace Bytom.Hardware.CPU
         // Function used as main execution loop of the thread representing running core.
         public virtual void executionLoop()
         {
-            primeMicroOpDecoding();
             while (!requested_power_off)
             {
                 executeMicroOp();
