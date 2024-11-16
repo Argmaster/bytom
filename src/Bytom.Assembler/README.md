@@ -75,26 +75,37 @@ writing 32-bit register to 16-bit register, always lower 16 bits are taken. When
   - bit 4: zero division flag
 
 - `CR0` `0b10_0000` - Configuration Register 0 [kmd-only]
+
   - bit 0: enable virtual memory
-  - bit 1: interrupt flag
   - bit 31: supervisor bit
+
 - `STP` `0b10_0100` - Call Stack Top Pointer containing virtual address of top of the
   call stack. (use push and pop to modify) (In x86 `ESP`)
+
 - `FBP` `0b10_0101` - Frame Base Pointer containing address of the base of the stack
   frame. (use call and ret to modify) (In x86 `EPB`)
+
 - `VATTA` `0b10_0110` - Virtual Address Translation Table Physical Address [kmd-only]
-- `IDT` `0b10_0111` - Interrupt Descriptor Table containing virtual address of the
+
+- `IDT` `0b10_0111` - Interrupt Descriptor Table containing physical address of the
   Interrupt Handlers [kmd-only]
+
 - `IRA` `0b10_1000` - Interrupt Return Address containing virtual address of the next
   instruction after the interrupt [kmd-only]
+
 - `IP` `0b10_1001` - Instruction Pointer containing virtual address of next instruction
   (direct write disallowed, use jump instructions)
+
 - `TRA` `0b10_1010` - Task Descriptor Address (address of currently running task)
+
 - `TDTA` `0b10_1011` - Task Descriptor Table Address
+
 - `KERNEL_STP` `0b11_1010` - Kernel Call Stack Top Pointer containing virtual address of
   top of the kernel call stack.
+
 - `KERNEL_FBP` `0b11_1011` - Kernel Call Stack Base Pointer containing virtual address
   of the bottom of the kernel call stack.
+
 - `KERNEL_IP` `0b11_1100` - Kernel Instruction Pointer containing virtual address of
   next instruction to be executed in kernel mode.
 

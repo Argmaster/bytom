@@ -1,16 +1,20 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Bytom.Hardware.CPU
 {
     public class Package
     {
+        public uint package_id { get; }
         public List<Core> cores { get; }
         protected PowerStatus power_status;
         public Motherboard? motherboard;
+        public ConcurrentQueue<uint> interruptQueue = new ConcurrentQueue<uint>();
 
-        public Package(List<Core> cores)
+        public Package(List<Core> cores, uint package_id)
         {
             this.cores = cores;
+            this.package_id = package_id;
             power_status = PowerStatus.OFF;
         }
 

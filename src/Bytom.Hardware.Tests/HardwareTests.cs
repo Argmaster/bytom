@@ -26,7 +26,7 @@ namespace Bytom.Hardware.Tests
             rom = new FirmwareRom(1024, 500, 1, 1, 1);
             controller = new IoController([ram], rom, []);
             core = new Core(0, 500);
-            cpu = new Package([core]);
+            cpu = new Package([core], 0);
             motherboard = new Motherboard(cpu, controller);
         }
 

@@ -96,13 +96,16 @@ namespace Bytom.Hardware.CPU
         public Register32 vRD2 = new Register32(0, name: "vRD2");
         // Hidden intermediate register 3 used by micro-ops.
         public Register32 vRD3 = new Register32(0, name: "vRD3");
-        // Pipeline containing scheduled micro-ops.
-        public List<MicroOp> pipeline = new List<MicroOp>();
+        public Pipeline kernel_pipeline = new Pipeline();
+        public Pipeline user_pipeline = new Pipeline();
+        public Pipeline interrupt_pipeline = new Pipeline();
         // Micro-op that was primed and currently is being executed.
         // Execution of micro-op can take multiple cycles, for example if this is
         // a blocking memory read operation.
-        IEnumerator? currentMicroOp;
-        List<uint> interrupt_queue = new List<uint>();
+        public IEnumerator? currentMicroOp;
+        // Interrupt currently being processed by the core.
+        // If null then no interrupt is being processed.
+        public uint? interrupt = null;
 
         public Dictionary<RegisterID, Register32> registers;
 
@@ -150,29 +153,45 @@ namespace Bytom.Hardware.CPU
             };
         }
 
+        public Pipeline getPipeline()
+        {
+            if (interrupt != null)
+            {
+                return interrupt_pipeline;
+            }
+            return isKernelMode() ? kernel_pipeline : user_pipeline;
+        }
+
         public void primeMicroOpDecoding()
         {
             pushMicroOp(new ReadMemory(IP, vInstruction));
             pushMicroOp(new InstructionDecode(vInstruction));
         }
+
         // Execute the next tick on the current micro-op or if it's finished then
         // start execution of the next micro-op in the pipeline.
         public void executeMicroOp()
         {
+            if (interrupt == null)
+            {
+                if (package?.interruptQueue.TryDequeue(out var temp_interrupt) ?? false)
+                {
+                    getPipeline().pushBack(new EnterInterruptHandler(temp_interrupt));
+                }
+            }
             if (currentMicroOp?.MoveNext() ?? false)
             {
                 return;
             }
-            if (pipeline.Count > 0)
+            if (!getPipeline().isEmpty())
             {
-                currentMicroOp = pipeline.First().execute(this).GetEnumerator();
-                pipeline.RemoveAt(0);
+                currentMicroOp = getPipeline().popFront().execute(this).GetEnumerator();
             }
         }
         // Push a micro-op to the pipeline.
         public void pushMicroOp(MicroOp microOp)
         {
-            pipeline.Add(microOp);
+            getPipeline().pushBack(microOp);
         }
         // Get the kernel mode bit from the control register 0.
         public bool isKernelMode()
@@ -218,6 +237,9 @@ namespace Bytom.Hardware.CPU
             STP.writeUInt32(ram_end_address);
             FBP.writeUInt32(ram_end_address);
 
+            KERNEL_STP.writeUInt32(ram_end_address);
+            KERNEL_FBP.writeUInt32(ram_end_address);
+
             var firmware_address = GetMemoryController().getFirmwareAddressRange().base_address.ToUInt32();
             IP.writeUInt32(firmware_address);
 
@@ -240,7 +262,7 @@ namespace Bytom.Hardware.CPU
             requested_power_off = false;
             if (power_status == PowerStatus.ON)
             {
-                throw new System.Exception("Incorrect core power state");
+                throw new Exception("Incorrect core power state");
             }
         }
         // Method for stopping the core. It will wait for the current instruction to finish
@@ -249,7 +271,7 @@ namespace Bytom.Hardware.CPU
         {
             if (power_status == PowerStatus.OFF)
             {
-                throw new System.Exception("Core is already powered off");
+                throw new Exception("Core is already powered off");
             }
             power_status = PowerStatus.STOPPING;
             powerOffTeardown();
@@ -259,7 +281,11 @@ namespace Bytom.Hardware.CPU
         public virtual void powerOffTeardown()
         {
             requested_power_off = true;
-            pipeline.Clear();
+
+            currentMicroOp = null;
+            user_pipeline.flush();
+            kernel_pipeline.flush();
+
             while (power_status == PowerStatus.ON)
             {
                 clock.waitForCycles(1);

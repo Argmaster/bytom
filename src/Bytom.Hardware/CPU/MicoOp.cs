@@ -3,6 +3,9 @@
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using Bytom.Tools;
 
 namespace Bytom.Hardware.CPU
@@ -25,6 +28,7 @@ namespace Bytom.Hardware.CPU
             this.address = address;
         }
     }
+
     public class ReadMemory : MemoryIO
     {
         public ReadMemory(Register destination, Register32 address) : base(destination, address)
@@ -75,6 +79,147 @@ namespace Bytom.Hardware.CPU
         }
     }
 
+    public class Common
+    {
+        public static List<Register> getWorkingSet(Core core)
+        {
+            return new List<Register>
+            {
+                core.RD0,
+                core.RD1,
+                core.RD2,
+                core.RD3,
+                core.RD4,
+                core.RD5,
+                core.RD6,
+                core.RD7,
+                core.RD8,
+                core.RD9,
+                core.RDA,
+                core.RDB,
+                core.RDC,
+                core.RDD,
+                core.RDE,
+                core.RDF,
+                core.IP,
+                core.CCR,
+                core.CR0,
+                core.FBP,
+                core.STP
+            };
+        }
+
+        public static void storeWorkingSet(Core core)
+        {
+            foreach (var register in getWorkingSet(core))
+            {
+                pushStackValue(core, register);
+            }
+        }
+
+        public static void loadWorkingSet(Core core)
+        {
+            // Pop all register values in reverse order.
+            foreach (var register in getWorkingSet(core).AsEnumerable().Reverse())
+            {
+                popStackValue(core, register);
+            }
+        }
+
+        public static void pushStackValue(Core core, Register source)
+        {
+            core.pushMicroOp(
+                new WriteMemory(
+                    address: core.STP,
+                    source: source
+                )
+            );
+            core.pushMicroOp(
+                new WriteRegister(
+                    destination: core.vRD1,
+                    source: Serialization.UInt32ToBytesBigEndian(source.getSizeBytes())
+                )
+            );
+            core.pushMicroOp(
+                new ALUOperation32(
+                    operation: ALUOperationType.SUB,
+                    left: core.STP,
+                    right: core.vRD1
+                )
+            );
+        }
+
+        public static void popStackValue(Core core, Register destination)
+        {
+            core.pushMicroOp(
+                new ReadMemory(
+                    address: core.STP,
+                    destination: destination
+                )
+            );
+            core.pushMicroOp(
+                new WriteRegister(
+                    destination: core.vRD1,
+                    source: Serialization.UInt32ToBytesBigEndian(destination.getSizeBytes())
+                )
+            );
+            core.pushMicroOp(
+                new ALUOperation32(
+                    operation: ALUOperationType.ADD,
+                    left: core.STP,
+                    right: core.vRD1
+                )
+            );
+        }
+        // Push ReadMemory operation to the core pipeline followed by update of the
+        // instruction pointer.
+        public static void readInstructionConstant(Core core, Register32 destination)
+        {
+            core.pushMicroOp(new ReadMemory(destination: destination, address: core.IP));
+            updateInstructionPointer(core, 4u);
+        }
+        // Add `size` to the instruction pointer.
+        public static void updateInstructionPointer(Core core, uint size)
+        {
+            core.pushMicroOp(
+                new WriteRegister(
+                    destination: core.vInstructionSize,
+                    source: Serialization.UInt32ToBytesBigEndian(size)
+                )
+            );
+            core.pushMicroOp(
+                new ALUOperation32(
+                    operation: ALUOperationType.ADD,
+                    left: core.IP,
+                    right: core.vInstructionSize
+                )
+            );
+        }
+
+        public static void updateInstructionPointer(Core core, Register32 new_value)
+        {
+            core.pushMicroOp(
+                new CopyRegister(
+                    destination: core.IP,
+                    source: new_value
+                )
+            );
+        }
+
+        public static void pushContinueExecution(Core core)
+        {
+            core.pushMicroOp(
+                new ReadMemory(
+                    destination: core.vInstruction,
+                    address: core.IP
+                )
+            );
+            core.pushMicroOp(
+                new InstructionDecode(core.vInstruction)
+            );
+        }
+    }
+
     public class InstructionDecode : MicroOp
     {
         public Register32 source;
@@ -85,7 +230,7 @@ namespace Bytom.Hardware.CPU
         public override IEnumerable execute(Core core)
         {
             var decoder = new InstructionDecoder(source.readBytes());
-            updateInstructionPointer(core, 4u);
+            Common.updateInstructionPointer(core, 4u);
 
             Register? first = null;
             Register? second = null;
@@ -99,7 +244,7 @@ namespace Bytom.Hardware.CPU
             switch (decoder.GetOpCode())
             {
                 case OpCode.Nop:
-                    pushContinueExecution(core);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.Halt:
@@ -114,7 +259,7 @@ namespace Bytom.Hardware.CPU
                             source: second!
                         )
                     );
-                    pushContinueExecution(core);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.MovRegMem:
@@ -124,7 +269,7 @@ namespace Bytom.Hardware.CPU
                             address: (Register32)second!
                         )
                     );
-                    pushContinueExecution(core);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.MovMemReg:
@@ -134,40 +279,40 @@ namespace Bytom.Hardware.CPU
                             source: second!
                         )
                     );
-                    pushContinueExecution(core);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.MovRegCon:
-                    readInstructionConstant(core, core.vRD0);
+                    Common.readInstructionConstant(core, core.vRD0);
                     core.pushMicroOp(
                         new CopyRegister(
                             destination: first!,
                             source: core.vRD0
                         )
                     );
-                    pushContinueExecution(core);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.MovMemCon:
-                    readInstructionConstant(core, core.vRD0);
+                    Common.readInstructionConstant(core, core.vRD0);
                     core.pushMicroOp(
                         new WriteMemory(
                             address: (Register32)first!,
                             source: core.vRD0
                         )
                     );
-                    pushContinueExecution(core);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.PushCon:
-                    readInstructionConstant(core, core.vRD0);
-                    pushStackValue(core, core.vRD0);
-                    pushContinueExecution(core);
+                    Common.readInstructionConstant(core, core.vRD0);
+                    Common.pushStackValue(core, core.vRD0);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.PushReg:
-                    pushStackValue(core, first!);
-                    pushContinueExecution(core);
+                    Common.pushStackValue(core, first!);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.PushMem:
@@ -177,24 +322,24 @@ namespace Bytom.Hardware.CPU
                             address: (Register32)first!
                         )
                     );
-                    pushStackValue(core, core.vRD0);
-                    pushContinueExecution(core);
+                    Common.pushStackValue(core, core.vRD0);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.PopReg:
-                    popStackValue(core, first!);
-                    pushContinueExecution(core);
+                    Common.popStackValue(core, first!);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.PopMem:
-                    popStackValue(core, core.vRD0!);
+                    Common.popStackValue(core, core.vRD0!);
                     core.pushMicroOp(
                         new WriteMemory(
                             address: (Register32)first!,
                             source: core.vRD0
                         )
                     );
-                    pushContinueExecution(core);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.Add:
@@ -239,7 +384,7 @@ namespace Bytom.Hardware.CPU
                             ccr: core.CCR
                         )
                     );
-                    pushContinueExecution(core);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.Cmp:
@@ -257,18 +402,18 @@ namespace Bytom.Hardware.CPU
                             ccr: core.CCR
                         )
                     );
-                    pushContinueExecution(core);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.JmpMem:
-                    updateInstructionPointer(core, (Register32)first!);
-                    pushContinueExecution(core);
+                    Common.updateInstructionPointer(core, (Register32)first!);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.JmpCon:
-                    readInstructionConstant(core, core.vRD0);
-                    updateInstructionPointer(core, core.vRD0);
-                    pushContinueExecution(core);
+                    Common.readInstructionConstant(core, core.vRD0);
+                    Common.updateInstructionPointer(core, core.vRD0);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.JeqMem:
@@ -309,7 +454,7 @@ namespace Bytom.Hardware.CPU
                             condition: (ccr) => ccr.isEqual()
                         )
                     );
-                    pushContinueExecution(core);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.JeqCon:
@@ -343,7 +488,7 @@ namespace Bytom.Hardware.CPU
                     condition = (ccr) => ccr.isGreaterThanOrEqual();
                     goto JMP_CON;
                 JMP_CON:
-                    readInstructionConstant(core, core.vRD0);
+                    Common.readInstructionConstant(core, core.vRD0);
                     core.pushMicroOp(
                         new JmpIfCondition(
                             address: core.vRD0,
@@ -351,126 +496,132 @@ namespace Bytom.Hardware.CPU
                             condition: (ccr) => ccr.isEqual()
                         )
                     );
-                    pushContinueExecution(core);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.CallMem:
-                    pushStackValue(core, core.IP);
-                    updateInstructionPointer(core, (Register32)first!);
-                    pushContinueExecution(core);
+                    Common.pushStackValue(core, core.IP);
+                    Common.updateInstructionPointer(core, (Register32)first!);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.CallCon:
-                    readInstructionConstant(core, core.vRD0);
-                    pushStackValue(core, core.IP);
-                    updateInstructionPointer(core, core.vRD0);
-                    pushContinueExecution(core);
+                    Common.readInstructionConstant(core, core.vRD0);
+                    Common.pushStackValue(core, core.IP);
+                    Common.updateInstructionPointer(core, core.vRD0);
+                    Common.pushContinueExecution(core);
                     break;
 
                 case OpCode.Ret:
-                    popStackValue(core, core.IP);
-                    pushContinueExecution(core);
+                    Common.popStackValue(core, core.IP);
+                    Common.pushContinueExecution(core);
                     break;
+
+                case OpCode.Int:
+                    core.package!.interruptQueue.Enqueue(((Register32)first!).readUInt32());
+                    break;
+
+                case OpCode.IRet:
+                    core.interrupt_pipeline.flush();
+                    core.interrupt = null;
+                    // push value of IRA register to IP
+                    core.pushMicroOp(
+                        new CopyRegister(
+                            destination: core.IP,
+                            source: core.IRA
+                        )
+                    );
+                    Common.loadWorkingSet(core);
+                    Common.pushContinueExecution(core);
+                    break;
+
+                case OpCode.CpuId:
+                    {
+                        uint code = ((Register32)first!).readUInt32();
+                        switch (code)
+                        {
+                            case 0x00:
+                                core.RD0.writeBytes([(byte)'B', (byte)'y', (byte)'t', (byte)'o']);
+                                core.RD1.writeBytes([(byte)'m', (byte)'C', (byte)'o', (byte)'r']);
+                                core.RD2.writeBytes([(byte)'p', (byte)'o', (byte)'r', (byte)'a']);
+                                core.RD3.writeBytes([(byte)'t', (byte)'i', (byte)'o', (byte)'n']);
+                                break;
+                            case 1:
+                                core.RD0.writeUInt32(core.core_id);
+                                core.RD1.writeUInt32(0);
+                                core.RD2.writeUInt32(core.package!.package_id);
+                                break;
+                            case 2:
+                                core.RD0.writeUInt32((uint)core.package!.cores.Count);
+                                core.RD1.writeUInt32((uint)core.package!.cores.Count);
+                                core.RD2.writeUInt32(1);
+                                break;
+                            default:
+                                throw new NotImplementedException(code.ToString());
+                        }
+                        break;
+                    }
 
                 default:
                     throw new NotImplementedException(decoder.GetOpCode().ToString());
             }
             yield break;
         }
+    }
 
-        private static void pushStackValue(Core core, Register source)
-        {
-            core.pushMicroOp(
-                new WriteMemory(
-                    address: core.STP,
-                    source: source
-                )
-            );
-            core.pushMicroOp(
-                new WriteRegister(
-                    destination: core.vRD1,
-                    source: Serialization.UInt32ToBytesBigEndian(source.getSizeBytes())
-                )
-            );
-            core.pushMicroOp(
-                new ALUOperation32(
-                    operation: ALUOperationType.SUB,
-                    left: core.STP,
-                    right: core.vRD1
-                )
-            );
-        }
+    public class EnterInterruptHandler : MicroOp
+    {
+        public uint interrupt_id;
 
-        private static void popStackValue(Core core, Register destination)
+        public EnterInterruptHandler(uint interrupt_id)
         {
-            core.pushMicroOp(
-                new ReadMemory(
-                    address: core.STP,
-                    destination: destination
-                )
-            );
-            core.pushMicroOp(
-                new WriteRegister(
-                    destination: core.vRD1,
-                    source: Serialization.UInt32ToBytesBigEndian(destination.getSizeBytes())
-                )
-            );
-            core.pushMicroOp(
-                new ALUOperation32(
-                    operation: ALUOperationType.ADD,
-                    left: core.STP,
-                    right: core.vRD1
-                )
-            );
+            this.interrupt_id = interrupt_id;
         }
-        // Push ReadMemory operation to the core pipeline followed by update of the
-        // instruction pointer.
-        private static void readInstructionConstant(Core core, Register32 destination)
+        public override IEnumerable execute(Core core)
         {
-            core.pushMicroOp(new ReadMemory(destination: destination, address: core.IP));
-            updateInstructionPointer(core, 4u);
-        }
-        // Add `size` to the instruction pointer.
-        private static void updateInstructionPointer(Core core, uint size)
-        {
-            core.pushMicroOp(
-                new WriteRegister(
-                    destination: core.vInstructionSize,
-                    source: Serialization.UInt32ToBytesBigEndian(size)
-                )
-            );
-            core.pushMicroOp(
-                new ALUOperation32(
-                    operation: ALUOperationType.ADD,
-                    left: core.IP,
-                    right: core.vInstructionSize
-                )
-            );
-        }
-
-        private static void updateInstructionPointer(Core core, Register32 new_value)
-        {
+            Debug.Assert(core.interrupt == null);
+            // This will automatically change pipeline to interrupt pipeline.
+            core.interrupt = interrupt_id;
+            // Store register values on the stack since interrupt handler may need them.
+            Common.storeWorkingSet(core);
+            // Move IP to IRA so IRet knows where to return.
             core.pushMicroOp(
                 new CopyRegister(
-                    destination: core.IP,
-                    source: new_value
+                    destination: core.IRA,
+                    source: core.IP
                 )
             );
-        }
-
-        private void pushContinueExecution(Core core)
-        {
+            // Fetch the interrupt handler address.
             core.pushMicroOp(
                 new ReadMemory(
-                    destination: core.vInstruction,
-                    address: core.IP
+                    destination: core.vRD0,
+                    address: core.IDT
+                )
+            );
+            // Calculate offset into the interrupt descriptor table.
+            // Each entry is 4 bytes long, it contains the address of the interrupt handler.
+            core.pushMicroOp(
+                new WriteRegister(
+                    destination: core.vRD1,
+                    source: Serialization.UInt32ToBytesBigEndian(interrupt_id * 4)
                 )
             );
             core.pushMicroOp(
-                new InstructionDecode(core.vInstruction)
+                new ALUOperation32(
+                    operation: ALUOperationType.ADD,
+                    left: core.vRD0,
+                    right: core.vRD1
+                )
             );
+            // Jump to the interrupt handler determined by address in vRD0.
+            Common.updateInstructionPointer(core, core.vRD0);
+            // Prime fetch-decode-execute cycle.
+            Common.pushContinueExecution(core);
+
+            yield break;
         }
     }
+
     public class CopyRegister : MicroOp
     {
         public Register destination;
@@ -486,6 +637,7 @@ namespace Bytom.Hardware.CPU
             yield break;
         }
     }
+
     public class WriteRegister : MicroOp
     {
         public Register destination;
@@ -501,6 +653,7 @@ namespace Bytom.Hardware.CPU
             yield break;
         }
     }
+
     public class JmpIfCondition : MicroOp
     {
         public Register32 address;

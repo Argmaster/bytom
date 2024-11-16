@@ -311,17 +311,17 @@ namespace Bytom.Assembler
                     OpMemoryAddress? destination = frontend.tryParseMemoryAddress(parameters[0]);
                     if (destination != null)
                     {
-                        return (JMem)Activator.CreateInstance(typeof(JMem), destination);
+                        return (JMem)Activator.CreateInstance(typeof(JMem), destination)!;
                     }
                 }
                 {
                     OpConstantInt? destination = frontend.tryParseConstantInt(parameters[0]);
                     if (destination != null)
                     {
-                        return (JCon)Activator.CreateInstance(typeof(JCon), destination);
+                        return (JCon)Activator.CreateInstance(typeof(JCon), destination)!;
                     }
                 }
-                return (JLabel)Activator.CreateInstance(typeof(JLabel), new OpLabel(parameters[0].Trim()));
+                return (JLabel)Activator.CreateInstance(typeof(JLabel), new OpLabel(parameters[0].Trim()))!;
             }
         }
 
